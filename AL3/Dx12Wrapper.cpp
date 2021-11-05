@@ -1,0 +1,117 @@
+#include "Dx12Wrapper.h"
+
+ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::_heapForImgui;
+bool Dx12Wrapper::bInResult;
+
+Dx12Wrapper::Dx12Wrapper()
+{
+}
+
+void Dx12Wrapper::ImguiInit()
+{
+	_heapForImgui = CreateDescriptorHeapForImgui();
+
+	if (_heapForImgui == nullptr) {
+		assert(0);
+	}
+
+	if (ImGui::CreateContext() == nullptr) {
+		assert(0);
+	}
+	//[ImGui::]
+}
+
+void Dx12Wrapper::WindowsInit(HWND hwnd)
+{
+	bInResult = ImGui_ImplWin32_Init(hwnd);
+	if (!bInResult) {
+		assert(0);
+	}
+}
+
+void Dx12Wrapper::DirectXInit()
+{
+	bInResult = ImGui_ImplDX12_Init(
+		DirectXImportant::dev.Get(),
+		3,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		GetHeapForImgui().Get(),
+		GetHeapForImgui()->GetCPUDescriptorHandleForHeapStart(),
+		GetHeapForImgui()->GetGPUDescriptorHandleForHeapStart());
+}
+
+void Dx12Wrapper::Draw(bool isDraw)
+{
+	if (!isDraw) {
+		return;
+	}
+
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	bool blnChk = false;
+	ImGui::Checkbox("CheakboxTest", &blnChk);
+
+	int radio = 0;
+	ImGui::RadioButton("Radio 1", &radio, 0);
+	ImGui::SameLine();
+	ImGui::RadioButton("Radio 2", &radio, 1);
+	ImGui::SameLine();
+	ImGui::RadioButton("Radio 3", &radio, 2);
+
+	int nSlider = 0;
+	ImGui::SliderInt("Int Slider", &nSlider, 0, 100);
+
+	float fSlider = 0.0f;
+	ImGui::SliderFloat("Float Slider", &fSlider, 0.0f, 100.0f);
+
+	float col3[3] = {};
+	ImGui::ColorPicker3(
+		"ColorPicker3",
+		col3,
+		ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayRGB);
+
+	float col4[4] = {};
+	ImGui::ColorPicker4(
+		"ColorPicker4",
+		col4,
+		ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
+
+	ImGui::Begin("Rendering Test Menu");
+	ImGui::SetWindowSize(
+		ImVec2(400, 500),
+		ImGuiCond_::ImGuiCond_FirstUseEver);
+
+	ImGui::End();
+
+	ImGui::Render();
+	DirectXImportant::cmdList->SetDescriptorHeaps(
+		1,
+		GetHeapForImgui().GetAddressOf());
+
+	ImGui_ImplDX12_RenderDrawData(
+		ImGui::GetDrawData(),
+		DirectXImportant::cmdList.Get());
+}
+
+ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::CreateDescriptorHeapForImgui()
+{
+	ComPtr<ID3D12DescriptorHeap> ret;
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	desc.NodeMask = 0;
+	desc.NumDescriptors = 1;
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+	DirectXImportant::dev->CreateDescriptorHeap(
+		&desc,
+		IID_PPV_ARGS(ret.ReleaseAndGetAddressOf()));
+
+	return ret;
+}
+
+ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::GetHeapForImgui()
+{
+	return _heapForImgui;
+}
