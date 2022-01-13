@@ -1,99 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ソース ファイル">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="ヘッダー ファイル">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="シェーダー ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Imgui">
       <UniqueIdentifier>{29f2004c-7006-44c1-a2cf-e8f744382205}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SourceCodes">
+      <UniqueIdentifier>{85947ef6-0dd2-43de-b19c-0ec247b9aee4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Math">
+      <UniqueIdentifier>{45753fa5-4619-446c-81f5-6e3a18457a96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users">
+      <UniqueIdentifier>{f431e633-1e0a-4582-a36d-b14228b7022c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\WinAPI">
+      <UniqueIdentifier>{77629839-7737-454f-8296-c2d4da178760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\XAudio2">
+      <UniqueIdentifier>{9035af13-eb3a-45b3-afed-37d8bdf5c1e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{a6ea7941-ca4d-44a5-94aa-14d6d901afaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Input">
+      <UniqueIdentifier>{d9ffa54c-25c9-464b-8fb9-cba15d9e7875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\2D">
+      <UniqueIdentifier>{5079feb3-b64e-44e8-a4db-be704da20071}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\DirectX">
+      <UniqueIdentifier>{5bc33b23-416b-4fe5-b88b-23717eeb03bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\3D">
+      <UniqueIdentifier>{bd378ddd-6327-46cd-9c44-886aef529555}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="SpriteVertexShader.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="SpritePixelShader.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="ObjVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="ObjPS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="BasicVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="BasicPS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="BasicGeometryShader.hlsl">
-      <Filter>シェーダー ファイル</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SpriteShaderHeader.hlsli">
-      <Filter>シェーダー ファイル</Filter>
-    </None>
-    <None Include="ObjShaderHeader.hlsli">
-      <Filter>シェーダー ファイル</Filter>
-    </None>
-    <None Include="BasicShaderHeader.hlsli">
-      <Filter>シェーダー ファイル</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Camera.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugText.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX2D.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectXBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectXImportant.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Dx12Wrapper.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Model3D.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Model3DManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Music.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsAPI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>Imgui</Filter>
     </ClCompile>
@@ -115,47 +57,71 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\2D\DirectX2D.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Object3D.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Model3DManager.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Shape.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\Camera.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\DescriptorHeap.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\DirectXBase.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\DirectXImportant.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\GraphicsPipeline.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Input\Input.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Math\Collision.cpp">
+      <Filter>SourceCodes\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Math\CollisionPrimitive.cpp">
+      <Filter>SourceCodes\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\GameScene.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp">
+      <Filter>SourceCodes\WinAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\XAudio2\Music.cpp">
+      <Filter>SourceCodes\XAudio2</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\main.cpp">
+      <Filter>SourceCodes</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\Dx12Wrapper.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugText.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX2D.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectXBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectXImportant.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Dx12Wrapper.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Model3D.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Model3DManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Music.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsAPI.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>Imgui</Filter>
     </ClInclude>
@@ -180,5 +146,102 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>Imgui</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCodes\2D\DirectX2D.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Object3D.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Model3DManager.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Shape.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\Camera.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\DescriptorHeap.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\DirectXBase.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\DirectXImportant.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\GraphicsPipeline.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Input\Input.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\Collision.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\CollisionPrimitive.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\GameScene.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h">
+      <Filter>SourceCodes\WinAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\XAudio2\Music.h">
+      <Filter>SourceCodes\XAudio2</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Singleton.h">
+      <Filter>SourceCodes</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\Dx12Wrapper.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\Shaders\BasicGeometryShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\BasicPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\BasicVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ObjPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ObjVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SpritePixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SpriteVertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\BasicShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\ObjShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\SpriteShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
