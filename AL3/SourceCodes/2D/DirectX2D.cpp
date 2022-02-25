@@ -26,7 +26,7 @@ void DirectX2D::VSShaderCompile()
 
 	/*頂点シェーダの読み込みとコンパイル*/
 	result = D3DCompileFromFile(
-		L"SpriteVertexShader.hlsl",
+		L"Resources/Shaders/SpriteVertexShader.hlsl",
 		nullptr,
 		//インクルード可能にする
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
@@ -62,7 +62,7 @@ void DirectX2D::PSShaderCompile()
 	/*ピクセルシェーダの読み込みとコンパイル*/
 	result = D3DCompileFromFile(
 		//シェーダファイル名
-		L"SpritePixelShader.hlsl",
+		L"Resources/Shaders/SpritePixelShader.hlsl",
 		nullptr,
 		//インクルード可能にする
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,

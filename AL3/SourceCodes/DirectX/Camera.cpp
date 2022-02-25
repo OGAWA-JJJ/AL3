@@ -2,7 +2,7 @@
 
 XMMATRIX Camera::matView;
 XMMATRIX Camera::matPerspective;
-XMFLOAT3 Camera::eye = { 0,0,-10.0f };
+XMFLOAT3 Camera::eye = { 0,20,-50.0f };
 XMFLOAT3 Camera::target = { 0,0,0 };
 XMFLOAT3 Camera::up = { 0,1,0 };
 float Camera::fov = 60.0f;

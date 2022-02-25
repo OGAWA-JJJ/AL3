@@ -1,84 +1,83 @@
 #include "GameScene.h"
+#include "../3D/FbxLoader.h"
+#include "../3D/FbxObject3D.h"
 
 GameScene::GameScene()
 {
-	timer = 0;
-	waterCount = 0;
-	randCount = 0;
-	score = 0;
-	side = rand() % 2;
-	miss = false;
+	modelA = Model::CreateFromObj("skydome");
+	modelB = Model::CreateFromObj("jihannki");
+
+	objA = Object::Create(modelA);
+	objB = Object::Create(modelB);
+
+	objA->SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+	objB->SetScale(XMFLOAT3(5.0f, 5.0f, 5.0f));
+
+	light = Light::Create();
+	light->SetLightColor({ 1,1,1 });
+	Object::SetLight(light);
+
+	Camera::SetEye(XMFLOAT3(0, 10, -50));
+
+	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+	FbxObject3D::CreateGraphicsPipeline();
+
+	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
+
+	fbxObj1 = new FbxObject3D();
+	fbxObj1->Init();
+	fbxObj1->SetModel(fbxModel1);
+	fbxObj1->PlayAnimation();
 }
 
 GameScene::~GameScene()
 {
+	delete modelA;
+	delete modelB;
+	delete objA;
+	delete objB;
+	delete fbxModel1;
+	delete fbxObj1;
 }
 
 void GameScene::Init()
 {
-	timer = 0;
-	waterCount = 0;
-	randCount = 0;
-	score = 0;
-	side = rand() % 2;
-	miss = false;
+	objA->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	objB->SetPosition(XMFLOAT3(-40.0f, 0.0f, 0.0f));
+
+	objA->SetRotation(XMFLOAT3(0, 0, 0));
+	objB->SetRotation(XMFLOAT3(0, -90, 0));
+
+	Camera::SetEye({ 20,20.0f,-50.0f });
+	Camera::SetTarget({ 0.0f,5.0f,0.0f });
+	Camera::SetUp({ 0.0f,1.0f,0.0f });
 }
 
 void GameScene::Update()
 {
-	if (No == Title) {
+	objA->Update();
+	objB->Update();
 
-		//タイトル入力
+	light->Update();
 
-	}
+	XMFLOAT3 rot = objA->GetRotation();
+	rot.y += 0.03f;
+	objA->SetRotation(rot);
 
-	else if (No == GamePlay) {
+	XMFLOAT3 eye = Camera::GetEye();
+	if (Input::isKey(DIK_RIGHT)) { eye.x += 1.0f; }
+	if (Input::isKey(DIK_LEFT)) { eye.x -= 1.0f; }
+	Camera::SetEye(eye);
 
-		if (Input::isKeyTrigger(DIK_A)) {
-			//失敗
-			if (side == !Right) { miss = true; }
-			//成功
-			else {
-				waterCount--;
-				score += SCORE;
-				side = Left;
-			}
-		}
-
-		if (Input::isKeyTrigger(DIK_D)) {
-			//失敗
-			if (side == !Left) { miss = true; }
-			//成功
-			else {
-				waterCount--;
-				score += SCORE;
-				side = Right;
-			}
-		}
-
-		if (Input::isKeyTrigger(DIK_SPACE)) {
-			//失敗
-			if (waterCount != 0) {}
-			//成功
-			else {}
-		}
-
-		//シーン管理
-		if (miss) { No = Result; }
-
-		//時間管理
-		if (timer <= MAX_TIME) { timer++; }
-		else { No = Result; }
-
-	}
-
-	else if (No == Result) {
-
-		//スコア表示とか
-
-	}
+	fbxObj1->Update();
 }
 
 void GameScene::Draw()
 {
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	objA->Draw();
+	objB->Draw();
+	Object::PostDraw();
+
+	fbxObj1->Draw(DirectXImportant::cmdList.Get());
 }

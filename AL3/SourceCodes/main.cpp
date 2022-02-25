@@ -1,14 +1,17 @@
 #include "DirectX/DirectXBase.h"
 #include "../imgui/Dx12Wrapper.h"
 #include "Users/GameScene.h"
+#include "3D/Light.h"
+#include "2D/PostEffect.h"
+#include "3D/FbxLoader.h"
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	//ウィンドウタイトル
-	LPCTSTR WindowTitle = L"MOCHI_TUKI";
+	LPCTSTR WindowTitle = L"OgwJ Engine";
 	//背景の色
-	float WindowColor[] = { 0.4f,0.4f,0.4f,1.0f };
+	float WindowColor[] = { 0.2f,0.2f,0.2f,1.0f };
 
 #ifdef _DEBUG
 	Window::Debuglayer();
@@ -20,13 +23,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Dx12Wrapper::ImguiInit();
 	Dx12Wrapper::WindowsInit(hwnd);
 	Dx12Wrapper::DirectXInit();
+	Object::StaticInit(DirectXImportant::dev.Get());
+	Light::StaticInit(DirectXImportant::dev.Get());
+	if (!Sprite::StaticInitialize(DirectXImportant::dev.Get(), WINDOW_WIDTH, WINDOW_HEIGHT)) {
+		assert(0);
+		return 1;
+	}
+	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
+
+	PostEffect* postEffect = nullptr;
+	//Sprite::LoadTexture(100, L"Resources/white1280x720.png");
+	//Spriteの継承を外して独立させる
+	postEffect = new PostEffect();
+	postEffect->Init();
 
 	/*----------宣言　ここから----------*/
 
-	//Shape shape;
-	//shape.CreateGeometry(L"Resources/hamurabyss.png");
-	GameScene Gamescene;
-	Gamescene.Init();
+	GameScene* Gamescene = nullptr;
+	Gamescene = new GameScene();
+	Gamescene->Init();
 
 	/*----------宣言　ここまで----------*/
 
@@ -35,33 +50,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Window::Msg();
 		Input::Update();
 
-		DirectXBase::BeforeDraw(WindowColor);
+		Gamescene->Update();
+		postEffect->PreDrawScene(DirectXImportant::cmdList.Get());
+		Gamescene->Draw();
+		postEffect->PostDrawScene(DirectXImportant::cmdList.Get());
 
+		DirectXBase::BeforeDraw(WindowColor);
+		//Gamescene->Draw();
 
 		/*----------DirectX毎フレーム処理　ここから----------*/
 
-		Gamescene.Update();
-		Gamescene.Draw();
-
-		/*for (int i = 0; i < 2; i++) {
-			const float md_pos = 5.0f;
-			XMFLOAT3 pos{};
-			pos.x = (float)rand() / RAND_MAX * md_pos - md_pos / 2.0f;
-			pos.y = (float)rand() / RAND_MAX * md_pos - md_pos / 2.0f;
-			pos.z = (float)rand() / RAND_MAX * md_pos - md_pos / 2.0f;
-
-			const float md_vel = 0.05f;
-			XMFLOAT3 vel{};
-			vel.x = (float)rand() / RAND_MAX * md_vel - md_vel / 2.0f;
-			vel.y = (float)rand() / RAND_MAX * md_vel - md_vel / 2.0f;
-			vel.z = (float)rand() / RAND_MAX * md_vel - md_vel / 2.0f;
-
-			const float md_acc = 0.001f;
-			XMFLOAT3 acc{};
-			acc.y = (float)rand() / RAND_MAX * md_acc;
-			shape.Add(60, pos, vel, acc, 1.0f, 0.0f);
-		}*/
-		//shape.DrawGeometry();
+		postEffect->Draw(DirectXImportant::cmdList.Get());
 
 		/*----------DirextX毎フレーム処理　ここまで----------*/
 
@@ -72,6 +71,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+
+	FbxLoader::GetInstance()->Finalize();
 	//ウィンドウクラスを登録解除
 	UnregisterClass(Window::windowClass.lpszClassName, Window::windowClass.hInstance);
 }

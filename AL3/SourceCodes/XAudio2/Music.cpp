@@ -12,7 +12,7 @@ Music::Music()
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 }
 
-void Music::PlayWave(const char* filename,float volume)
+void Music::PlayWave(const char* filename, float volume, bool isLoop)
 {
 	HRESULT result = S_OK;
 
@@ -54,7 +54,7 @@ void Music::PlayWave(const char* filename,float volume)
 	wfex.wBitsPerSample = format.fmt.nBlockAlign * 8 / format.fmt.nChannels;
 
 	/*波形フォーマットを元にSourceVoiceの生成*/
-	IXAudio2SourceVoice* pSourceVoice = nullptr;
+	//IXAudio2SourceVoice* pSourceVoice = nullptr;
 	result = xAudio2->CreateSourceVoice(&pSourceVoice, &wfex, 0, 2.0f, &voiceCallback);
 	//result = xAudio2->CreateSourceVoice(&pSourceVoice, &wfex);
 	if FAILED(result) {
@@ -71,7 +71,7 @@ void Music::PlayWave(const char* filename,float volume)
 
 	/*波形データの再生*/
 	pSourceVoice->SetVolume(volume);
-	//buf.LoopCount = XAUDIO2_MAX_LOOP_COUNT;
+	if (isLoop) { buf.LoopCount = XAUDIO2_MAX_LOOP_COUNT; }
 	result = pSourceVoice->SubmitSourceBuffer(&buf);
 	result = pSourceVoice->Start();
 }

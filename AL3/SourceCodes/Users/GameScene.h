@@ -1,32 +1,24 @@
 #pragma once
-#include "../2D/DirectX2D.h"
-#include "../3D/Object3D.h"
+#include "../2D/Sprite.h"
+#include "../3D/Object.h"
+#include "../3D/Model.h"
 #include "../3D/Shape.h"
 #include "../XAudio2/Music.h"
-
-const int MAX_TIME = 30 * 60;
-const int SCORE = 100;
+#include "../3D/FbxObject3D.h"
 
 class GameScene
 {
 private:
-	int No;
-	enum Scene
-	{
-		Title, GamePlay, Result
-	};
+	Light* light = nullptr;
 
-private:
-	enum Side
-	{
-		Left, Right
-	};
-	int timer;
-	int waterCount;
-	int randCount;
-	int score;
-	bool side;
-	bool miss;
+	Model* modelA = nullptr;
+	Model* modelB = nullptr;
+
+	Object* objA = nullptr;
+	Object* objB = nullptr;
+
+	FbxModel* fbxModel1 = nullptr;
+	FbxObject3D* fbxObj1 = nullptr;
 
 public:
 	GameScene();

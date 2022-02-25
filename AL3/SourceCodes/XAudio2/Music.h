@@ -9,6 +9,8 @@ private:
 	ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;
 
+	IXAudio2SourceVoice* pSourceVoice = nullptr;
+
 private:
 	/*チャンクヘッダ*/
 	struct  Chunk {
@@ -29,7 +31,9 @@ private:
 
 public:
 	Music();
-	void PlayWave(const char* filename,float volume);
+	void PlayWave(const char* filename, float volume, bool isLoop = false);
+	void StopWave() { pSourceVoice->Stop(); }
+
 };
 
 class XAudio2VoiceCallback :public IXAudio2VoiceCallback

@@ -19,7 +19,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //反射光ベクトル
     float3 reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
     //環境反射光
-    float3 ambient = m_ambient;
+    float3 ambient = (1, 1, 1); /*m_ambient*/
     //拡散反射光
     float3 diffuse = dotlightnormal * m_diffuse;
     //鏡面反射光
@@ -29,6 +29,8 @@ float4 PSmain(VSOutput input) : SV_TARGET
     shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
     shadecolor.a = m_alpha;
     
+    //return float4(1, 0, 0, 1);
     //シェーディングによる色で描画
+    //return texcolor;
     return shadecolor * texcolor;
 }

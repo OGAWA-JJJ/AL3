@@ -108,16 +108,43 @@
     <ClCompile Include="imgui\Dx12Wrapper.cpp">
       <Filter>Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="SourceCodes\3D\Material.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
+    <ClCompile Include="SourceCodes\3D\Mesh.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
+    <ClCompile Include="SourceCodes\3D\Model.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
+    <ClCompile Include="SourceCodes\3D\Object.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Light.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\Sprite.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Hantei.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Math\SphereCollider.cpp">
+      <Filter>SourceCodes\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Math\CollisionManager.cpp">
+      <Filter>SourceCodes\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\PostEffect.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxLoader.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxModel.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxObject3D.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
   </ItemGroup>
@@ -197,16 +224,64 @@
     <ClInclude Include="imgui\Dx12Wrapper.h">
       <Filter>Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="SourceCodes\3D\Material.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
+    <ClInclude Include="SourceCodes\3D\Mesh.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="SourceCodes\3D\Model.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
+    <ClInclude Include="SourceCodes\3D\Object.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Light.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\Sprite.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Hantei.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\Easing.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\OgaJHelper.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\CollisionTypes.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\BaseCollider.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\CollisionInfo.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\SphereCollider.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\CollisionManager.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\RaycastHit.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\MeshCollider.h">
+      <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\PostEffect.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxLoader.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxModel.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxObject3D.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
   </ItemGroup>
@@ -232,6 +307,24 @@
     <FxCompile Include="Resources\Shaders\SpriteVertexShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\PostEffectTestPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\PostEffectTestVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FBXPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FBXVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\UnityPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\UnityVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BasicShaderHeader.hlsli">
@@ -241,6 +334,15 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\SpriteShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\PostEffectTest.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\FBX.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\UnityShaderHeader.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

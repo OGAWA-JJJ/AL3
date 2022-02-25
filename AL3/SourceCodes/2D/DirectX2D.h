@@ -80,6 +80,8 @@ public:
 	//描画コマンド（毎フレーム処理）
 	void SpriteDraw(bool isDraw = true);
 	//場所の設定
-	void SetPos(XMFLOAT2 pos);
+	void SetPos(XMFLOAT2 pos) {
+		sprData.spritePosition = { pos.x,pos.y,0 };
+	}
 };
 
