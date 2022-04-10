@@ -4,6 +4,9 @@
 #include "3D/Light.h"
 #include "2D/PostEffect.h"
 #include "3D/FbxLoader.h"
+#include "2D/RenderTarget.h"
+
+void CalcWeightsTableFromGaussian(float* weightsTbl, int sizeOfWeightsTbl, float sigma);
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -31,17 +34,119 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
 
-	PostEffect* postEffect = nullptr;
-	//Sprite::LoadTexture(100, L"Resources/white1280x720.png");
-	//Spriteの継承を外して独立させる
-	postEffect = new PostEffect();
-	postEffect->Init();
-
-	/*----------宣言　ここから----------*/
-
 	GameScene* Gamescene = nullptr;
 	Gamescene = new GameScene();
 	Gamescene->Init();
+
+	//1,GameScene描画用のレンダーターゲットを作成
+	RenderTarget mainRenderTarget;
+	mainRenderTarget.Create(
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT,
+		1,
+		1,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		DXGI_FORMAT_D32_FLOAT
+	);
+
+	//2,ガウスブラー用の重みテーブルを計算する
+	const int NUM_HEIGHT = 8;
+
+	//テーブルのサイズは8
+	float weights[NUM_HEIGHT];
+
+	//重みテーブルを計算する
+	CalcWeightsTableFromGaussian(
+		weights,		//格納先
+		NUM_HEIGHT,		//重みテーブルのサイズ
+		8.0f			//ボケ具合
+	);
+
+	//3,横ブラー用のレンダリングターゲットを作成
+	RenderTarget xBlurRenderTarget;
+	xBlurRenderTarget.Create(
+		WINDOW_WIDTH / 2.0f,
+		WINDOW_HEIGHT,
+		1,
+		1,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		DXGI_FORMAT_D32_FLOAT
+	);
+
+	//4,横ブラー用のスプライトを初期化
+	SpriteInitData xBlurSpriteInitData;
+	xBlurSpriteInitData.m_vsShaderName;
+	xBlurSpriteInitData.m_psShaderName;
+
+	xBlurSpriteInitData.m_vsEntryPoint;
+	xBlurSpriteInitData.m_psEntryPoint;
+
+	xBlurSpriteInitData.m_width = WINDOW_WIDTH / 2.0f;
+	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
+
+	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
+	xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();
+
+	xBlurSpriteInitData.m_expandConstantBuffer = &weights;
+	xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
+
+	PostEffect* xBlurSprite = nullptr;
+	xBlurSprite = new PostEffect();
+	xBlurSprite->Init(xBlurSpriteInitData);
+
+	//5,横ブラー用のレンダリングターゲットを作成
+	RenderTarget yBlurRenderTarget;
+	yBlurRenderTarget.Create(
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT / 2.0f,
+		1,
+		1,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		DXGI_FORMAT_D32_FLOAT
+	);
+
+	//6,縦ブラー用のスプライトを初期化
+	SpriteInitData yBlurSpriteInitData;
+	yBlurSpriteInitData.m_vsShaderName;
+	yBlurSpriteInitData.m_psShaderName;
+
+	yBlurSpriteInitData.m_vsEntryPoint;
+	yBlurSpriteInitData.m_psEntryPoint;
+
+	yBlurSpriteInitData.m_width = WINDOW_WIDTH;
+	yBlurSpriteInitData.m_height = WINDOW_HEIGHT / 2.0f;
+
+	//yBlurSpriteInitData.m_textures.push_back(&xBlurRenderTarget.GetRenderTargetTexture());
+	yBlurSpriteInitData.m_textures[0] = &xBlurRenderTarget.GetRenderTargetTexture();
+
+	yBlurSpriteInitData.m_expandConstantBuffer = &weights;
+	yBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
+
+	PostEffect* yBlurSprite = nullptr;
+	yBlurSprite = new PostEffect();
+	yBlurSprite->Init(yBlurSpriteInitData);
+
+	//7,縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
+	SpriteInitData spriteInitData;
+	//spriteInitData.m_textures.push_back(&yBlurRenderTarget.GetRenderTargetTexture());
+	spriteInitData.m_textures[0] = &yBlurRenderTarget.GetRenderTargetTexture();
+
+	spriteInitData.m_width = WINDOW_WIDTH;
+	spriteInitData.m_height = WINDOW_HEIGHT;
+
+	spriteInitData.m_vsShaderName;
+	spriteInitData.m_psShaderName;
+
+	PostEffect* copyToFrameBufferSprite = nullptr;
+	copyToFrameBufferSprite = new PostEffect();
+	copyToFrameBufferSprite->Init(spriteInitData);
+
+
+	/*----------宣言　ここから----------*/
+
+	/*GameScene* Gamescene = nullptr;
+	Gamescene = new GameScene();
+	Gamescene->Init();*/
 
 	/*----------宣言　ここまで----------*/
 
@@ -49,18 +154,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		Window::Msg();
 		Input::Update();
-
-		Gamescene->Update();
-		postEffect->PreDrawScene(DirectXImportant::cmdList.Get());
-		Gamescene->Draw();
-		postEffect->PostDrawScene(DirectXImportant::cmdList.Get());
-
 		DirectXBase::BeforeDraw(WindowColor);
-		//Gamescene->Draw();
 
 		/*----------DirectX毎フレーム処理　ここから----------*/
 
-		postEffect->Draw(DirectXImportant::cmdList.Get());
+		//8,レンダリングターゲットをmainRenderTargetに変更する
+
+		//9,mainRenderTargetに各種モデルを描画する
+
+		//10,mainRenderTargetに描画された画像に横ブラーをかける
+
+		//11,縦ブラーも行う
+
+		//12,mainRenderTargetの絵をフレームバッファにコピー
+
+		// ↓ HLSLの改良...
+
 
 		/*----------DirextX毎フレーム処理　ここまで----------*/
 
@@ -75,4 +184,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	FbxLoader::GetInstance()->Finalize();
 	//ウィンドウクラスを登録解除
 	UnregisterClass(Window::windowClass.lpszClassName, Window::windowClass.hInstance);
+}
+
+void CalcWeightsTableFromGaussian(float* weightsTbl, int sizeOfWeightsTbl, float sigma)
+{
+	// 重みの合計を記録する変数を定義する
+	float total = 0;
+
+	// ここからガウス関数を用いて重みを計算している
+	// ループ変数のxが基準テクセルからの距離
+	for (int x = 0; x < sizeOfWeightsTbl; x++)
+	{
+		weightsTbl[x] = expf(-0.5f * (float)(x * x) / sigma);
+		total += 2.0f * weightsTbl[x];
+	}
+
+	// 重みの合計で除算することで、重みの合計を1にしている
+	for (int i = 0; i < sizeOfWeightsTbl; i++)
+	{
+		weightsTbl[i] /= total;
+	}
 }

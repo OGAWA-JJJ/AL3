@@ -17,6 +17,7 @@ ComPtr<ID3D12PipelineState> Sprite::pipelineState;
 XMMATRIX Sprite::matProjection;
 ComPtr<ID3D12DescriptorHeap> Sprite::descHeap;
 ComPtr<ID3D12Resource> Sprite::texBuff[srvCount];
+//CD3DX12_RESOURCE_DESC Sprite::m_textureDesc;
 
 bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window_height)
 {

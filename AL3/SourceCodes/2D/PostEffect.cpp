@@ -22,11 +22,11 @@ PostEffect::PostEffect() :Sprite(
 
 }
 
-void PostEffect::Init()
+void PostEffect::Init(const SpriteInitData& spriteInitData)
 {
 	HRESULT result;
 
-	CreateGraphicsPipelineState();
+	CreateGraphicsPipelineState(spriteInitData);
 
 	//基底クラスとしての初期化
 	//Sprite::Init();
@@ -42,13 +42,20 @@ void PostEffect::Init()
 		IID_PPV_ARGS(&vertBuff));
 	assert(SUCCEEDED(result));
 
-	//頂点データ転送(一旦画面半分)
-	VertexPosUv vertices[vertNum] = {
-		{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},
-		{{-0.5f,+0.5f,0.0f},{0.0f,0.0f}},
-		{{+0.5f,-0.5f,0.0f},{1.0f,1.0f}},
-		{{+0.5f,+0.5f,0.0f},{1.0f,0.0f}},
-	};
+	//頂点データ転送(Size可変にする)←した
+	VertexPosUv vertices[vertNum];
+	float width = spriteInitData.m_width / WINDOW_WIDTH;
+	float height = spriteInitData.m_height / WINDOW_HEIGHT;
+
+	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
+	vertices[1].pos = { -1.0f, height, 0.0f };
+	vertices[2].pos = { width, -1.0f , 0.0f };
+	vertices[3].pos = { width, height, 0.0f };
+
+	vertices[0].uv = { 0.0f, 1.0f };
+	vertices[1].uv = { 0.0f, 0.0f };
+	vertices[2].uv = { 1.0f, 1.0f };
+	vertices[3].uv = { 1.0f, 0.0f };
 
 	//頂点バッファへのデータ転送
 	VertexPosUv* vertMap = nullptr;
@@ -74,7 +81,7 @@ void PostEffect::Init()
 	);
 	assert(SUCCEEDED(result));
 
-	//テクスチャリソース設定
+	//テクスチャリソース設定←こいつのFormatを引っ張る
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		WINDOW_WIDTH,
@@ -92,6 +99,9 @@ void PostEffect::Init()
 		IID_PPV_ARGS(&texbuff)
 	);
 	assert(SUCCEEDED(result));
+
+	//Format取得用
+	texresDescFormat = texresDesc.Format;
 
 	//テクスチャを赤クリア
 	//画素数1280*720=921600ピクセル
@@ -288,7 +298,7 @@ void PostEffect::PostDrawScene(ID3D12GraphicsCommandList* cmdList)
 	);
 }
 
-void PostEffect::CreateGraphicsPipelineState()
+void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitData)
 {
 	HRESULT result = S_FALSE;
 	ComPtr<ID3DBlob> vsBlob;
@@ -297,10 +307,11 @@ void PostEffect::CreateGraphicsPipelineState()
 
 	//頂点シェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/PostEffectTestVS.hlsl",			//シェーダファイル名
+		spriteInitData.m_vsShaderName,						//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
-		"VSmain", "vs_5_0",									//エントリーポイント名、シェーダーモデル指定
+		spriteInitData.m_vsEntryPoint,						//エントリーポイント名
+		"vs_5_0",											//シェーダーモデル指定
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&vsBlob, &errorBlob);
@@ -321,10 +332,11 @@ void PostEffect::CreateGraphicsPipelineState()
 
 	//ピクセルシェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/PostEffectTestPS.hlsl",			//シェーダファイル名
+		spriteInitData.m_psShaderName,						//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
-		"PSmain", "ps_5_0",									//エントリーポイント名、シェーダーモデル指定
+		spriteInitData.m_psEntryPoint,						//エントリーポイント名
+		"ps_5_0",											//シェーダーモデル指定
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&psBlob, &errorBlob);

@@ -1,8 +1,11 @@
 #pragma once
+//#include "Texture.h"
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include <DirectXMath.h>
+
+//class Texture;
 
 class Sprite
 {
@@ -37,6 +40,8 @@ public:
 	static void PostDraw();
 	//スプライト生成
 	static Sprite* Create(UINT texNumber, XMFLOAT2 position, XMFLOAT4 color = { 1, 1, 1, 1 }, XMFLOAT2 anchorpoint = { 0.0f, 0.0f }, bool isFlipX = false, bool isFlipY = false);
+	//テクスチャのフォーマットを取得
+	//static DXGI_FORMAT GetFormat() { return m_textureDesc.Format; }
 
 protected:
 	//テクスチャの最大枚数
@@ -59,6 +64,8 @@ protected:
 	static ComPtr<ID3D12DescriptorHeap> descHeap;
 	//テクスチャバッファ
 	static ComPtr<ID3D12Resource> texBuff[srvCount];
+	//テクスチャ情報
+	//static CD3DX12_RESOURCE_DESC m_textureDesc;
 
 public:
 	//コンストラクタ

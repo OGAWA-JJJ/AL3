@@ -1,4 +1,4 @@
-#include "SpriteShaderHeader.hlsli"
+#include "GaussianBlurShaderHeader.hlsli"
 
 VSOutput VSmain(float4 pos : POSITION, float2 uv : TEXCOORD)
 {

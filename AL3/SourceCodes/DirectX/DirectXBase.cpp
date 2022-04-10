@@ -70,7 +70,11 @@ void DirectXBase::Device()
 	for (int i = 0; i < _countof(levels); i++)
 	{
 		//採用したアダプターでデバイスを生成
-		result = D3D12CreateDevice(tmpAdapter.Get(), levels[i], IID_PPV_ARGS(DirectXImportant::dev.ReleaseAndGetAddressOf()));
+		result = D3D12CreateDevice(
+			tmpAdapter.Get(),
+			levels[i],
+			IID_PPV_ARGS(DirectXImportant::dev.ReleaseAndGetAddressOf()));
+
 		if (result == S_OK)
 		{
 			//デバイスを生成できた時点でループを抜ける

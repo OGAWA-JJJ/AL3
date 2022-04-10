@@ -147,6 +147,15 @@
     <ClCompile Include="SourceCodes\3D\FbxObject3D.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\2D\RenderTarget.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\GaussianBlur.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\Texture.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -284,6 +293,18 @@
     <ClInclude Include="SourceCodes\3D\FbxObject3D.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCodes\2D\RenderTarget.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\GaussianBlur.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\Texture.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\IShaderResource.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BasicGeometryShader.hlsl">
@@ -325,6 +346,15 @@
     <FxCompile Include="Resources\Shaders\UnityVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\LuminancePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\GaussianBlurPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\GaussianBlurVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BasicShaderHeader.hlsli">
@@ -343,6 +373,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\UnityShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\GaussianBlurShaderHeader.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
