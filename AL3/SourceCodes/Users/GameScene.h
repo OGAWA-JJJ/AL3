@@ -9,6 +9,17 @@
 class GameScene
 {
 private:
+	const float g = 9.8f;
+
+private:
+	XMFLOAT2 p;	//ˆÊ’u
+	XMFLOAT2 v;	//‘¬“x
+	XMFLOAT2 a;	//‰Á‘¬“x
+	XMFLOAT2 f;	//“­‚­—Í
+	float m;	//Ž¿—Ê
+	float t;	//ŽžŠÔ
+
+private:
 	Light* light = nullptr;
 
 	Model* modelA = nullptr;
@@ -19,6 +30,8 @@ private:
 
 	FbxModel* fbxModel1 = nullptr;
 	FbxObject3D* fbxObj1 = nullptr;
+
+	Sprite* GH1;
 
 public:
 	GameScene();

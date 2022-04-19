@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "../3D/FbxLoader.h"
 #include "../3D/FbxObject3D.h"
+//#include "../Math/OgaJHelper.h"
 
 GameScene::GameScene()
 {
@@ -28,6 +29,17 @@ GameScene::GameScene()
 	fbxObj1->Init();
 	fbxObj1->SetModel(fbxModel1);
 	fbxObj1->PlayAnimation();
+
+	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
+	GH1 = Sprite::Create(0, { WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2 });
+	GH1->SetSize(XMFLOAT2{ 64, 64 });
+
+	p = { 0.0f,WINDOW_HEIGHT / 2 };
+	v = { 10.0f,-7.0f };
+	a = { 0.0f,0.0f };
+	f = { 0.0f,0.0f };
+	m = 50.0f;
+	t = 0.0f;
 }
 
 GameScene::~GameScene()
@@ -70,6 +82,27 @@ void GameScene::Update()
 	Camera::SetEye(eye);
 
 	fbxObj1->Update();
+
+	p.x += v.x;
+	p.y += v.y;
+	v.x += a.x;
+	v.y += a.y;
+	a.x += f.x / m;
+	a.y += f.y / m;
+
+	p.y += -(t - 0.5 * pow(g, 2) * pow(t, 2));
+	t += 1.0f / 60.0f;
+
+	GH1->SetPosition(p);
+
+	if (Input::isKeyTrigger(DIK_R)) {
+		p = { 0.0f,WINDOW_HEIGHT / 2 };
+		v = { 10.0f,-5.0f };
+		a = { 0.0f,0.0f };
+		f = { 0.0f,0.0f };
+		m = 50.0f;
+		t = 0.0f;
+	}
 }
 
 void GameScene::Draw()
@@ -80,4 +113,8 @@ void GameScene::Draw()
 	Object::PostDraw();
 
 	fbxObj1->Draw(DirectXImportant::cmdList.Get());
+
+	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	GH1->Draw();
+	Sprite::PostDraw();
 }
