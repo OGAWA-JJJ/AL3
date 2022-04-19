@@ -1,6 +1,12 @@
 #pragma once
 #include <DirectXMath.h>
 
+using namespace DirectX;
+
+//static const XMFLOAT2 operator+ (XMFLOAT2 lhs, XMFLOAT2 rhs) {
+//	return XMFLOAT2{ lhs.x + rhs.x,lhs.y + rhs.x };
+//}
+
 namespace OgaJHelper {
 
 using XMFLOAT3 = DirectX::XMFLOAT3;
