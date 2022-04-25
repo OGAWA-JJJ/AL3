@@ -8,6 +8,25 @@ VSOutput VSmain(float4 pos : POSITION, float2 uv : TEXCOORD)
     return output;
 }
 
+VSOutput VSXmain(float4 pos : POSITION, float2 uv : TEXCOORD)
+{
+    VSOutput output;
+    output.svpos = pos;
+    output.uv = uv;
+    
+    return output;
+}
+
+VSOutput VSYmain(float4 pos : POSITION, float2 uv : TEXCOORD)
+{
+    VSOutput output;
+    output.svpos = pos;
+    output.uv = uv;
+    
+    
+    return output;
+}
+
 
 //VSOutput VSmain(float4 pos : POSITION, float2 uv : TEXCOORD)
 //{
