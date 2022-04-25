@@ -1,5 +1,6 @@
 cbuffer cbuff0 : register(b0)
 {
+    float4 weights[2];
 };
 
 struct VSOutput

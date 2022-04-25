@@ -75,17 +75,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//4,横ブラー用のスプライトを初期化
 	SpriteInitData xBlurSpriteInitData;
-	xBlurSpriteInitData.m_vsShaderName;
-	xBlurSpriteInitData.m_psShaderName;
+	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	xBlurSpriteInitData.m_vsEntryPoint;
-	xBlurSpriteInitData.m_psEntryPoint;
+	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
+	xBlurSpriteInitData.m_psEntryPoint = "PSXmain";
 
-	xBlurSpriteInitData.m_width = WINDOW_WIDTH / 2.0f;
+	xBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
 	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
 	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
-	xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();
+	xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
 
 	xBlurSpriteInitData.m_expandConstantBuffer = &weights;
 	xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
@@ -107,17 +107,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//6,縦ブラー用のスプライトを初期化
 	SpriteInitData yBlurSpriteInitData;
-	yBlurSpriteInitData.m_vsShaderName;
-	yBlurSpriteInitData.m_psShaderName;
+	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	yBlurSpriteInitData.m_vsEntryPoint;
-	yBlurSpriteInitData.m_psEntryPoint;
+	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
+	yBlurSpriteInitData.m_psEntryPoint = "PSYmain";
 
 	yBlurSpriteInitData.m_width = WINDOW_WIDTH;
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT / 2.0f;
 
 	//yBlurSpriteInitData.m_textures.push_back(&xBlurRenderTarget.GetRenderTargetTexture());
-	yBlurSpriteInitData.m_textures[0] = &xBlurRenderTarget.GetRenderTargetTexture();
+	yBlurSpriteInitData.m_textures[0] = &xBlurRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
 
 	yBlurSpriteInitData.m_expandConstantBuffer = &weights;
 	yBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
@@ -134,8 +134,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteInitData.m_width = WINDOW_WIDTH;
 	spriteInitData.m_height = WINDOW_HEIGHT;
 
-	spriteInitData.m_vsShaderName;
-	spriteInitData.m_psShaderName;
+	spriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
+	spriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
+
+	yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
+	yBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	PostEffect* copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = new PostEffect();
@@ -154,7 +157,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		Window::Msg();
 		Input::Update();
+
+		Gamescene->Update();
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		Gamescene->Draw();
+		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+
+		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+
+		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+
 		DirectXBase::BeforeDraw(WindowColor);
+
+		/*----------DirectX毎フレーム処理　ここから----------*/
+
+		//8,レンダリングターゲットをmainRenderTargetに変更する(HLSLの魔導書の方法は謎)
+
+		//9,mainRenderTargetに各種モデルを描画する
+
+		//10,mainRenderTargetに描画された画像に横ブラーをかける
+
+		//11,縦ブラーも行う
+
+		//12,mainRenderTargetの絵をフレームバッファにコピー
+
+		// ↓ HLSLの改良...
+
+
+		//Gamescene->Draw();
+		copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
 
 		/*----------DirectX毎フレーム処理　ここから----------*/
 
