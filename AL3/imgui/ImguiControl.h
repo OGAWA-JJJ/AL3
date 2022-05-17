@@ -19,6 +19,7 @@ public:
 	static float Imgui_lightDir_x;
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
+	static float Imgui_ground_y;
 
 public:
 	//InguiControl();

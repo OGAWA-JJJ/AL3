@@ -2,7 +2,7 @@
 #include "imgui.h"
 
 float ImguiControl::Imgui_eye_x = 0.0f;
-float ImguiControl::Imgui_eye_y = 25.0f;
+float ImguiControl::Imgui_eye_y = 50.0f;
 float ImguiControl::Imgui_eye_z = -100.0f;
 float ImguiControl::Imgui_fov = 60.0f;
 float ImguiControl::Imgui_far_z = 1000.0f;
@@ -17,6 +17,7 @@ float ImguiControl::Imgui_lightColor_b = 0.6f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = -1.0f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
+float ImguiControl::Imgui_ground_y = -10.0f;
 
 void ImguiControl::Update()
 {
@@ -39,6 +40,8 @@ void ImguiControl::Update()
 	ImGui::SliderFloat("LIGHT_DIR_X", &Imgui_lightDir_x, -1.0f, 1.0f);
 	ImGui::SliderFloat("LIGHT_DIR_Y", &Imgui_lightDir_y, -1.0f, 1.0f);
 	ImGui::SliderFloat("LIGHT_DIR_Z", &Imgui_lightDir_z, -1.0f, 1.0f);
+
+	ImGui::SliderFloat("GROUND_Y", &Imgui_ground_y, -100.0f, 100.0f);
 
 	//ImGui::SliderInt("WINDOWSIZE_X", &Imgui_windowSize_x, 400, 800);
 	//ImGui::SliderInt("WINDOWSIZE_Y", &Imgui_windowSize_y, 200, 800);
