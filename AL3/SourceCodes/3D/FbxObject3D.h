@@ -91,5 +91,11 @@ public:
 public:
 	void SetModel(FbxModel* model) { this->model = model; }
 	//Setter‚ðì‚êI
+	void SetScale(XMFLOAT3& scale) { this->scale = scale; }
+	void SetRotation(XMFLOAT3& rotation) { this->rotation = rotation; }
+	void SetPosition(XMFLOAT3& position) { this->position = position; }
+	const XMFLOAT3 &GetScale() { return scale; }
+	const XMFLOAT3& GetRotation() { return rotation; }
+	const XMFLOAT3& GetPosition() { return position; }
 };
 
