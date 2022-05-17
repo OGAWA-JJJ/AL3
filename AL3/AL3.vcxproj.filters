@@ -156,6 +156,9 @@
     <ClCompile Include="SourceCodes\2D\Texture.cpp">
       <Filter>SourceCodes\2D</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\ImguiControl.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -304,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="SourceCodes\2D\IShaderResource.h">
       <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\ImguiControl.h">
+      <Filter>Imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
