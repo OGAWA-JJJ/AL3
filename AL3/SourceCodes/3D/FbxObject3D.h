@@ -1,5 +1,6 @@
 #pragma once
 #include "FbxModel.h"
+#include "../3D/Light.h"
 
 #include <Windows.h>
 #include <wrl.h>
@@ -38,6 +39,16 @@ public:
 		XMMATRIX bones[MAX_BONES];
 	};
 
+	struct ConstBufferData1
+	{
+		XMFLOAT3 ambient; // アンビエント係数
+		float pad1; // パディング
+		XMFLOAT3 diffuse; // ディフューズ係数
+		float pad2; // パディング
+		XMFLOAT3 specular; // スペキュラー係数
+		float alpha;	// アルファ
+	};
+
 private:
 	//デバイス
 	static ID3D12Device* device;
@@ -45,16 +56,32 @@ private:
 	static ComPtr<ID3D12RootSignature> rootsignature;
 	//パイプラインステートオブジェクト
 	static ComPtr<ID3D12PipelineState> pipelinestate;
+	//ライト
+	static Light* light;
 
 public:
 	//Setter
 	static void SetDevice(ID3D12Device* device) { FbxObject3D::device = device; }
 	//グラフィックスパイプラインの生成
 	static void CreateGraphicsPipeline();
+	//ライトのセット
+	static void SetLight(Light* light) { FbxObject3D::light = light; }
+
+private:
+	//アンビエント影響度
+	XMFLOAT3 ambient = { 0.8f, 0.8f, 0.8f };
+	//ディフューズ影響度
+	XMFLOAT3 diffuse = { 0.8f, 0.8f, 0.8f };
+	//スペキュラー影響度
+	XMFLOAT3 specular = { 0.8f, 0.8f, 0.8f };
+	//アルファ
+	float alpha = 1.0f;
 
 protected:
 	//定数バッファ
 	ComPtr<ID3D12Resource> constBuffTransform;
+	//定数バッファ（反射光）
+	ComPtr<ID3D12Resource> constBuffData1;
 	//ローカルスケール
 	XMFLOAT3 scale = { 10,10,10 };
 	//X,Y,Z軸回りのローカル回転角
@@ -94,7 +121,7 @@ public:
 	void SetScale(XMFLOAT3& scale) { this->scale = scale; }
 	void SetRotation(XMFLOAT3& rotation) { this->rotation = rotation; }
 	void SetPosition(XMFLOAT3& position) { this->position = position; }
-	const XMFLOAT3 &GetScale() { return scale; }
+	const XMFLOAT3& GetScale() { return scale; }
 	const XMFLOAT3& GetRotation() { return rotation; }
 	const XMFLOAT3& GetPosition() { return position; }
 };
