@@ -9,6 +9,8 @@ GameScene::GameScene()
 	const float objA_Scale = 20.0f;
 	const float objB_Scale = 2.0f;
 
+	cameraAngle = { 0,0,0 };
+
 	modelA = Model::CreateFromObj("monkey");
 	//modelB = Model::CreateFromObj("sponza");
 	modelB = Model::CreateFromObj("skydome");
