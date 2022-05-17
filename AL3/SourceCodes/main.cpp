@@ -95,8 +95,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
 	//xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();	//©¡‰½‚àŽg‚Á‚Ä‚È‚¢
 
-	//xBlurSpriteInitData.m_expandConstantBuffer = &weights;
-	//xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
+	xBlurSpriteInitData.m_expandConstantBuffer = &weights;
+	xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
 
 	PostEffect* xBlurSprite = nullptr;
 	xBlurSprite = new PostEffect();
@@ -174,17 +174,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Input::Update();
 
 		Gamescene->Update();
-		//xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
-		//Gamescene->Draw();
-		//xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
-
-		//yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
-		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		//yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
-
-		//copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get());
-		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		//copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		Gamescene->Draw();
+		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
 		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
 		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
