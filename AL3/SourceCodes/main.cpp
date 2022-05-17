@@ -98,9 +98,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//xBlurSpriteInitData.m_expandConstantBuffer = &weights;
 	//xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
 
-	//PostEffect* xBlurSprite = nullptr;
-	//xBlurSprite = new PostEffect();
-	//xBlurSprite->Init(xBlurSpriteInitData);
+	PostEffect* xBlurSprite = nullptr;
+	xBlurSprite = new PostEffect();
+	xBlurSprite->Init(xBlurSpriteInitData);
 
 	//5,縦ブラー用のレンダリングターゲットを作成
 	RenderTarget yBlurRenderTarget;
