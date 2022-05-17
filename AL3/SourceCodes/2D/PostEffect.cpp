@@ -1,8 +1,11 @@
 #include "PostEffect.h"
 #include "../WinAPI/WindowsAPI.h"
 #include "../DirectX/DirectXImportant.h"
+#include "../DirectX/Camera.h"
+
 #include <d3dx12.h>
 #include <d3dcompiler.h>
+#include <cassert>
 
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -10,14 +13,7 @@ const float PostEffect::clearColor[4] = { 0.25f,0.5f,0.1f,0.0f };
 
 using namespace DirectX;
 
-PostEffect::PostEffect() :Sprite(
-	100,					//テクスチャ番号
-	{ 0,0 },				//座標
-	{ 500.0f,500.0f, },		//サイズ
-	{ 1,1,1,1 },			//色
-	{ 0.0f,0.0f },			//アンカーポイント
-	false,					//左右反転フラグ
-	false)					//上下反転フラグ
+PostEffect::PostEffect()
 {
 
 }
@@ -33,7 +29,7 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	//頂点バッファ生成(Spriteの頂点バッファ生成処理を関数化するのもアリ)
 
 	//頂点バッファ生成
-	result = device->CreateCommittedResource(
+	result = DirectXImportant::dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(VertexPosUv) * vertNum),
@@ -74,7 +70,7 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	result = DirectXImportant::dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xff) & ~0xff),
+		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstantBuffer_b0) + 0xff) & ~0xff),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&constBuff)
@@ -214,13 +210,16 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 	this->matWorld *= XMMatrixRotationZ(XMConvertToRadians(rotation));
 	this->matWorld *= XMMatrixTranslation(position.x, position.y, 0.0f);*/
 
-	//定数バッファにデータ転送
-	ConstBufferData* constMap = nullptr;
+	const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
+
+	//定数バッファにデータ転送(ガウシアンブラー用に重みつきの定数バッファにする必要があるかも)
+	ConstantBuffer_b0* constMap = nullptr;
 	HRESULT result = this->constBuff->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(result)) {
 		constMap->color = this->color;
 		//constMap->mat = this->matWorld * matProjection;	// 行列の合成
 		constMap->mat = XMMatrixIdentity();
+		constMap->viewproj = matViewProjection;
 		this->constBuff->Unmap(0, nullptr);
 	}
 
@@ -415,10 +414,12 @@ void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitDat
 	CD3DX12_DESCRIPTOR_RANGE descRangeSRV;
 	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); //t0レジスタ
 
-	//ルートパラメータ
-	CD3DX12_ROOT_PARAMETER rootparams[2];
+	//ルートパラメータ(定数バッファに送るやつの設定、最初の引数でregisterを選択)
+	//分けておくと必要な情報だけ転送したりできてエコ
+	CD3DX12_ROOT_PARAMETER rootparams[3];
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
+	rootparams[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	//スタティックサンプラー
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc =
@@ -436,13 +437,13 @@ void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitDat
 	assert(SUCCEEDED(result));
 
 	//ルートシグネチャの生成
-	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(),
+	result = DirectXImportant::dev->CreateRootSignature(0, rootSigBlob->GetBufferPointer(),
 		rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
 
 	gpipeline.pRootSignature = rootSignature.Get();
 
 	//グラフィックスパイプラインの生成
-	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
+	result = DirectXImportant::dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 }

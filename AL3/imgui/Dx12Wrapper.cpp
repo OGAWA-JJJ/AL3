@@ -1,4 +1,5 @@
 #include "Dx12Wrapper.h"
+#include "ImguiControl.h"
 
 ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::_heapForImgui;
 bool Dx12Wrapper::bInResult;
@@ -50,38 +51,38 @@ void Dx12Wrapper::Draw(bool isDraw)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	bool blnChk = false;
-	ImGui::Checkbox("CheakboxTest", &blnChk);
+	//static bool blnChk = false;
+	//ImGui::Checkbox("CheakboxTest", &blnChk);
 
-	int radio = 0;
-	ImGui::RadioButton("Radio 1", &radio, 0);
-	ImGui::SameLine();
-	ImGui::RadioButton("Radio 2", &radio, 1);
-	ImGui::SameLine();
-	ImGui::RadioButton("Radio 3", &radio, 2);
+	//static int radio = 0;
+	//ImGui::RadioButton("Radio 1", &radio, 0);
+	//ImGui::SameLine();
+	//ImGui::RadioButton("Radio 2", &radio, 1);
+	//ImGui::SameLine();
+	//ImGui::RadioButton("Radio 3", &radio, 2);
 
-	int nSlider = 0;
-	ImGui::SliderInt("Int Slider", &nSlider, 0, 100);
+	//static int nSlider = 0;
+	//ImGui::SliderInt("Int Slider", &nSlider, 0, 100);
 
-	float fSlider = 0.0f;
-	ImGui::SliderFloat("Float Slider", &fSlider, 0.0f, 100.0f);
+	//static float fSlider = 0.0f;
+	//ImGui::SliderFloat("Float Slider", &fSlider, 0.0f, 100.0f);
 
-	float col3[3] = {};
-	ImGui::ColorPicker3(
-		"ColorPicker3",
-		col3,
-		ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayRGB);
+	//static float col3[3] = {};
+	//ImGui::ColorPicker3("ColorPicker3", col3,
+		//ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayRGB);
 
-	float col4[4] = {};
-	ImGui::ColorPicker4(
-		"ColorPicker4",
-		col4,
-		ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
+	//static float col4[4] = {};
+	//ImGui::ColorPicker4("ColorPicker4", col4,
+		//ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
 
-	ImGui::Begin("Rendering Test Menu");
+	ImGui::Begin("Settings");
 	ImGui::SetWindowSize(
-		ImVec2(400, 500),
+		ImVec2(
+			400,
+			400),
 		ImGuiCond_::ImGuiCond_FirstUseEver);
+
+	ImguiControl::Update();
 
 	ImGui::End();
 

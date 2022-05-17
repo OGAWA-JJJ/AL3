@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "../../imgui/ImguiControl.h"
 
 XMMATRIX Camera::matView;
 XMMATRIX Camera::matPerspective;
@@ -9,6 +10,10 @@ float Camera::fov = 60.0f;
 
 XMMATRIX Camera::ViewMatrix()
 {
+	//eye.x = ImguiControl::Imgui_eye_x;
+	//eye.y = ImguiControl::Imgui_eye_y;
+	//eye.z = ImguiControl::Imgui_eye_z;
+
 	matView = XMMatrixLookAtLH(
 		XMLoadFloat3(&eye),
 		XMLoadFloat3(&target),
@@ -18,10 +23,12 @@ XMMATRIX Camera::ViewMatrix()
 
 XMMATRIX Camera::PerspectiveMatrix()
 {
+	fov = ImguiControl::Imgui_fov;
+
 	matPerspective = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(fov),
 		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
-		0.1f, 1000.0f); //前端、奥端
+		0.1f, ImguiControl::Imgui_far_z); //前端、奥端
 	return matPerspective;
 }
 

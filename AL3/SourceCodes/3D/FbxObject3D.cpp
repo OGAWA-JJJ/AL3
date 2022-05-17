@@ -11,6 +11,7 @@ using namespace DirectX;
 ID3D12Device* FbxObject3D::device = nullptr;
 ComPtr<ID3D12RootSignature> FbxObject3D::rootsignature;
 ComPtr<ID3D12PipelineState> FbxObject3D::pipelinestate;
+Light* FbxObject3D::light = nullptr;
 
 void FbxObject3D::CreateGraphicsPipeline()
 {
@@ -145,7 +146,7 @@ void FbxObject3D::CreateGraphicsPipeline()
 
 	// ルートパラメータ
 	//CD3DX12_ROOT_PARAMETER rootparams[2];
-	CD3DX12_ROOT_PARAMETER rootparams[3];
+	CD3DX12_ROOT_PARAMETER rootparams[5];
 
 	// CBV（座標変換行列用）
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
@@ -153,6 +154,10 @@ void FbxObject3D::CreateGraphicsPipeline()
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
 	// CBV（スキニング用）
 	rootparams[2].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
+	// ライト情報転送用
+	rootparams[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
+	// 反射光情報転送用
+	rootparams[4].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	// スタティックサンプラー
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
@@ -197,6 +202,16 @@ void FbxObject3D::Init()
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&constBuffSkin)
+	);
+
+	//定数バッファ生成
+	result = device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData1) + 0xff) & ~0xFF),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&constBuffData1)
 	);
 
 	//1フレーム分の時間を60FPSで設定
@@ -257,6 +272,17 @@ void FbxObject3D::Update()
 		constBuffTransform->Unmap(0, nullptr);
 	}
 
+	//定数バッファへデータ転送
+	ConstBufferData1* constMap1 = nullptr;
+	result = constBuffData1->Map(0, nullptr, (void**)&constMap1);
+	if (SUCCEEDED(result)) {
+		constMap1->ambient = ambient;
+		constMap1->diffuse = diffuse;
+		constMap1->specular = specular;
+		constMap1->alpha = alpha;
+		constBuffData1->Unmap(0, nullptr);
+	}
+
 	//ボーン配列
 	std::vector<FbxModel::Bone>& bones = model->GetBones();
 
@@ -296,12 +322,20 @@ void FbxObject3D::Draw(ID3D12GraphicsCommandList* cmdList)
 		0,
 		constBuffTransform->GetGPUVirtualAddress()
 	);
+	//定数バッファをセット
+	cmdList->SetGraphicsRootConstantBufferView(
+		4,
+		constBuffData1->GetGPUVirtualAddress()
+	);
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(
 		2,
 		constBuffSkin->GetGPUVirtualAddress()
 	);
 
+
+	//ライトの描画
+	light->Draw(cmdList, 3);
 	//描画
 	model->Draw(cmdList);
 }

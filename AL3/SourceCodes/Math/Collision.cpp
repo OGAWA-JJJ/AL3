@@ -1,5 +1,4 @@
 #include "Collision.h"
-#include "OgaJHelper.h"
 
 using namespace DirectX;
 
@@ -35,13 +34,13 @@ bool Collision::CheakSphere2Sphere(const Sphere& sphereA, const Sphere& sphereB,
 	XMStoreFloat3(&posA, sphereA.center);
 	XMStoreFloat3(&posB, sphereB.center);
 	//2点間の距離
-	float dist = OgaJHelper::CalcDist(posA, posB);
+	float dist = CalcDist(posA, posB);
 	//チェック
 	if (dist > sphereA.radius + sphereB.radius) { return false; }
 
 	//疑似交点を計算
 	if (inter) {
-		
+
 	}
 
 	return true;
