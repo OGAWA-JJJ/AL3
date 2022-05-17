@@ -21,7 +21,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //ŠÂ‹«”½ŽËŒõ
     float3 ambient = (1, 1, 1); /*m_ambient*/
     //ŠgŽU”½ŽËŒõ
-    float3 diffuse = dotlightnormal * m_diffuse;
+    float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //‹¾–Ê”½ŽËŒõ
     float3 specular = pow(saturate(dot(reflect, eyedir)), shininess) * m_specular;
 	

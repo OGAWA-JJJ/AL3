@@ -1,7 +1,9 @@
 #pragma once
-#include "Sprite.h"
+//#include "Sprite.h"
 #include "Texture.h"
+#include <wrl.h>
 #include <array>
+#include <DirectXMath.h>
 
 //AlphaBlendMode
 enum AlphaBlendMode {
@@ -39,13 +41,34 @@ struct SpriteInitData {
 	//};	//レンダリングするカラーバッファのフォーマット。
 };
 
-class PostEffect :public Sprite
+class PostEffect
 {
 private:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 private:
+	struct VertexPosUv
+	{
+		DirectX::XMFLOAT3 pos;			//xyz座標
+		DirectX::XMFLOAT2 uv;			//uv座標
+	};
+
+	struct ConstantBuffer_b0
+	{
+		DirectX::XMFLOAT4 color;		//色
+		DirectX::XMMATRIX mat;			//変換行列
+		DirectX::XMMATRIX viewproj;
+	};
+
+	struct ConstantBuffer_b1//未転送
+	{
+		float weights[8];
+	};
+
+private:
 	static const float clearColor[4];
+	//頂点数
+	static const int vertNum = 4;
 
 private:
 	//テクスチャバッファ
@@ -62,6 +85,15 @@ private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	//ルートシグネチャ
 	ComPtr<ID3D12RootSignature> rootSignature;
+
+	//頂点バッファ
+	ComPtr<ID3D12Resource> vertBuff;
+	//頂点バッファビュー
+	D3D12_VERTEX_BUFFER_VIEW vbView{};
+	//定数バッファ
+	ComPtr<ID3D12Resource> constBuff;
+	//色
+	DirectX::XMFLOAT4 color = { 1, 1, 1, 1 };
 
 private:
 	//情報取得用
