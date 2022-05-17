@@ -1,5 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
+#include <vector>
 
 using namespace DirectX;
 
@@ -54,5 +55,13 @@ float CalcTwoVec2toRadian(XMFLOAT2 first, XMFLOAT2 second) {
 	float absB = sqrtf(second.x * second.x + second.y * second.y);
 	float cosTheta = dot / (absA * absB);
 	return acosf(-cosTheta);
+}
+
+//Vector‚Ì’†g‚Énumber‚ª‚ ‚é‚©”»’è
+bool VectorFinder(std::vector<int> vec, int number) {
+	auto itr = std::find(vec.begin(), vec.end(), number);
+	size_t index = std::distance(vec.begin(), itr);
+	if (index != vec.size()) { return true; }
+	else { return false; }
 }
 }
