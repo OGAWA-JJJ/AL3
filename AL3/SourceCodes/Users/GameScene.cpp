@@ -34,6 +34,9 @@ GameScene::GameScene()
 	GH1 = Sprite::Create(0, { WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2 });
 	GH1->SetSize(XMFLOAT2{ 64, 64 });
 
+	GH2 = Sprite::Create(0, { WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2 });
+	GH2->SetSize(XMFLOAT2{ 64, 64 });
+
 	p = { 0.0f,WINDOW_HEIGHT / 2 };
 	v = { 10.0f,-7.0f };
 	a = { 0.0f,0.0f };

@@ -32,6 +32,7 @@ private:
 	FbxObject3D* fbxObj1 = nullptr;
 
 	Sprite* GH1;
+	Sprite* GH2;
 
 public:
 	GameScene();
