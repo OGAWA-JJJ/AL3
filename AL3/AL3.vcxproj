@@ -181,6 +181,7 @@
     <ClCompile Include="SourceCodes\3D\Object.cpp" />
     <ClCompile Include="SourceCodes\3D\Object3D.cpp" />
     <ClCompile Include="SourceCodes\3D\Model3DManager.cpp" />
+    <ClCompile Include="SourceCodes\3D\PointLight.cpp" />
     <ClCompile Include="SourceCodes\3D\Shape.cpp" />
     <ClCompile Include="SourceCodes\DirectX\Camera.cpp" />
     <ClCompile Include="SourceCodes\DirectX\DescriptorHeap.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="SourceCodes\3D\Object.h" />
     <ClInclude Include="SourceCodes\3D\Object3D.h" />
     <ClInclude Include="SourceCodes\3D\Model3DManager.h" />
+    <ClInclude Include="SourceCodes\3D\PointLight.h" />
     <ClInclude Include="SourceCodes\3D\Shape.h" />
     <ClInclude Include="SourceCodes\DirectX\Camera.h" />
     <ClInclude Include="SourceCodes\DirectX\DescriptorHeap.h" />
