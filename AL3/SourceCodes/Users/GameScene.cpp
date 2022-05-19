@@ -60,6 +60,7 @@ GameScene::GameScene()
 GameScene::~GameScene()
 {
 	//‘‚«–Y‚ê‚é‚©‚çƒ„ƒƒI
+	delete light;
 	delete modelA;
 	delete objA;
 	delete modelB;
@@ -91,8 +92,6 @@ void GameScene::Init()
 
 void GameScene::Update()
 {
-	objB->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-
 	light->SetLightColor(
 		{
 			ImguiControl::Imgui_lightColor_r,
@@ -137,7 +136,7 @@ void GameScene::Update()
 
 
 	/*----------Update,Setter----------*/
-	//objA->SetPosition(objApos);
+	objA->SetPosition(objApos);
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
 	Camera::SetEye(cameraPos);
 
