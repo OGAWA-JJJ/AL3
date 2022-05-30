@@ -9,7 +9,7 @@
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-const float PostEffect::clearColor[4] = { 0.25f,0.5f,0.1f,0.0f };
+const float PostEffect::clearColor[4] = { 1.0f,1.0f,1.0f,0.0f };
 
 using namespace DirectX;
 

@@ -64,4 +64,18 @@ bool VectorFinder(std::vector<int> vec, int number) {
 	if (index != vec.size()) { return true; }
 	else { return false; }
 }
+
+//‹ß‚¢•û‚ðŠp“x‚ðŽZo
+float RotateEarliestArc(float NowAngle, float EndAngle)
+{
+	if (fabsf(EndAngle - NowAngle) > 180.0f) {
+		if (NowAngle < 180.0f) {
+			NowAngle += 360.0f;
+		}
+		else {
+			NowAngle -= 360.0f;
+		}
+	}
+	return EndAngle - NowAngle;
+}
 }
