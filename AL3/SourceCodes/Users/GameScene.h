@@ -31,9 +31,6 @@ private:
 	Model* modelC = nullptr;
 	Object* objC = nullptr;
 
-	Model* num = nullptr;
-	Object* num1 = nullptr;
-
 	FbxModel* fbxModel1 = nullptr;
 	FbxObject3D* fbxObj1 = nullptr;
 
