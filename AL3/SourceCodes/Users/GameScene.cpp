@@ -9,19 +9,16 @@ GameScene::GameScene()
 	const float objA_Scale = 40.0f;
 	const float objB_Scale = 20.0f;
 	const float objC_Scale = 20.0f;
-	const float fbx1_Scale = 20.0f;
+	const float fbx1_Scale = 0.1f;
 
 	XMFLOAT3 camera = Camera::GetEye();
 	OgaJHelper::ConvertToRadian(camera.y);
 	cameraAngle = { 0,camera.y,0 };
-	isChangedRot = false;
 
 	modelA = Model::CreateFromObj("Lich");
-	//modelA = Model::CreateFromObj("number1");
 	modelB = Model::CreateFromObj("ground");
 	//modelB = Model::CreateFromObj("sponza");
 	modelC = Model::CreateFromObj("monkey");
-	//modelC = Model::CreateFromObj("newOthello");
 
 	objA = Object::Create(modelA);
 	objB = Object::Create(modelB);
@@ -50,7 +47,7 @@ GameScene::GameScene()
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
 	FbxObject3D::CreateGraphicsPipeline();
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
+	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("player_stay");
 
 	fbxObj1 = new FbxObject3D();
 	fbxObj1->Init();
@@ -58,10 +55,6 @@ GameScene::GameScene()
 	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
 	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj1->PlayAnimation();
-
-	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
-	GH1->SetColor(XMFLOAT4(1, 1, 1, 0.5));
 }
 
 GameScene::~GameScene()
@@ -98,8 +91,7 @@ void GameScene::Init()
 
 void GameScene::Update()
 {
-
-#pragma region AEì•i
+	objB->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 
 	light->SetLightColor(
 		{
@@ -114,76 +106,11 @@ void GameScene::Update()
 			ImguiControl::Imgui_lightDir_z,
 		});
 
-	XMFLOAT3 objCpos = objC->GetPosition();
-	float isWkey = 0;
-	float isSkey = 0;
-	float isDkey = 0;
-	float isAkey = 0;
-	float myVec = 0.0f;
-	float nearArc = 0.0f;
-
-	if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
-	{
-		if (Input::isKey(DIK_W)) { isWkey = -1; }
-		if (Input::isKey(DIK_S)) { isSkey = 1; }
-		if (Input::isKey(DIK_D)) { isDkey = -1; }
-		if (Input::isKey(DIK_A)) { isAkey = 1; }
-
-		isChangedRot = true;
-	}
-
-	if (isChangedRot)
-	{
-		float rotY = objC->GetRotation().y * -1;
-		OgaJHelper::ConvertToRadian(rotY);
-
-		myVec = atan2(cosf(rotY), sinf(rotY));
-		OgaJHelper::ConvertToDegree(myVec);
-		if (myVec < 0.0f) { myVec += 360.0f; }
-
-		float keyVec = atan2(isWkey + isSkey, isDkey + isAkey) * -1;
-		OgaJHelper::ConvertToDegree(keyVec);
-		if (keyVec < 0.0f) { keyVec += 360.0f; }
-
-		nearArc = OgaJHelper::RotateEarliestArc(myVec, keyVec);
-
-		myVec += nearArc + 90.0f;
-		objC->SetRotation(XMFLOAT3(0, myVec, 0));
-
-		XMFLOAT2 vec2 = { cosf(myVec) ,sinf(myVec) };
-
-		float ws = vec2.y;
-		float ad = vec2.x;
-
-		/*if (isWkey != 0) {
-			objCpos.z -= vec2.y * MAX_MOVE_SPEED;
-		}
-		if (isSkey != 0) {
-			objCpos.z += vec2.y * MAX_MOVE_SPEED;
-		}
-		if (isDkey != 0) {
-			objCpos.x -= vec2.x * MAX_MOVE_SPEED;
-		}
-		if (isAkey != 0) {
-			objCpos.x += vec2.x * MAX_MOVE_SPEED;
-		}*/
-
-		if (isWkey != 0) {
-			objCpos.z -= MAX_MOVE_SPEED;
-		}
-		if (isSkey != 0) {
-			objCpos.z += MAX_MOVE_SPEED;
-		}
-		if (isDkey != 0) {
-			objCpos.x -= MAX_MOVE_SPEED;
-		}
-		if (isAkey != 0) {
-			objCpos.x += MAX_MOVE_SPEED;
-		}
-
-		isChangedRot = false;
-	}
-
+	XMFLOAT3 objApos = objA->GetPosition();
+	if (Input::isKey(DIK_W)) { objApos.z -= MAX_MOVE_SPEED; }
+	if (Input::isKey(DIK_S)) { objApos.z += MAX_MOVE_SPEED; }
+	if (Input::isKey(DIK_D)) { objApos.x -= MAX_MOVE_SPEED; }
+	if (Input::isKey(DIK_A)) { objApos.x += MAX_MOVE_SPEED; }
 
 	if (Input::isKey(DIK_RIGHT)) { cameraAngle.x += MAX_CAMERA_MOVE_SPEED; }
 	if (Input::isKey(DIK_LEFT)) { cameraAngle.x -= MAX_CAMERA_MOVE_SPEED; }
@@ -195,7 +122,7 @@ void GameScene::Update()
 		if (cameraAngle.y > -XM_PI / 5) { cameraAngle.y -= MAX_CAMERA_MOVE_SPEED; }
 	}
 
-	XMFLOAT3 cameraPos = objC->GetPosition();
+	XMFLOAT3 cameraPos = { 0,0,0 };
 	float distance = MAX_DISTANCE;
 	float diff = 0;
 
@@ -205,20 +132,13 @@ void GameScene::Update()
 		diff = cameraPos.y; cameraPos.y = 0;
 	}
 
-	cameraPos.x += sinf(cameraAngle.x) * (distance + diff);
-	cameraPos.z += cosf(cameraAngle.x) * (distance + diff);
+	cameraPos.x = sinf(cameraAngle.x) * (distance + diff);
+	cameraPos.z = cosf(cameraAngle.x) * (distance + diff);
 
-#pragma endregion
-
-
-#pragma region AEì•i(Update,Setter)
 
 	/*----------Update,Setter----------*/
-
+	//objA->SetPosition(objApos);
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
-	objC->SetPosition(objCpos);
-
-	Camera::SetTarget(objCpos);
 	Camera::SetEye(cameraPos);
 
 	Object::SetLight(light);
@@ -231,24 +151,16 @@ void GameScene::Update()
 	objC->Update();
 
 	fbxObj1->Update();
-
 	/*----------Update,Setter----------*/
-
-#pragma endregion
-
 }
 
 void GameScene::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//objA->Draw();
-	//objB->Draw();
-	//objC->Draw();
+	objA->Draw();
+	objB->Draw();
+	objC->Draw();
 	Object::PostDraw();
 
-	fbxObj1->Draw(DirectXImportant::cmdList.Get());
-
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
-	GH1->Draw();
-	Sprite::PostDraw();
+	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
 }

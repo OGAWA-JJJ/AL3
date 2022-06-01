@@ -11,13 +11,10 @@ class GameScene
 private:
 	const float MAX_DISTANCE = 125.0f;
 	const float MAX_MOVE_SPEED = 2.0f;
-	const float MAX_ROTATION_SPEED = 10.0f;
 	const float MAX_CAMERA_MOVE_SPEED = 0.02f;
 
 private:
 	XMFLOAT3 cameraAngle;
-	float rot_y;
-	bool isChangedRot;
 
 private:
 	Light* light = nullptr;
@@ -33,8 +30,6 @@ private:
 
 	FbxModel* fbxModel1 = nullptr;
 	FbxObject3D* fbxObj1 = nullptr;
-
-	Sprite* GH1 = nullptr;
 
 public:
 	GameScene();
