@@ -14,8 +14,8 @@ enum AlphaBlendMode {
 
 //情報の構造体
 struct SpriteInitData {
-	std::array<const wchar_t*, 100> m_fileName = { nullptr };				//ファイルパス名
-	std::array<Texture*, 100> m_textures = { nullptr };						//使用するテクスチャ
+	std::array<const wchar_t*, 100> m_fileName = { nullptr };			//ファイルパス名
+	std::array<Texture*, 100> m_textures = { nullptr };					//使用するテクスチャ
 	const char* m_vsEntryPoint = "VSmain";								//頂点シェーダーのエントリーポイント
 	const char* m_psEntryPoint = "PSmain";								//ピクセルシェーダーのエントリーポイント
 	const wchar_t* m_vsShaderName =
@@ -28,6 +28,7 @@ struct SpriteInitData {
 	int m_expandConstantBufferSize = 0;									//ユーザー拡張の定数バッファのサイズ。
 	//IShaderResource* m_expandShaderResoruceView = nullptr;			//ユーザー拡張のシェーダーリソース。
 	AlphaBlendMode m_alphaBlendMode = ALPHA_BLENDMODE_NONE;				//AlphaBlendMode
+	float m_size = 1.0f;
 	//D3D12_FILTER m_samplerFilter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;	//サンプラのフィルター。
 	//std::array<DXGI_FORMAT, MAX_RENDERING_TARGET> m_colorBufferFormat = {
 	//	DXGI_FORMAT_R8G8B8A8_UNORM,

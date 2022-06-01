@@ -86,11 +86,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
 	xBlurSpriteInitData.m_psEntryPoint = "PSXmain";
 
-	xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
-	xBlurSpriteInitData.m_psEntryPoint = "PSmain";
+	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
+	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
-	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
+	xBlurSpriteInitData.m_height = WINDOW_HEIGHT / 2;
 
 	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
 	//xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();	//Å©ç°âΩÇ‡égÇ¡ÇƒÇ»Ç¢
@@ -121,10 +121,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
 	yBlurSpriteInitData.m_psEntryPoint = "PSYmain";
 
-	yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
-	yBlurSpriteInitData.m_psEntryPoint = "PSmain";
+	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
+	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
-	yBlurSpriteInitData.m_width = WINDOW_WIDTH;
+	yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
 	//yBlurSpriteInitData.m_textures.push_back(&xBlurRenderTarget.GetRenderTargetTexture());
@@ -150,6 +150,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	spriteInitData.m_vsEntryPoint = "VSmain";
 	spriteInitData.m_psEntryPoint = "PSmain";
+
+	spriteInitData.m_size = 3.0f;
 
 	PostEffect* copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = new PostEffect();

@@ -44,9 +44,9 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	float height = spriteInitData.m_height / WINDOW_HEIGHT;
 
 	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
-	vertices[1].pos = { -1.0f, height, 0.0f };
-	vertices[2].pos = { width, -1.0f , 0.0f };
-	vertices[3].pos = { width, height, 0.0f };
+	vertices[1].pos = { -1.0f, height * spriteInitData.m_size, 0.0f };
+	vertices[2].pos = { width * spriteInitData.m_size, -1.0f , 0.0f };
+	vertices[3].pos = { width * spriteInitData.m_size, height * spriteInitData.m_size, 0.0f };
 
 	vertices[0].uv = { 0.0f, 1.0f };
 	vertices[1].uv = { 0.0f, 0.0f };
