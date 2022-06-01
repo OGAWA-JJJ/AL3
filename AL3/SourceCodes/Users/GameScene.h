@@ -9,27 +9,35 @@
 class GameScene
 {
 private:
-	const float MAX_DISTANCE = 125.0f;
-	const float MAX_MOVE_SPEED = 2.0f;
-	const float MAX_CAMERA_MOVE_SPEED = 0.02f;
+	//const float MAX_DISTANCE = 125.0f;
+	//const float MAX_MOVE_SPEED = 2.0f;
+	//const float MAX_CAMERA_MOVE_SPEED = 0.02f;
 
 private:
-	XMFLOAT3 cameraAngle;
+	//XMFLOAT3 cameraAngle;
 
 private:
-	Light* light = nullptr;
+	//Light* light = nullptr;
 
-	Model* modelA = nullptr;
-	Object* objA = nullptr;
+	//Model* modelA = nullptr;
+	//Object* objA = nullptr;
 
-	Model* modelB = nullptr;
-	Object* objB = nullptr;
+	//Model* modelB = nullptr;
+	//Object* objB = nullptr;
 
-	Model* modelC = nullptr;
-	Object* objC = nullptr;
+	//Model* modelC = nullptr;
+	//Object* objC = nullptr;
 
-	FbxModel* fbxModel1 = nullptr;
-	FbxObject3D* fbxObj1 = nullptr;
+	//FbxModel* fbxModel1 = nullptr;
+	//FbxObject3D* fbxObj1 = nullptr;
+
+	Sprite* GH1 = nullptr;
+	Sprite* GH2 = nullptr;
+	Sprite* GH3 = nullptr;
+
+private:	//MT4
+	float dist2 = 250.0f;
+	XMFLOAT2 radian = { 0,0 };
 
 public:
 	GameScene();
