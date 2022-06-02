@@ -31,6 +31,8 @@ private:
 	FbxModel* fbxModel1 = nullptr;
 	FbxObject3D* fbxObj1 = nullptr;
 
+	Sprite* GH1 = nullptr;
+
 public:
 	GameScene();
 	~GameScene();

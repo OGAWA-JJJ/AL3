@@ -7,8 +7,6 @@
 #include "3D/FbxLoader.h"
 #include "2D/RenderTarget.h"
 
-void CalcWeightsTableFromGaussian(float* weightsTbl, int sizeOfWeightsTbl, float sigma);
-
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -55,17 +53,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	);
 
 	//2,ガウスブラー用の重みテーブルを計算する
-	const int NUM_HEIGHT = 8;
+	//const int NUM_HEIGHT = 8;
 
 	//テーブルのサイズは8
-	float weights[NUM_HEIGHT];
+	//float weights[NUM_HEIGHT];
 
 	//重みテーブルを計算する
-	CalcWeightsTableFromGaussian(
-		weights,		//格納先
-		NUM_HEIGHT,		//重みテーブルのサイズ
-		8.0f			//ボケ具合
-	);
+	//CalcWeightsTableFromGaussian(
+	//	weights,		//格納先
+	//	NUM_HEIGHT,		//重みテーブルのサイズ
+	//	8.0f			//ボケ具合
+	//);
 
 	//3,横ブラー用のレンダリングターゲットを作成
 	RenderTarget xBlurRenderTarget;
@@ -83,20 +81,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
+	//xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
+	//xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
+
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
-	xBlurSpriteInitData.m_psEntryPoint = "PSXmain";
+	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
 	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
-	xBlurSpriteInitData.m_height = WINDOW_HEIGHT / 2;
+	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
 	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
 	//xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
 
-	xBlurSpriteInitData.m_expandConstantBuffer = &weights;
-	xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
+	//xBlurSpriteInitData.m_expandConstantBuffer = &weights;
+	//xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
 
 	PostEffect* xBlurSprite = nullptr;
 	xBlurSprite = new PostEffect();
@@ -118,8 +119,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
+	//yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
+	//yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
+
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
-	yBlurSpriteInitData.m_psEntryPoint = "PSYmain";
+	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
 	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
@@ -130,8 +134,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//yBlurSpriteInitData.m_textures.push_back(&xBlurRenderTarget.GetRenderTargetTexture());
 	//yBlurSpriteInitData.m_textures[0] = &xBlurRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
 
-	yBlurSpriteInitData.m_expandConstantBuffer = &weights;
-	yBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
+	//yBlurSpriteInitData.m_expandConstantBuffer = &weights;
+	//yBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
 
 	PostEffect* yBlurSprite = nullptr;
 	yBlurSprite = new PostEffect();
@@ -142,8 +146,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//spriteInitData.m_textures.push_back(&yBlurRenderTarget.GetRenderTargetTexture());
 	//spriteInitData.m_textures[0] = &yBlurRenderTarget.GetRenderTargetTexture();
 
-	spriteInitData.m_width = WINDOW_WIDTH;
-	spriteInitData.m_height = WINDOW_HEIGHT;
+	spriteInitData.m_width = WINDOW_WIDTH / 2;
+	spriteInitData.m_height = WINDOW_HEIGHT / 2;
 
 	spriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
 	spriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
@@ -151,7 +155,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteInitData.m_vsEntryPoint = "VSmain";
 	spriteInitData.m_psEntryPoint = "PSmain";
 
-	spriteInitData.m_size = 3.0f;
+	//spriteInitData.m_size = 3.0f;
 
 	PostEffect* copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = new PostEffect();
@@ -171,20 +175,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		WindowColor[0] = ImguiControl::Imgui_backColor_r;
 		WindowColor[1] = ImguiControl::Imgui_backColor_g;
 		WindowColor[2] = ImguiControl::Imgui_backColor_b;
+		PostEffect::clearColor[0] = ImguiControl::Imgui_backColor_r;
+		PostEffect::clearColor[1] = ImguiControl::Imgui_backColor_g;
+		PostEffect::clearColor[2] = ImguiControl::Imgui_backColor_b;
+
+		//これ違う
+		//xBlurSprite->SetClearColor(WindowColor);
+		//yBlurSprite->SetClearColor(WindowColor);
+		//copyToFrameBufferSprite->SetClearColor(WindowColor);
 
 		Window::Msg();
 		Input::Update();
 
 		Gamescene->Update();
-		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData);
 		Gamescene->Draw();
 		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData);
 		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get());
+		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData);
 		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
@@ -223,24 +235,4 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	FbxLoader::GetInstance()->Finalize();
 	//ウィンドウクラスを登録解除
 	UnregisterClass(Window::windowClass.lpszClassName, Window::windowClass.hInstance);
-}
-
-void CalcWeightsTableFromGaussian(float* weightsTbl, int sizeOfWeightsTbl, float sigma)
-{
-	// 重みの合計を記録する変数を定義する
-	float total = 0;
-
-	// ここからガウス関数を用いて重みを計算している
-	// ループ変数のxが基準テクセルからの距離
-	for (int x = 0; x < sizeOfWeightsTbl; x++)
-	{
-		weightsTbl[x] = expf(-0.5f * (float)(x * x) / sigma);
-		total += 2.0f * weightsTbl[x];
-	}
-
-	// 重みの合計で除算することで、重みの合計を1にしている
-	for (int i = 0; i < sizeOfWeightsTbl; i++)
-	{
-		weightsTbl[i] /= total;
-	}
 }

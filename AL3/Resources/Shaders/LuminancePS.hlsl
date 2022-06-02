@@ -40,4 +40,5 @@ float4 PSmain(VSOutput input) : SV_TARGET
     texcolor /= 9.0f;
     
     return texcolor;
+    //return float4(1, 1, 1, 1);
 }

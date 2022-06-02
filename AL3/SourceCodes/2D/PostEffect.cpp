@@ -9,7 +9,7 @@
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-const float PostEffect::clearColor[4] = { 1.0f,1.0f,1.0f,0.0f };
+float PostEffect::clearColor[4] = { 1.0f,1.0f,1.0f,0.0f };
 
 using namespace DirectX;
 
@@ -40,13 +40,18 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 
 	//頂点データ転送(Size可変にする)←した
 	VertexPosUv vertices[vertNum];
-	float width = spriteInitData.m_width / WINDOW_WIDTH;
-	float height = spriteInitData.m_height / WINDOW_HEIGHT;
+	//float width = spriteInitData.m_width / WINDOW_WIDTH;
+	//float height = spriteInitData.m_height / WINDOW_HEIGHT;
+
+	//vertices[0].pos = { -1.0f, -1.0f , 0.0f };
+	//vertices[1].pos = { -1.0f, height * spriteInitData.m_size, 0.0f };
+	//vertices[2].pos = { width * spriteInitData.m_size, -1.0f , 0.0f };
+	//vertices[3].pos = { width * spriteInitData.m_size, height * spriteInitData.m_size, 0.0f };
 
 	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
-	vertices[1].pos = { -1.0f, height * spriteInitData.m_size, 0.0f };
-	vertices[2].pos = { width * spriteInitData.m_size, -1.0f , 0.0f };
-	vertices[3].pos = { width * spriteInitData.m_size, height * spriteInitData.m_size, 0.0f };
+	vertices[1].pos = { -1.0f, 1.0, 0.0f };
+	vertices[2].pos = { 1.0, -1.0f , 0.0f };
+	vertices[3].pos = { 1.0, 1.0, 0.0f };
 
 	vertices[0].uv = { 0.0f, 1.0f };
 	vertices[1].uv = { 0.0f, 0.0f };
@@ -77,11 +82,29 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	);
 	assert(SUCCEEDED(result));
 
+	//定数バッファの生成（重み転送用）
+	result = DirectXImportant::dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstantBuffer_b1) + 0xff) & ~0xff),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&constBuff_b1)
+	);
+	assert(SUCCEEDED(result));
+
+	//重み計算（引数とかで調整できるようにしろ！）
+	CalcWeightsTableFromGaussian(
+		weight,
+		NUM_HEIGHT,
+		8.0f
+	);
+
 	//テクスチャリソース設定←こいつのFormatを引っ張る
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
-		WINDOW_WIDTH,
-		(UINT)WINDOW_HEIGHT,
+		spriteInitData.m_width,
+		(UINT)spriteInitData.m_height,
 		1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
 	);
 
@@ -99,13 +122,12 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	//Format取得用
 	texresDescFormat = texresDesc.Format;
 
-	//テクスチャを赤クリア
-	//画素数1280*720=921600ピクセル
-	const UINT pixelCount = WINDOW_WIDTH * WINDOW_HEIGHT;
+	//テクスチャを仮想生成
+	const UINT pixelCount = spriteInitData.m_width * spriteInitData.m_height;
 	//画像1行分のデータサイズ
-	const UINT rowPitch = sizeof(UINT) * WINDOW_WIDTH;
+	const UINT rowPitch = sizeof(UINT) * spriteInitData.m_width;
 	//画像全体のデータサイズ
-	const UINT depthPitch = rowPitch * WINDOW_HEIGHT;
+	const UINT depthPitch = rowPitch * spriteInitData.m_height;
 	//画像イメージ
 	UINT* img = new UINT[pixelCount];
 	for (int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
@@ -163,8 +185,8 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	CD3DX12_RESOURCE_DESC depthResDesc =
 		CD3DX12_RESOURCE_DESC::Tex2D(
 			DXGI_FORMAT_D32_FLOAT,
-			WINDOW_WIDTH,
-			WINDOW_HEIGHT,
+			spriteInitData.m_width,
+			spriteInitData.m_height,
 			1, 0,
 			1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
@@ -212,7 +234,7 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 
 	const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 
-	//定数バッファにデータ転送(ガウシアンブラー用に重みつきの定数バッファにする必要があるかも)
+	//定数バッファにデータ転送
 	ConstantBuffer_b0* constMap = nullptr;
 	HRESULT result = this->constBuff->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(result)) {
@@ -221,6 +243,17 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 		constMap->mat = XMMatrixIdentity();
 		constMap->viewproj = matViewProjection;
 		this->constBuff->Unmap(0, nullptr);
+	}
+
+	//ガウシアンブラー用
+	ConstantBuffer_b1* constMap2 = nullptr;
+	result = constBuff_b1->Map(0, nullptr, (void**)&constMap2);
+	if (SUCCEEDED(result)) {
+		for (int i = 0; i < NUM_HEIGHT; i++)
+		{
+			constMap2->weights[i] = weight[i];
+		}
+		constBuff_b1->Unmap(0, nullptr);
 	}
 
 	//パイプラインステートの設定
@@ -239,19 +272,16 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, this->constBuff->GetGPUVirtualAddress());
-	//シェーダリソースビューをセット
-	/*cmdList->SetGraphicsRootDescriptorTable(
-		1, CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(),
-			this->texNumber,
-			descriptorHandleIncrementSize)
-	);*/
+	cmdList->SetGraphicsRootConstantBufferView(2, this->constBuff_b1->GetGPUVirtualAddress());
+
+	//SRV
 	cmdList->SetGraphicsRootDescriptorTable(
 		1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
 
-void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList)
+void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData)
 {
 	//リソースバリアを変更
 	cmdList->ResourceBarrier(
@@ -273,16 +303,24 @@ void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList)
 	//ビューポートの設定
 	cmdList->RSSetViewports(
 		1,
-		&CD3DX12_VIEWPORT(0.0f, 0.0f, WINDOW_WIDTH, WINDOW_HEIGHT)
+		&CD3DX12_VIEWPORT(0.0f, 0.0f, spriteInitData.m_width, spriteInitData.m_height)
+		//&CD3DX12_VIEWPORT(0.0f, 0.0f, WINDOW_WIDTH, WINDOW_HEIGHT)
 	);
 	//シザリング矩形の設定
 	cmdList->RSSetScissorRects(
 		1,
-		&CD3DX12_RECT(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+		&CD3DX12_RECT(0, 0, spriteInitData.m_width, spriteInitData.m_height)
+		//&CD3DX12_RECT(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 	);
 
 	//全画面クリア
 	cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
+	//float color[4];
+	//color[0] = this->color.x;
+	//color[1] = this->color.y;
+	//color[2] = this->color.z;
+	//color[3] = this->color.w;
+	//cmdList->ClearRenderTargetView(rtvH, color, 0, nullptr);
 	//深度バッファのクリア
 	cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
@@ -446,4 +484,24 @@ void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitDat
 	//グラフィックスパイプラインの生成
 	result = DirectXImportant::dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
+}
+
+void PostEffect::CalcWeightsTableFromGaussian(float* weightsTbl, int sizeOfWeightsTbl, float sigma)
+{
+	// 重みの合計を記録する変数を定義する
+	float total = 0;
+
+	// ここからガウス関数を用いて重みを計算している
+	// ループ変数のxが基準テクセルからの距離
+	for (int x = 0; x < sizeOfWeightsTbl; x++)
+	{
+		weightsTbl[x] = expf(-0.5f * (float)(x * x) / sigma);
+		total += 2.0f * weightsTbl[x];
+	}
+
+	// 重みの合計で除算することで、重みの合計を1にしている
+	for (int i = 0; i < sizeOfWeightsTbl; i++)
+	{
+		weightsTbl[i] /= total;
+	}
 }

@@ -9,7 +9,7 @@ GameScene::GameScene()
 	const float objA_Scale = 40.0f;
 	const float objB_Scale = 20.0f;
 	const float objC_Scale = 20.0f;
-	const float fbx1_Scale = 0.1f;
+	const float fbx1_Scale = 10.0f;
 
 	XMFLOAT3 camera = Camera::GetEye();
 	OgaJHelper::ConvertToRadian(camera.y);
@@ -47,7 +47,7 @@ GameScene::GameScene()
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
 	FbxObject3D::CreateGraphicsPipeline();
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("player_stay");
+	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
 
 	fbxObj1 = new FbxObject3D();
 	fbxObj1->Init();
@@ -55,6 +55,9 @@ GameScene::GameScene()
 	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
 	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj1->PlayAnimation();
+
+	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
+	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
 }
 
 GameScene::~GameScene()
@@ -157,10 +160,14 @@ void GameScene::Update()
 void GameScene::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objA->Draw();
+	//objA->Draw();
 	objB->Draw();
-	objC->Draw();
+	//objC->Draw();
 	Object::PostDraw();
 
-	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
+	fbxObj1->Draw(DirectXImportant::cmdList.Get());
+
+	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	//GH1->Draw();
+	Sprite::PostDraw();
 }
