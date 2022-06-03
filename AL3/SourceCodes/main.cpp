@@ -41,42 +41,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Gamescene = new GameScene();
 	Gamescene->Init();
 
-	//1,GameScene描画用のレンダーターゲットを作成
-	RenderTarget mainRenderTarget;
-	mainRenderTarget.Create(
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		1,
-		1,
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		DXGI_FORMAT_D32_FLOAT
-	);
+	//輝度抽出用
+	SpriteInitData luminanceData;
+	luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	luminanceData.m_psShaderName = L"Resources/Shaders/LuminancePS.hlsl";
 
-	//2,ガウスブラー用の重みテーブルを計算する
-	//const int NUM_HEIGHT = 8;
+	luminanceData.m_vsEntryPoint = "VSmain";
+	luminanceData.m_psEntryPoint = "PSmain";
 
-	//テーブルのサイズは8
-	//float weights[NUM_HEIGHT];
+	luminanceData.m_width = WINDOW_WIDTH;
+	luminanceData.m_height = WINDOW_HEIGHT;
 
-	//重みテーブルを計算する
-	//CalcWeightsTableFromGaussian(
-	//	weights,		//格納先
-	//	NUM_HEIGHT,		//重みテーブルのサイズ
-	//	8.0f			//ボケ具合
-	//);
+	PostEffect* luminanceSprite = nullptr;
+	luminanceSprite = new PostEffect();
+	luminanceSprite->Init(luminanceData);
 
-	//3,横ブラー用のレンダリングターゲットを作成
-	RenderTarget xBlurRenderTarget;
-	xBlurRenderTarget.Create(
-		WINDOW_WIDTH / 2.0f,
-		WINDOW_HEIGHT,
-		1,
-		1,
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		DXGI_FORMAT_D32_FLOAT
-	);
-
-	//4,横ブラー用のスプライトを初期化
+	//横ブラー用のスプライトを初期化
 	SpriteInitData xBlurSpriteInitData;
 	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
@@ -87,34 +67,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
 	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
+	xBlurSpriteInitData.m_gaussianSigma = 20.0f;
+
 	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
 	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
-	//xBlurSpriteInitData.m_textures.push_back(&mainRenderTarget.GetRenderTargetTexture());
-	//xBlurSpriteInitData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
-
-	//xBlurSpriteInitData.m_expandConstantBuffer = &weights;
-	//xBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
-
 	PostEffect* xBlurSprite = nullptr;
 	xBlurSprite = new PostEffect();
 	xBlurSprite->Init(xBlurSpriteInitData);
 
-	//5,縦ブラー用のレンダリングターゲットを作成
-	RenderTarget yBlurRenderTarget;
-	yBlurRenderTarget.Create(
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT / 2.0f,
-		1,
-		1,
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		DXGI_FORMAT_D32_FLOAT
-	);
-
-	//6,縦ブラー用のスプライトを初期化
+	//縦ブラー用のスプライトを初期化
 	SpriteInitData yBlurSpriteInitData;
 	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
@@ -125,29 +90,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
 	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
+	yBlurSpriteInitData.m_gaussianSigma = 20.0f;
+
 	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
-	//yBlurSpriteInitData.m_textures.push_back(&xBlurRenderTarget.GetRenderTargetTexture());
-	//yBlurSpriteInitData.m_textures[0] = &xBlurRenderTarget.GetRenderTargetTexture();	//←今何も使ってない
-
-	//yBlurSpriteInitData.m_expandConstantBuffer = &weights;
-	//yBlurSpriteInitData.m_expandConstantBufferSize = sizeof(weights);
-
 	PostEffect* yBlurSprite = nullptr;
 	yBlurSprite = new PostEffect();
 	yBlurSprite->Init(yBlurSpriteInitData);
 
-	//7,縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
+	//縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
 	SpriteInitData spriteInitData;
-	//spriteInitData.m_textures.push_back(&yBlurRenderTarget.GetRenderTargetTexture());
-	//spriteInitData.m_textures[0] = &yBlurRenderTarget.GetRenderTargetTexture();
 
-	spriteInitData.m_width = WINDOW_WIDTH / 2;
-	spriteInitData.m_height = WINDOW_HEIGHT / 2;
+	spriteInitData.m_width = WINDOW_WIDTH;
+	spriteInitData.m_height = WINDOW_HEIGHT;
 
 	spriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
 	spriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
@@ -155,7 +114,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteInitData.m_vsEntryPoint = "VSmain";
 	spriteInitData.m_psEntryPoint = "PSmain";
 
-	//spriteInitData.m_size = 3.0f;
+	spriteInitData.m_alphaBlendMode = AlphaBlendMode::ALPHA_BLENDMODE_ADD;
 
 	PostEffect* copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = new PostEffect();
@@ -188,11 +147,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Input::Update();
 
 		Gamescene->Update();
-		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData);
+
+		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData);
 		Gamescene->Draw();
+		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData);
+		luminanceSprite->Draw(DirectXImportant::cmdList.Get());
 		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData);
+		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData);
 		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
@@ -204,20 +168,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		/*----------DirectX毎フレーム処理　ここから----------*/
 
-		//8,レンダリングターゲットをmainRenderTargetに変更する(HLSLの魔導書の方法は謎)
-
-		//9,mainRenderTargetに各種モデルを描画する
-
-		//10,mainRenderTargetに描画された画像に横ブラーをかける
-
-		//11,縦ブラーも行う
-
-		//12,mainRenderTargetの絵をフレームバッファにコピー
-
-		// ↓ HLSLの改良...
-
-
-		//Gamescene->Draw();
+		Gamescene->Draw();
 		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());

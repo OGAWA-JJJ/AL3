@@ -93,11 +93,11 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	);
 	assert(SUCCEEDED(result));
 
-	//重み計算（引数とかで調整できるようにしろ！）
+	//重み計算（引数とかで調整できるようにしろ！）←ガウシアンブラーやらない時は処理通すな！
 	CalcWeightsTableFromGaussian(
 		weight,
 		NUM_HEIGHT,
-		8.0f
+		spriteInitData.m_gaussianSigma
 	);
 
 	//テクスチャリソース設定←こいつのFormatを引っ張る
@@ -422,11 +422,30 @@ void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitDat
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC blenddesc{};
 	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;	//RBGA全てのチャンネルを描画
-	blenddesc.BlendEnable = true;
-	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
-	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 
+	//ブレンドのOn/Off
+	if (spriteInitData.m_alphaBlendMode == ALPHA_BLENDMODE_NONE) {
+		blenddesc.BlendEnable = false;
+	}
+	else { blenddesc.BlendEnable = true; }
+
+	//半透明合成
+	if (spriteInitData.m_alphaBlendMode == ALPHA_BLENDMODE_TRANS)
+	{
+		blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
+		blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	}
+
+	//加算合成
+	else if (spriteInitData.m_alphaBlendMode == ALPHA_BLENDMODE_ADD)
+	{
+		blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
+		blenddesc.SrcBlend = D3D12_BLEND_ONE;
+		blenddesc.DestBlend = D3D12_BLEND_ONE;
+	}
+
+	//共通設定
 	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;

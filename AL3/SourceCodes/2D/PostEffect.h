@@ -27,8 +27,9 @@ struct SpriteInitData {
 	void* m_expandConstantBuffer = nullptr;								//ユーザー拡張の定数バッファ
 	int m_expandConstantBufferSize = 0;									//ユーザー拡張の定数バッファのサイズ。
 	//IShaderResource* m_expandShaderResoruceView = nullptr;			//ユーザー拡張のシェーダーリソース。
-	AlphaBlendMode m_alphaBlendMode = ALPHA_BLENDMODE_NONE;				//AlphaBlendMode
-	float m_size = 1.0f;
+	AlphaBlendMode m_alphaBlendMode = ALPHA_BLENDMODE_TRANS;			//AlphaBlendMode
+	float m_size = 1.0f;												//今使ってない
+	float m_gaussianSigma = 8.0f;										//ガウシアンブラーの重み
 	//D3D12_FILTER m_samplerFilter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;	//サンプラのフィルター。
 	//std::array<DXGI_FORMAT, MAX_RENDERING_TARGET> m_colorBufferFormat = {
 	//	DXGI_FORMAT_R8G8B8A8_UNORM,
