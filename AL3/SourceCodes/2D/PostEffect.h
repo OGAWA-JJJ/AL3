@@ -114,7 +114,7 @@ public:
 	void Init(const SpriteInitData& spriteInitData);
 	void Draw(ID3D12GraphicsCommandList* cmdList);
 	//シーン描画前処理
-	void PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData);
+	void PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData, const float* clearColor);
 	//シーン描画後処理
 	void PostDrawScene(ID3D12GraphicsCommandList* cmdList);
 

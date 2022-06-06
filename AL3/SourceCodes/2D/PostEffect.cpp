@@ -1,6 +1,6 @@
 #include "PostEffect.h"
 #include "../WinAPI/WindowsAPI.h"
-#include "../DirectX/DirectXImportant.h"
+#include "../DirectX/ConstantBuffer.h"
 #include "../DirectX/Camera.h"
 
 #include <d3dx12.h>
@@ -9,7 +9,7 @@
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-float PostEffect::clearColor[4] = { 1.0f,1.0f,1.0f,0.0f };
+float PostEffect::clearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
 
 using namespace DirectX;
 
@@ -234,19 +234,18 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 
 	const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 
+	HRESULT result = S_OK;
+
 	//定数バッファにデータ転送
-	ConstantBuffer_b0* constMap = nullptr;
-	HRESULT result = this->constBuff->Map(0, nullptr, (void**)&constMap);
-	if (SUCCEEDED(result)) {
-		constMap->color = this->color;
-		//constMap->mat = this->matWorld * matProjection;	// 行列の合成
-		constMap->mat = XMMatrixIdentity();
-		constMap->viewproj = matViewProjection;
-		this->constBuff->Unmap(0, nullptr);
-	}
+	ConstantBuffer_b0 data;
+	data.color = color;
+	data.mat = XMMatrixIdentity();
+	data.viewproj = matViewProjection;
+
+	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
 
 	//ガウシアンブラー用
-	ConstantBuffer_b1* constMap2 = nullptr;
+	/*ConstantBuffer_b1* constMap2 = nullptr;
 	result = constBuff_b1->Map(0, nullptr, (void**)&constMap2);
 	if (SUCCEEDED(result)) {
 		for (int i = 0; i < NUM_HEIGHT; i++)
@@ -254,7 +253,9 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 			constMap2->weights[i] = weight[i];
 		}
 		constBuff_b1->Unmap(0, nullptr);
-	}
+	}*/
+
+	ConstantBuffer::CopyToVRAM(constBuff_b1, weight, sizeof(ConstantBuffer_b1));
 
 	//パイプラインステートの設定
 	cmdList->SetPipelineState(pipelineState.Get());
@@ -281,7 +282,7 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
 
-void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData)
+void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData, const float* clearColor)
 {
 	//リソースバリアを変更
 	cmdList->ResourceBarrier(

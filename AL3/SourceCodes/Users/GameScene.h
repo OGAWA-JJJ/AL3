@@ -15,6 +15,7 @@ private:
 
 private:
 	XMFLOAT3 cameraAngle;
+	bool isTarget = false;
 
 private:
 	Light* light = nullptr;

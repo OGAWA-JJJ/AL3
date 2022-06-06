@@ -8,9 +8,9 @@ public:
 	static float Imgui_eye_z;
 	static float Imgui_fov;
 	static float Imgui_far_z;
-	static float Imgui_backColor_r;
-	static float Imgui_backColor_g;
-	static float Imgui_backColor_b;
+	//static float Imgui_backColor_r;
+	//static float Imgui_backColor_g;
+	//static float Imgui_backColor_b;
 	//static int Imgui_windowSize_x;
 	//static int Imgui_windowSize_y;
 	static float Imgui_lightColor_r;

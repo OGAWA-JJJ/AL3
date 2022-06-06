@@ -14,10 +14,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	LPCTSTR WindowTitle = L"OgwJ Engine";
 	//”wŒi‚ÌF
 	float WindowColor[] = {
-		ImguiControl::Imgui_backColor_r,
-		ImguiControl::Imgui_backColor_g,
-		ImguiControl::Imgui_backColor_b,
-		1.0f };
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f };
 
 #ifdef _DEBUG
 	Window::Debuglayer();
@@ -67,7 +67,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
 	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	xBlurSpriteInitData.m_gaussianSigma = 20.0f;
+	xBlurSpriteInitData.m_gaussianSigma = 10.0f;
 
 	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
 	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	yBlurSpriteInitData.m_gaussianSigma = 20.0f;
+	yBlurSpriteInitData.m_gaussianSigma = 10.0f;
 
 	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
@@ -131,12 +131,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	while (Window::flag)
 	{
-		WindowColor[0] = ImguiControl::Imgui_backColor_r;
-		WindowColor[1] = ImguiControl::Imgui_backColor_g;
-		WindowColor[2] = ImguiControl::Imgui_backColor_b;
-		PostEffect::clearColor[0] = ImguiControl::Imgui_backColor_r;
-		PostEffect::clearColor[1] = ImguiControl::Imgui_backColor_g;
-		PostEffect::clearColor[2] = ImguiControl::Imgui_backColor_b;
+		//WindowColor[0] = ImguiControl::Imgui_backColor_r;
+		//WindowColor[1] = ImguiControl::Imgui_backColor_g;
+		//WindowColor[2] = ImguiControl::Imgui_backColor_b;
+		//PostEffect::clearColor[0] = ImguiControl::Imgui_backColor_r;
+		//PostEffect::clearColor[1] = ImguiControl::Imgui_backColor_g;
+		//PostEffect::clearColor[2] = ImguiControl::Imgui_backColor_b;
 
 		//‚±‚êˆá‚¤
 		//xBlurSprite->SetClearColor(WindowColor);
@@ -147,20 +147,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Input::Update();
 
 		Gamescene->Update();
+		//Gamescene->Draw();
 
-		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData);
+		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
 		Gamescene->Draw();
 		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData);
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);
 		luminanceSprite->Draw(DirectXImportant::cmdList.Get());
 		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData);
+		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData, WindowColor);
 		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData);
+		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
 		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
@@ -168,6 +169,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		/*----------DirectX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚©‚ç----------*/
 
+		//luminanceSprite->Draw(DirectXImportant::cmdList.Get());
 		Gamescene->Draw();
 		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());

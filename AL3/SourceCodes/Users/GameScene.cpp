@@ -109,40 +109,178 @@ void GameScene::Update()
 			ImguiControl::Imgui_lightDir_z,
 		});
 
-	XMFLOAT3 objApos = objA->GetPosition();
-	if (Input::isKey(DIK_W)) { objApos.z -= MAX_MOVE_SPEED; }
-	if (Input::isKey(DIK_S)) { objApos.z += MAX_MOVE_SPEED; }
-	if (Input::isKey(DIK_D)) { objApos.x -= MAX_MOVE_SPEED; }
-	if (Input::isKey(DIK_A)) { objApos.x += MAX_MOVE_SPEED; }
+	XMFLOAT3 objCpos = objC->GetPosition();
+	XMFLOAT3 cameraPos = { objCpos.x,0,objCpos.z };
 
-	if (Input::isKey(DIK_RIGHT)) { cameraAngle.x += MAX_CAMERA_MOVE_SPEED; }
-	if (Input::isKey(DIK_LEFT)) { cameraAngle.x -= MAX_CAMERA_MOVE_SPEED; }
+	if (!isTarget)
+	{
+		if (Input::isKeyTrigger(DIK_T)) { isTarget = true; }
 
-	if (Input::isKey(DIK_UP)) {
-		if (cameraAngle.y < XM_PI / 2) { cameraAngle.y += MAX_CAMERA_MOVE_SPEED; }
+		//ÉJÉÅÉâån
+		if (Input::isKey(DIK_RIGHT)) { cameraAngle.x += MAX_CAMERA_MOVE_SPEED; }
+		if (Input::isKey(DIK_LEFT)) { cameraAngle.x -= MAX_CAMERA_MOVE_SPEED; }
+		if (Input::isKey(DIK_UP)) {
+			if (cameraAngle.y < XM_PI / 2) { cameraAngle.y += MAX_CAMERA_MOVE_SPEED; }
+		}
+		if (Input::isKey(DIK_DOWN)) {
+			if (cameraAngle.y > -XM_PI / 5) { cameraAngle.y -= MAX_CAMERA_MOVE_SPEED; }
+		}
+
+		//ãóó£Ç∆ç∑ï™
+		float distance = MAX_DISTANCE;
+		float diff = 0;
+
+		cameraPos.y += sinf(cameraAngle.y) * MAX_DISTANCE;
+		//ãﬂäÒÇÈÇ©ÇÃîªíË
+		if (cameraPos.y < 0) {
+			diff = cameraPos.y; cameraPos.y = 0;
+		}
+
+		cameraPos.x += sinf(cameraAngle.x) * (distance + diff);
+		cameraPos.z += cosf(cameraAngle.x) * (distance + diff);
+
+		//à⁄ìÆån
+		XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(cameraPos, objCpos);
+		cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
+
+		//å¸Ç´
+		if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+		{
+			XMFLOAT2 vec = { 0,0 };
+
+			if (Input::isKey(DIK_W))
+			{
+				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+				vec.x += 0;
+				vec.y += 1;
+			}
+
+			if (Input::isKey(DIK_S))
+			{
+				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+				vec.x += 0;
+				vec.y += -1;
+			}
+
+			if (Input::isKey(DIK_D))
+			{
+				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				cameraRad += XM_PI / 2;
+				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				OgaJHelper::ConvertToDegree(cameraRad);
+
+				vec.x += -1;
+				vec.y += 0;
+			}
+
+			if (Input::isKey(DIK_A)) {
+				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				cameraRad -= XM_PI / 2;
+				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				OgaJHelper::ConvertToDegree(cameraRad);
+
+				vec.x += 1;
+				vec.y += 0;
+			}
+
+			float deg = atan2(vec.y, vec.x);
+			OgaJHelper::ConvertToDegree(deg);
+			float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+			OgaJHelper::ConvertToDegree(cameraRad);
+
+			objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+		}
+
+		Camera::SetEye(cameraPos);
+		Camera::SetTarget(objC->GetPosition());
 	}
-	if (Input::isKey(DIK_DOWN)) {
-		if (cameraAngle.y > -XM_PI / 5) { cameraAngle.y -= MAX_CAMERA_MOVE_SPEED; }
+
+	else
+	{
+		XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+		enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
+
+		Camera::SetEye(XMFLOAT3(
+			objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
+			sinf(cameraAngle.y) * MAX_DISTANCE,
+			objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+
+		//à⁄ìÆån
+		XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objCpos);
+		cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
+
+		if (Input::isKeyTrigger(DIK_T))
+		{
+			isTarget = false;
+		}
+
+		//å¸Ç´
+		if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+		{
+			XMFLOAT2 vec = { 0,0 };
+
+			if (Input::isKey(DIK_W))
+			{
+				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+				vec.x += 0;
+				vec.y += 1;
+			}
+
+			if (Input::isKey(DIK_S))
+			{
+				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+				vec.x += 0;
+				vec.y += -1;
+			}
+
+			if (Input::isKey(DIK_D))
+			{
+				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				cameraRad += XM_PI / 2;
+				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				OgaJHelper::ConvertToDegree(cameraRad);
+
+				vec.x += -1;
+				vec.y += 0;
+			}
+
+			if (Input::isKey(DIK_A)) {
+				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				cameraRad -= XM_PI / 2;
+				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				OgaJHelper::ConvertToDegree(cameraRad);
+
+				vec.x += 1;
+				vec.y += 0;
+			}
+
+			float deg = atan2(vec.y, vec.x);
+			OgaJHelper::ConvertToDegree(deg);
+			float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+			OgaJHelper::ConvertToDegree(cameraRad);
+
+			objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+		}
+
+		Camera::SetTarget(objA->GetPosition());
 	}
-
-	XMFLOAT3 cameraPos = { 0,0,0 };
-	float distance = MAX_DISTANCE;
-	float diff = 0;
-
-	cameraPos.y = sinf(cameraAngle.y) * MAX_DISTANCE;
-	//ãﬂäÒÇÈÇ©ÇÃîªíË
-	if (cameraPos.y < 0) {
-		diff = cameraPos.y; cameraPos.y = 0;
-	}
-
-	cameraPos.x = sinf(cameraAngle.x) * (distance + diff);
-	cameraPos.z = cosf(cameraAngle.x) * (distance + diff);
 
 
 	/*----------Update,Setter----------*/
-	//objA->SetPosition(objApos);
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
-	Camera::SetEye(cameraPos);
+	objC->SetPosition(objCpos);
 
 	Object::SetLight(light);
 	FbxObject3D::SetLight(light);
@@ -160,12 +298,12 @@ void GameScene::Update()
 void GameScene::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//objA->Draw();
+	objA->Draw();
 	objB->Draw();
-	//objC->Draw();
+	objC->Draw();
 	Object::PostDraw();
 
-	fbxObj1->Draw(DirectXImportant::cmdList.Get());
+	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
 
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//GH1->Draw();
