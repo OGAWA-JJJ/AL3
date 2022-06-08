@@ -3,6 +3,7 @@
 #include "../3D/FbxObject3D.h"
 #include "../../imgui/ImguiControl.h"
 #include "../Math/OgaJHelper.h"
+#include "../Input/FunaInput.h"
 
 GameScene::GameScene()
 {
@@ -19,14 +20,17 @@ GameScene::GameScene()
 	modelB = Model::CreateFromObj("ground");
 	//modelB = Model::CreateFromObj("sponza");
 	modelC = Model::CreateFromObj("monkey");
+	modelD = Model::CreateFromObj("eyeball");
 
 	objA = Object::Create(modelA);
 	objB = Object::Create(modelB);
 	objC = Object::Create(modelC);
+	objD = Object::Create(modelD);
 
 	objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
 	objB->SetScale(XMFLOAT3(objB_Scale, objB_Scale, objB_Scale));
 	objC->SetScale(XMFLOAT3(objC_Scale, objC_Scale, objC_Scale));
+	objD->SetScale(XMFLOAT3(5, 5, 5));
 
 	light = Light::Create();
 	light->SetLightColor(
@@ -58,6 +62,25 @@ GameScene::GameScene()
 
 	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
 	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
+
+	obj1 = Object::Create(modelC);
+	obj2 = Object::Create(modelC);
+	obj3 = Object::Create(modelC);
+	obj4 = Object::Create(modelC);
+	obj5 = Object::Create(modelC);
+
+	obj1->SetPosition(XMFLOAT3(-100, 0, 0));
+	obj2->SetPosition(XMFLOAT3(-50, 0, 0));
+	obj3->SetPosition(XMFLOAT3(0, 0, 0));
+	obj4->SetPosition(XMFLOAT3(50, 0, 0));
+	obj5->SetPosition(XMFLOAT3(100, 0, 0));
+
+	const float obj_Scale = 20.0f;
+	obj1->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	obj2->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	obj3->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	obj4->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	obj5->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
 }
 
 GameScene::~GameScene()
@@ -69,8 +92,11 @@ GameScene::~GameScene()
 	delete objB;
 	delete modelC;
 	delete objC;
+	delete modelD;
+	delete objD;
 	delete fbxModel1;
 	delete fbxObj1;
+	delete GH1;
 }
 
 void GameScene::Init()
@@ -87,14 +113,42 @@ void GameScene::Init()
 	objC->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	objC->SetRotation(XMFLOAT3(0, 180, 0));
 
-	//Camera::SetEye({ 20,20.0f,-50.0f });
-	Camera::SetTarget({ 0.0f,15.0f,0.0f });
-	//Camera::SetUp({ 0.0f,1.0f,0.0f });
+	//eye
+	objD->SetBillboard(true);
+
+	Camera::SetTarget(XMFLOAT3(
+		objC->GetPosition().x,
+		objC->GetPosition().y,
+		objC->GetPosition().z));
+
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
+
+	Camera::SetEye(XMFLOAT3(
+		objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
+		50.0f,
+		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+
+	cameraY = Camera::GetEye().y;
 }
 
 void GameScene::Update()
 {
-	objB->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	//FunaInput
+	FunaInput::Update();
+
+	////x
+	//if (0.5f < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)))
+	//{
+	//	float f = fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE));
+	//	int a = 0;
+	//}
+	////y
+	//if (0.5f < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+	//{
+	//	float f = fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT));
+	//	int a = 0;
+	//}
 
 	light->SetLightColor(
 		{
@@ -109,178 +163,402 @@ void GameScene::Update()
 			ImguiControl::Imgui_lightDir_z,
 		});
 
+	//各種変数
 	XMFLOAT3 objCpos = objC->GetPosition();
-	XMFLOAT3 cameraPos = { objCpos.x,0,objCpos.z };
+	XMFLOAT3 cameraPos = Camera::GetEye();
+	XMFLOAT3 targetPos = Camera::GetTarget();
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
+	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objC->GetPosition());
+	cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
 
 	if (!isTarget)
 	{
-		if (Input::isKeyTrigger(DIK_T)) { isTarget = true; }
-
-		//カメラ系
-		if (Input::isKey(DIK_RIGHT)) { cameraAngle.x += MAX_CAMERA_MOVE_SPEED; }
-		if (Input::isKey(DIK_LEFT)) { cameraAngle.x -= MAX_CAMERA_MOVE_SPEED; }
-		if (Input::isKey(DIK_UP)) {
-			if (cameraAngle.y < XM_PI / 2) { cameraAngle.y += MAX_CAMERA_MOVE_SPEED; }
-		}
-		if (Input::isKey(DIK_DOWN)) {
-			if (cameraAngle.y > -XM_PI / 5) { cameraAngle.y -= MAX_CAMERA_MOVE_SPEED; }
-		}
-
-		//距離と差分
-		float distance = MAX_DISTANCE;
-		float diff = 0;
-
-		cameraPos.y += sinf(cameraAngle.y) * MAX_DISTANCE;
-		//近寄るかの判定
-		if (cameraPos.y < 0) {
-			diff = cameraPos.y; cameraPos.y = 0;
-		}
-
-		cameraPos.x += sinf(cameraAngle.x) * (distance + diff);
-		cameraPos.z += cosf(cameraAngle.x) * (distance + diff);
-
-		//移動系
-		XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(cameraPos, objCpos);
-		cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
-
-		//向き
-		if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+		//pad
+		if (FunaInput::isConnect)
 		{
-			XMFLOAT2 vec = { 0,0 };
-
-			if (Input::isKey(DIK_W))
+			if (FunaInput::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
 			{
-				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-
-				vec.x += 0;
-				vec.y += 1;
+				cameraMoveEase = 0.0f;
+				isTarget = true;
 			}
 
-			if (Input::isKey(DIK_S))
+			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
-				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+				XMFLOAT3 vec = { 0,0,0 };
+				vec.x = FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+				vec.z = FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-				vec.x += 0;
-				vec.y += -1;
-			}
+				objCpos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
-			if (Input::isKey(DIK_D))
-			{
+				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				rad += XM_PI / 2;
+				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+
+				cameraPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				cameraPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+				cameraPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				cameraPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+
+				targetPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				targetPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+				targetPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				targetPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+
+				float deg = atan2(vec.x, vec.z);
+				OgaJHelper::ConvertToDegree(deg);
 				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				cameraRad += XM_PI / 2;
-				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				OgaJHelper::ConvertToDegree(cameraRad);
 
-				vec.x += -1;
-				vec.y += 0;
+				Camera::SetEye(cameraPos);
+				Camera::SetTarget(targetPos);
+				objC->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 			}
 
-			if (Input::isKey(DIK_A)) {
-				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				cameraRad -= XM_PI / 2;
-				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-				OgaJHelper::ConvertToDegree(cameraRad);
+			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
+				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
+			{
+				//ここをどうにかしたい,targetは最悪補完かける
+				XMFLOAT3 objc = objC->GetPosition();
+				XMFLOAT3 eye = Camera::GetEye();
 
-				vec.x += 1;
-				vec.y += 0;
+				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(objC->GetPosition(), Camera::GetEye());
+				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
+
+				float xz = atan2(playerToCamera.x, playerToCamera.z);
+				OgaJHelper::ConvertToDegree(xz);
+				//計算
+				xz += FunaInput::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * MAX_CAMERA_MOVE_SPEED;
+				cameraPos.y += FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
+
+				//距離と差分
+				float diff = 0;
+				if (cameraPos.y < 0)
+				{
+					//地面との仮判定
+					diff = cameraPos.y;
+					cameraPos.y = 0;
+				}
+
+				//radに戻す
+				OgaJHelper::ConvertToRadian(xz);
+				float s = sinf(xz);
+				float c = cosf(xz);
+				//sin.cos
+				Camera::SetEye(XMFLOAT3(
+					objCpos.x + s * (MAX_DISTANCE + diff),
+					cameraPos.y,
+					objCpos.z + c * (MAX_DISTANCE + diff)
+				));
 			}
 
-			float deg = atan2(vec.y, vec.x);
-			OgaJHelper::ConvertToDegree(deg);
-			float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-			OgaJHelper::ConvertToDegree(cameraRad);
-
-			objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+			if (isEase)
+			{
+				XMFLOAT3 target;
+				if (cameraMoveEase < 1.0f)
+				{
+					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), objC->GetPosition(), cameraMoveEase);
+					cameraMoveEase += EASE_CAMERA_TIMER * 2;
+				}
+				else
+				{
+					cameraMoveEase = 1.0f;
+					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), objC->GetPosition(), cameraMoveEase);
+				}
+				Camera::SetTarget(target);
+			}
 		}
 
-		Camera::SetEye(cameraPos);
-		Camera::SetTarget(objC->GetPosition());
+		//キー(一旦放置)
+		else
+		{
+			if (Input::isKeyTrigger(DIK_T))
+			{
+				cameraMoveEase = 0.0f;
+				isTarget = true;
+			}
+
+			//カメラ系
+			if (Input::isKey(DIK_RIGHT) || Input::isKey(DIK_LEFT) || Input::isKey(DIK_UP) || Input::isKey(DIK_DOWN))
+			{
+				if (Input::isKey(DIK_RIGHT))
+				{
+					cameraPos.x += MAX_CAMERA_MOVE_SPEED;
+					targetPos.x -= MAX_CAMERA_MOVE_SPEED;
+				}
+				if (Input::isKey(DIK_LEFT))
+				{
+					cameraPos.x -= MAX_CAMERA_MOVE_SPEED;
+					targetPos.x += MAX_CAMERA_MOVE_SPEED;
+				}
+				if (Input::isKey(DIK_UP))
+				{
+					cameraPos.y += MAX_CAMERA_MOVE_SPEED;
+					targetPos.y -= MAX_CAMERA_MOVE_SPEED;
+				}
+				if (Input::isKey(DIK_DOWN))
+				{
+					cameraPos.y -= MAX_CAMERA_MOVE_SPEED;
+					targetPos.y += MAX_CAMERA_MOVE_SPEED;
+				}
+
+				//距離と差分
+				float diff = 0;
+
+				//地面との仮判定
+				if (cameraPos.y < 0) {
+					//diff = cameraPos.y;
+					//cameraPos.y = 0;
+				}
+
+				//セット
+				XMFLOAT3 targetToCamera = OgaJHelper::CalcDirectionVec3(targetPos, cameraPos);
+				targetToCamera = OgaJHelper::CalcNormalizeVec3(targetToCamera);
+				XMFLOAT3 cameraToTarget = OgaJHelper::CalcDirectionVec3(cameraPos, targetPos);
+				cameraToTarget = OgaJHelper::CalcNormalizeVec3(cameraToTarget);
+
+				/*Camera::SetEye(XMFLOAT3(
+					objC->GetPosition().x + targetToCamera.x * (MAX_DISTANCE + diff),
+					objC->GetPosition().y + targetToCamera.y * (MAX_DISTANCE + diff),
+					objC->GetPosition().z + targetToCamera.z * (MAX_DISTANCE + diff)
+				));*/
+				Camera::SetEye(cameraPos);
+				/*Camera::SetTarget(XMFLOAT3(
+					objC->GetPosition().x + cameraToTarget.x * (MAX_DISTANCE + diff),
+					objC->GetPosition().y + cameraToTarget.y * (MAX_DISTANCE + diff),
+					objC->GetPosition().z + cameraToTarget.z * (MAX_DISTANCE + diff)
+				));*/
+				Camera::SetTarget(targetPos);
+
+				XMFLOAT3 eye = Camera::GetEye();
+				XMFLOAT3 target = Camera::GetTarget();
+			}
+
+			//移動と回転
+			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+			{
+				XMFLOAT2 vec = { 0,0 };
+
+				if (Input::isKey(DIK_W))
+				{
+					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+					targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+					vec.x += 0;
+					vec.y += 1;
+				}
+
+				if (Input::isKey(DIK_S))
+				{
+					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+					targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+					vec.x += 0;
+					vec.y += -1;
+				}
+
+				if (Input::isKey(DIK_D))
+				{
+					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+					cameraRad += XM_PI / 2;
+					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+					targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					//OgaJHelper::ConvertToDegree(cameraRad);
+
+					vec.x += -1;
+					vec.y += 0;
+				}
+
+				if (Input::isKey(DIK_A)) {
+					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+					cameraRad -= XM_PI / 2;
+					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+					targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					//OgaJHelper::ConvertToDegree(cameraRad);
+
+					vec.x += 1;
+					vec.y += 0;
+				}
+
+				float deg = atan2(vec.y, vec.x);
+				OgaJHelper::ConvertToDegree(deg);
+				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				OgaJHelper::ConvertToDegree(cameraRad);
+
+				Camera::SetEye(cameraPos);
+				Camera::SetTarget(targetPos);
+				objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+			}
+		}
 	}
 
 	else
 	{
-		XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
-		enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-
-		Camera::SetEye(XMFLOAT3(
-			objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
-			sinf(cameraAngle.y) * MAX_DISTANCE,
-			objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
-
-		//移動系
-		XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objCpos);
-		cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
-
-		if (Input::isKeyTrigger(DIK_T))
+		//pad
+		if (FunaInput::isConnect)
 		{
-			isTarget = false;
+			if (FunaInput::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
+			{
+				cameraMoveEase = 0.0f;
+				isTarget = false;
+				isEase = true;
+			}
+
+			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+			{
+				XMFLOAT3 vec = { 0,0,0 };
+				vec.x += FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+				vec.z += FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
+				//XMFLOAT3 normalize = OgaJHelper::CalcNormalizeVec3(XMFLOAT3(vec.x, vec.y, 0));
+
+				objCpos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+
+				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+				rad += XM_PI / 2;
+				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+			}
 		}
+
+		else
+		{
+			//切り替え
+			if (Input::isKeyTrigger(DIK_T))
+			{
+				cameraMoveEase = 0.0f;
+				isTarget = false;
+			}
+
+			//移動
+			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+			{
+				if (Input::isKey(DIK_W))
+				{
+					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+				}
+
+				if (Input::isKey(DIK_S))
+				{
+					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+				}
+
+				if (Input::isKey(DIK_D))
+				{
+					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+					cameraRad += XM_PI / 2;
+					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				}
+
+				if (Input::isKey(DIK_A)) {
+					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+					cameraRad -= XM_PI / 2;
+					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+				}
+			}
+		}
+
+		//ゴール地点
+		const XMFLOAT3 GoalCameraTarget = {
+			objA->GetPosition().x,
+			objA->GetPosition().y - 30.0f,
+			objA->GetPosition().z
+		};
+		const XMFLOAT3 GoalCameraEye = {
+			objCpos.x + enemyToPlayer.x * MAX_DISTANCE,
+			50.0f,
+			objCpos.z + enemyToPlayer.z * MAX_DISTANCE,
+		};
+
+		XMFLOAT3 target;
+		XMFLOAT3 eye;
+
+		//カメラ挙動管理用
+		if (cameraMoveEase < 1.0f)
+		{
+			target = OgaJEase::easeOutCubicXMFLOAT3(
+				Camera::GetTarget(),
+				GoalCameraTarget,
+				cameraMoveEase);
+			eye = OgaJEase::easeOutCubicXMFLOAT3(
+				Camera::GetEye(),
+				GoalCameraEye,
+				cameraMoveEase);
+
+			cameraMoveEase += EASE_CAMERA_TIMER;
+		}
+
+		else
+		{
+			cameraMoveEase = 1.0f;
+
+			target = OgaJEase::easeOutCubicXMFLOAT3(
+				Camera::GetTarget(),
+				GoalCameraTarget,
+				cameraMoveEase);
+			eye = OgaJEase::easeOutCubicXMFLOAT3(
+				Camera::GetEye(),
+				GoalCameraEye,
+				cameraMoveEase);
+		}
+
+		//セット
+		Camera::SetTarget(target);
+		Camera::SetEye(eye);
 
 		//向き
-		if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
-		{
-			XMFLOAT2 vec = { 0,0 };
-
-			if (Input::isKey(DIK_W))
-			{
-				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-
-				vec.x += 0;
-				vec.y += 1;
-			}
-
-			if (Input::isKey(DIK_S))
-			{
-				objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-				objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
-
-				vec.x += 0;
-				vec.y += -1;
-			}
-
-			if (Input::isKey(DIK_D))
-			{
-				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				cameraRad += XM_PI / 2;
-				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-				OgaJHelper::ConvertToDegree(cameraRad);
-
-				vec.x += -1;
-				vec.y += 0;
-			}
-
-			if (Input::isKey(DIK_A)) {
-				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				cameraRad -= XM_PI / 2;
-				objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-				objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-				OgaJHelper::ConvertToDegree(cameraRad);
-
-				vec.x += 1;
-				vec.y += 0;
-			}
-
-			float deg = atan2(vec.y, vec.x);
-			OgaJHelper::ConvertToDegree(deg);
-			float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-			OgaJHelper::ConvertToDegree(cameraRad);
-
-			objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-		}
-
-		Camera::SetTarget(objA->GetPosition());
+		float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
+		OgaJHelper::ConvertToDegree(pRadian);
+		float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
+		OgaJHelper::ConvertToDegree(cRadian);
+		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
+		//float sub = objC->GetRotation().y - rot;
+		float diff = 0;
+		if (objC->GetRotation().y - rot > 0) { diff = 2.0f; }
+		else if (objC->GetRotation().y - rot < 0) { diff = -2.0f; }
+		objC->SetRotation(XMFLOAT3(
+			objC->GetRotation().x,
+			rot + diff,
+			objC->GetRotation().z
+		));
 	}
-
 
 	/*----------Update,Setter----------*/
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
 	objC->SetPosition(objCpos);
+	objD->SetPosition(Camera::GetTarget());
 
 	Object::SetLight(light);
 	FbxObject3D::SetLight(light);
@@ -290,22 +568,45 @@ void GameScene::Update()
 	objA->Update();
 	objB->Update();
 	objC->Update();
+	objD->Update();
 
 	fbxObj1->Update();
 	/*----------Update,Setter----------*/
+
+	obj1->Update();
+	obj2->Update();
+	obj3->Update();
+	obj4->Update();
+	obj5->Update();
 }
 
 void GameScene::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objA->Draw();
+	//objA->Draw();
 	objB->Draw();
-	objC->Draw();
+	//objC->Draw();
+	//objD->Draw();
+
+	obj1->Draw();
+	obj2->Draw();
+	obj3->Draw();
+	obj4->Draw();
+	obj5->Draw();
 	Object::PostDraw();
 
 	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
 
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//GH1->Draw();
-	Sprite::PostDraw();
+	//Sprite::PostDraw();
+}
+
+void GameScene::LuminanceDraw()
+{
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	//objC->Draw();
+	obj2->Draw();
+	obj4->Draw();
+	Object::PostDraw();
 }

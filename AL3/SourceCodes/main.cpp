@@ -56,6 +56,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	luminanceSprite = new PostEffect();
 	luminanceSprite->Init(luminanceData);
 
+	//重み係数
+	const float gaussSigma = 30.0f;
+
 	//横ブラー用のスプライトを初期化
 	SpriteInitData xBlurSpriteInitData;
 	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
@@ -67,7 +70,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
 	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	xBlurSpriteInitData.m_gaussianSigma = 10.0f;
+	xBlurSpriteInitData.m_gaussianSigma = gaussSigma;
 
 	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
@@ -90,7 +93,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
 	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	yBlurSpriteInitData.m_gaussianSigma = 10.0f;
+	yBlurSpriteInitData.m_gaussianSigma = gaussSigma;
 
 	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
 	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
@@ -150,7 +153,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//Gamescene->Draw();
 
 		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
-		Gamescene->Draw();
+		//Gamescene->Draw();
+		Gamescene->LuminanceDraw();
 		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
 		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);

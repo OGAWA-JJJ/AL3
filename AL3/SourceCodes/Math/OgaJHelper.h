@@ -1,8 +1,8 @@
 #pragma once
-#include <DirectXMath.h>
+#include "Easing.h"
 #include <vector>
 
-using namespace DirectX;
+//using namespace DirectX;
 
 //static const XMFLOAT2 operator+ (XMFLOAT2 lhs, XMFLOAT2 rhs) {
 //	return XMFLOAT2{ lhs.x + rhs.x,lhs.y + rhs.x };
@@ -77,5 +77,14 @@ float RotateEarliestArc(float NowAngle, float EndAngle)
 		}
 	}
 	return EndAngle - NowAngle;
+}
+
+XMFLOAT3 Cross(const XMFLOAT3& v1, const XMFLOAT3& v2)
+{
+	XMFLOAT3 vec;
+	vec.x = v1.y * v2.z - v1.z * v2.y;
+	vec.y = v1.z * v2.x - v1.x * v2.z;
+	vec.z = v1.x * v2.y - v1.y * v2.x;
+	return vec;
 }
 }
