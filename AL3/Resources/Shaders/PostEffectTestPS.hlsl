@@ -5,6 +5,7 @@ SamplerState smp : register(s0);
 
 float4 PSmain(VSOutput input) : SV_TARGET
 {
+    //return float4(1, 1, 1, 1);
     float4 texcolor = tex.Sample(smp, input.uv);
     return texcolor;
     
@@ -90,9 +91,10 @@ float4 PSXmain(VSOutput input) : SV_TARGET
     float4 texcolor = tex.Sample(smp, input.uv);
     
     //平均ブラー
+    const float texel = 5.0f;
     //1.5テクセルずらすためのUV値を求める
-    float offsetU = 1.5f / 1280.0f;
-    float offsetV = 1.5f / 720.0f;
+    float offsetU = texel / 1280.0f;
+    float offsetV = texel / 720.0f;
     
     //基準テクセルから右のテクセルのカラーをサンプリング
     texcolor += tex.Sample(smp, input.uv + float2(offsetU, 0.0f));
@@ -115,6 +117,7 @@ float4 PSXmain(VSOutput input) : SV_TARGET
     texcolor /= 9.0f;
     
     return texcolor;
+    //return float4(1, 1, 1, 1);
 }
 
 float4 PSYmain(VSOutput input) : SV_TARGET
@@ -122,9 +125,10 @@ float4 PSYmain(VSOutput input) : SV_TARGET
     float4 texcolor = tex.Sample(smp, input.uv);
     
     //平均ブラー
-    //2.5テクセルずらすためのUV値を求める
-    float offsetU = 1.5f / 1280.0f;
-    float offsetV = 1.5f / 720.0f;
+    const float texel = 5.0f;
+    //1.5テクセルずらすためのUV値を求める
+    float offsetU = texel / 1280.0f;
+    float offsetV = texel / 720.0f;
     
     //基準テクセルから右のテクセルのカラーをサンプリング
     texcolor += tex.Sample(smp, input.uv + float2(offsetU, 0.0f));
@@ -147,4 +151,32 @@ float4 PSYmain(VSOutput input) : SV_TARGET
     texcolor /= 9.0f;
     
     return texcolor;
+    //return float4(1, 1, 1, 1);
+}
+
+float4 PSBlur(VSOutput input) : SV_TARGET
+{
+    float4 Color;
+    
+    Color = weights[0].x * tex.Sample(smp, input.tex0.xy);
+
+    Color += weights[0].y * tex.Sample(smp, input.tex1.xy);
+    Color += weights[0].z * tex.Sample(smp, input.tex2.xy);
+    Color += weights[0].w * tex.Sample(smp, input.tex3.xy);
+    Color += weights[1].x * tex.Sample(smp, input.tex4.xy);
+    Color += weights[1].y * tex.Sample(smp, input.tex5.xy);
+    Color += weights[1].z * tex.Sample(smp, input.tex6.xy);
+    Color += weights[1].w * tex.Sample(smp, input.tex7.xy);
+    
+    Color += weights[0].x * tex.Sample(smp, input.tex0.zw);
+    Color += weights[0].y * tex.Sample(smp, input.tex1.zw);
+    Color += weights[0].z * tex.Sample(smp, input.tex2.zw);
+    Color += weights[0].w * tex.Sample(smp, input.tex3.zw);
+    Color += weights[1].x * tex.Sample(smp, input.tex4.zw);
+    Color += weights[1].y * tex.Sample(smp, input.tex5.zw);
+    Color += weights[1].z * tex.Sample(smp, input.tex6.zw);
+    Color += weights[1].w * tex.Sample(smp, input.tex7.zw);
+    
+    //return float4(1, 1, 0, 1);
+    return float4(Color.xyz, 1.0f);
 }

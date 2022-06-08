@@ -4,6 +4,8 @@
 #include <d3dcompiler.h>
 #include <DirectXTex.h>
 
+#include "../DirectX/DirectXImportant.h"
+
 #pragma comment(lib, "d3dcompiler.lib")
 
 using namespace DirectX;
@@ -121,6 +123,9 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+
+	//float factor[4] = { 0,0,0,0 };
+	//DirectXImportant::cmdList->OMSetBlendFactor(factor);
 
 	//ブレンドステートの設定
 	gpipeline.BlendState.RenderTarget[0] = blenddesc;
@@ -475,7 +480,11 @@ void Sprite::Draw()
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, this->constBuff->GetGPUVirtualAddress());
 	//シェーダリソースビューをセット
-	cmdList->SetGraphicsRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), this->texNumber, descriptorHandleIncrementSize));
+	cmdList->SetGraphicsRootDescriptorTable(
+		1,
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(),
+			this->texNumber,
+			descriptorHandleIncrementSize));
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
