@@ -67,4 +67,3 @@ public:
 private:
 	void CreateGraphicsPipelineState();
 };
-

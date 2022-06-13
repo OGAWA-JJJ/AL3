@@ -28,8 +28,8 @@ private:
 private:
 	Light* light = nullptr;
 
-	//Model* modelA = nullptr;
-	//Object* objA = nullptr;
+	Model* modelA = nullptr;
+	Object* objA = nullptr;
 
 	Model* modelB = nullptr;
 	Object* objB = nullptr;
@@ -37,20 +37,20 @@ private:
 	Model* modelC = nullptr;
 	Object* objC = nullptr;
 
-	//Model* modelD = nullptr;
-	//Object* objD = nullptr;
+	Model* modelD = nullptr;
+	Object* objD = nullptr;
 
-	//FbxModel* fbxModel1 = nullptr;
-	//FbxObject3D* fbxObj1 = nullptr;
+	FbxModel* fbxModel1 = nullptr;
+	FbxObject3D* fbxObj1 = nullptr;
 
-	//Sprite* GH1 = nullptr;
+	Sprite* GH1 = nullptr;
 
 private:
 	Object* obj1 = nullptr;
-	//Object* obj2 = nullptr;
-	//Object* obj3 = nullptr;
-	//Object* obj4 = nullptr;
-	//Object* obj5 = nullptr;
+	Object* obj2 = nullptr;
+	Object* obj3 = nullptr;
+	Object* obj4 = nullptr;
+	Object* obj5 = nullptr;
 
 public:
 	GameScene();

@@ -34,9 +34,6 @@
     <Filter Include="SourceCodes\3D">
       <UniqueIdentifier>{bd378ddd-6327-46cd-9c44-886aef529555}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{8314f7b5-d3aa-4d12-9540-f7ce91fec8eb}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -165,14 +162,14 @@
     <ClCompile Include="SourceCodes\3D\PointLight.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\DirectX\ConstantBuffer.cpp">
-      <Filter>SourceCodes\DirectX</Filter>
-    </ClCompile>
     <ClCompile Include="SourceCodes\Input\FunaInput.cpp">
       <Filter>SourceCodes\Input</Filter>
     </ClCompile>
     <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
       <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\ConstantBuffer.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -329,14 +326,14 @@
     <ClInclude Include="SourceCodes\3D\PointLight.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\DirectX\ConstantBuffer.h">
-      <Filter>SourceCodes\DirectX</Filter>
-    </ClInclude>
     <ClInclude Include="SourceCodes\Input\FunaInput.h">
       <Filter>SourceCodes\Input</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\2D\ShadowMap.h">
       <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\ConstantBuffer.h">
+      <Filter>SourceCodes\DirectX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
