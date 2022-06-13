@@ -34,6 +34,9 @@
     <Filter Include="SourceCodes\3D">
       <UniqueIdentifier>{bd378ddd-6327-46cd-9c44-886aef529555}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{8314f7b5-d3aa-4d12-9540-f7ce91fec8eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
