@@ -32,21 +32,21 @@ GameScene::GameScene()
 	OgaJHelper::ConvertToRadian(camera.y);
 	cameraAngle = { 0,camera.y,0 };
 
-	modelA = Model::CreateFromObj("triangle");
+	//modelA = Model::CreateFromObj("triangle");
 	modelB = Model::CreateFromObj("yuka");
 	//modelB = Model::CreateFromObj("sponza");
 	modelC = Model::CreateFromObj("monkey");
-	modelD = Model::CreateFromObj("triangle");
+	//modelD = Model::CreateFromObj("triangle");
 
-	objA = Object::Create(modelA);
+	//objA = Object::Create(modelA);
 	objB = Object::Create(modelB);
 	objC = Object::Create(modelC);
-	objD = Object::Create(modelD);
+	//objD = Object::Create(modelD);
 
-	objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
+	///objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
 	objB->SetScale(XMFLOAT3(objB_Scale, objB_Scale, objB_Scale));
 	objC->SetScale(XMFLOAT3(objC_Scale, objC_Scale, objC_Scale));
-	objD->SetScale(XMFLOAT3(5, 5, 5));
+	//objD->SetScale(XMFLOAT3(5, 5, 5));
 
 	light = Light::Create();
 	light->SetLightColor(
@@ -64,68 +64,68 @@ GameScene::GameScene()
 
 	Object::SetLight(light);
 
-	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
-	FbxObject3D::CreateGraphicsPipeline();
+	//FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+	//FbxObject3D::CreateGraphicsPipeline();
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
+	//fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
 
-	fbxObj1 = new FbxObject3D();
-	fbxObj1->Init();
-	fbxObj1->SetModel(fbxModel1);
-	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
-	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxObj1->PlayAnimation();
+	//fbxObj1 = new FbxObject3D();
+	//fbxObj1->Init();
+	//fbxObj1->SetModel(fbxModel1);
+	//fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	//fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
+	//fbxObj1->PlayAnimation();
 
-	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
+	//Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
+	//GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
 
 	obj1 = Object::Create(modelC);
-	obj2 = Object::Create(modelC);
-	obj3 = Object::Create(modelC);
-	obj4 = Object::Create(modelC);
-	obj5 = Object::Create(modelC);
+	//obj2 = Object::Create(modelC);
+	//obj3 = Object::Create(modelC);
+	//obj4 = Object::Create(modelC);
+	//obj5 = Object::Create(modelC);
 
 	obj1->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
-	obj2->SetPosition(XMFLOAT3(-50, 0, 0));
-	obj3->SetPosition(XMFLOAT3(0, 0, 0));
-	obj4->SetPosition(XMFLOAT3(50, 0, 0));
-	obj5->SetPosition(XMFLOAT3(100, 0, 0));
+	//obj2->SetPosition(XMFLOAT3(-50, 0, 0));
+	//obj3->SetPosition(XMFLOAT3(0, 0, 0));
+	//obj4->SetPosition(XMFLOAT3(50, 0, 0));
+	//obj5->SetPosition(XMFLOAT3(100, 0, 0));
 
 	const float obj_Scale = 20.0f;
 	obj1->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj2->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj3->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj4->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj5->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	//obj2->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	//obj3->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	//obj4->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
+	//obj5->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
 }
 
 GameScene::~GameScene()
 {
 	//書き忘れるからヤメロ！
-	delete modelA;
-	delete objA;
+	//delete modelA;
+	//delete objA;
 	delete modelB;
 	delete objB;
 	delete modelC;
 	delete objC;
-	delete modelD;
-	delete objD;
-	delete fbxModel1;
-	delete fbxObj1;
-	delete GH1;
+	//delete modelD;
+	//delete objD;
+	//delete fbxModel1;
+	//delete fbxObj1;
+	//delete GH1;
 
 	delete obj1;
-	delete obj2;
-	delete obj3;
-	delete obj4;
-	delete obj5;
+	//delete obj2;
+	//delete obj3;
+	//delete obj4;
+	//delete obj5;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
 {
 	//Lich
-	objA->SetPosition(XMFLOAT3(0.0f, 65.0f, -400.0f));
-	objA->SetRotation(XMFLOAT3(0, -100, 0));
+	//objA->SetPosition(XMFLOAT3(0.0f, 65.0f, -400.0f));
+	//objA->SetRotation(XMFLOAT3(0, -100, 0));
 
 	//skydome or sponza
 	objB->SetPosition(XMFLOAT3(0.0f, -10.0f, 0.0f));
@@ -136,20 +136,20 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	objC->SetRotation(XMFLOAT3(0, 180, 0));
 
 	//eye
-	objD->SetBillboard(true);
+	//objD->SetBillboard(true);
 
 	Camera::SetTarget(XMFLOAT3(
 		objC->GetPosition().x,
 		objC->GetPosition().y,
 		objC->GetPosition().z));
 
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
-	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
+	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	//enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
-	Camera::SetEye(XMFLOAT3(
-		objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
-		50.0f,
-		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+	//Camera::SetEye(XMFLOAT3(
+		//objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
+		//50.0f,
+		//objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
 
 	cameraY = Camera::GetEye().y;
 
@@ -191,8 +191,8 @@ void GameScene::Update()
 	XMFLOAT3 objCpos = objC->GetPosition();
 	XMFLOAT3 cameraPos = Camera::GetEye();
 	XMFLOAT3 targetPos = Camera::GetTarget();
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
-	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
+	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	//enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objC->GetPosition());
 	cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
 
@@ -515,16 +515,16 @@ void GameScene::Update()
 		}
 
 		//ゴール地点
-		const XMFLOAT3 GoalCameraTarget = {
-			objA->GetPosition().x,
-			objA->GetPosition().y - 30.0f,
-			objA->GetPosition().z
-		};
-		const XMFLOAT3 GoalCameraEye = {
-			objCpos.x + enemyToPlayer.x * MAX_DISTANCE,
-			50.0f,
-			objCpos.z + enemyToPlayer.z * MAX_DISTANCE,
-		};
+		//const XMFLOAT3 GoalCameraTarget = {
+			//objA->GetPosition().x,
+			//objA->GetPosition().y - 30.0f,
+			//objA->GetPosition().z
+		//};
+		//const XMFLOAT3 GoalCameraEye = {
+			//objCpos.x + enemyToPlayer.x * MAX_DISTANCE,
+			//50.0f,
+			//objCpos.z + enemyToPlayer.z * MAX_DISTANCE,
+		//};
 
 		XMFLOAT3 target;
 		XMFLOAT3 eye;
@@ -532,14 +532,14 @@ void GameScene::Update()
 		//カメラ挙動管理用
 		if (cameraMoveEase < 1.0f)
 		{
-			target = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetTarget(),
-				GoalCameraTarget,
-				cameraMoveEase);
-			eye = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetEye(),
-				GoalCameraEye,
-				cameraMoveEase);
+			//target = OgaJEase::easeOutCubicXMFLOAT3(
+				//Camera::GetTarget(),
+				//GoalCameraTarget,
+				//cameraMoveEase);
+			//eye = OgaJEase::easeOutCubicXMFLOAT3(
+				//Camera::GetEye(),
+				//GoalCameraEye,
+				//cameraMoveEase);
 
 			cameraMoveEase += EASE_CAMERA_TIMER;
 		}
@@ -548,19 +548,19 @@ void GameScene::Update()
 		{
 			cameraMoveEase = 1.0f;
 
-			target = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetTarget(),
-				GoalCameraTarget,
-				cameraMoveEase);
-			eye = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetEye(),
-				GoalCameraEye,
-				cameraMoveEase);
+			//target = OgaJEase::easeOutCubicXMFLOAT3(
+				//Camera::GetTarget(),
+				//GoalCameraTarget,
+				//cameraMoveEase);
+			//eye = OgaJEase::easeOutCubicXMFLOAT3(
+				//Camera::GetEye(),
+				//GoalCameraEye,
+				//cameraMoveEase);
 		}
 
 		//セット
-		Camera::SetTarget(target);
-		Camera::SetEye(eye);
+		//Camera::SetTarget(target);
+		//Camera::SetEye(eye);
 
 		//向き
 		float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
@@ -582,26 +582,26 @@ void GameScene::Update()
 	/*----------Update,Setter----------*/
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
 	objC->SetPosition(objCpos);
-	objD->SetPosition(Camera::GetTarget());
+	//objD->SetPosition(Camera::GetTarget());
 
 	Object::SetLight(light);
 	FbxObject3D::SetLight(light);
 
 	light->Update();
 
-	objA->Update();
+	//objA->Update();
 	objB->Update();
 	objC->Update();
-	objD->Update();
+	//objD->Update();
 
-	fbxObj1->Update();
+	//fbxObj1->Update();
 	/*----------Update,Setter----------*/
 
 	obj1->Update(true);
-	obj2->Update();
-	obj3->Update();
-	obj4->Update();
-	obj5->Update();
+	//obj2->Update();
+	//obj3->Update();
+	//obj4->Update();
+	//obj5->Update();
 }
 
 void GameScene::Draw(ID3D12Resource* texbuff)
