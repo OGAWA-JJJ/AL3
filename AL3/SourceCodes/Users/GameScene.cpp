@@ -7,6 +7,22 @@
 
 GameScene::GameScene()
 {
+	ObjectInitData objInitData;
+	objInitData.m_psEntryPoint = "PSmain";
+	objInitData.m_vsEntryPoint = "VSmain";
+	pipelineSet = Object::CreateGraphicsPipeline(objInitData);
+
+	ObjectInitData shadowInitData;
+	shadowInitData.m_psEntryPoint = "PSBlack";
+	shadowInitData.m_vsEntryPoint = "VSShadowMain";
+	shadow = Object::CreateGraphicsPipeline(shadowInitData);
+
+	ObjectInitData objData;
+	objData.m_psEntryPoint = "PSShadowMain";
+	objData.m_vsEntryPoint = "VSShadowMain";
+	shadow2 = Object::CreateGraphicsPipeline(objData);
+
+
 	const float objA_Scale = 40.0f;
 	const float objB_Scale = 20.0f;
 	const float objC_Scale = 20.0f;
@@ -16,11 +32,11 @@ GameScene::GameScene()
 	OgaJHelper::ConvertToRadian(camera.y);
 	cameraAngle = { 0,camera.y,0 };
 
-	modelA = Model::CreateFromObj("Lich");
-	modelB = Model::CreateFromObj("ground");
+	modelA = Model::CreateFromObj("triangle");
+	modelB = Model::CreateFromObj("yuka");
 	//modelB = Model::CreateFromObj("sponza");
 	modelC = Model::CreateFromObj("monkey");
-	modelD = Model::CreateFromObj("eyeball");
+	modelD = Model::CreateFromObj("triangle");
 
 	objA = Object::Create(modelA);
 	objB = Object::Create(modelB);
@@ -69,7 +85,7 @@ GameScene::GameScene()
 	obj4 = Object::Create(modelC);
 	obj5 = Object::Create(modelC);
 
-	obj1->SetPosition(XMFLOAT3(-100, 0, 0));
+	obj1->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	obj2->SetPosition(XMFLOAT3(-50, 0, 0));
 	obj3->SetPosition(XMFLOAT3(0, 0, 0));
 	obj4->SetPosition(XMFLOAT3(50, 0, 0));
@@ -97,9 +113,15 @@ GameScene::~GameScene()
 	delete fbxModel1;
 	delete fbxObj1;
 	delete GH1;
+
+	delete obj1;
+	delete obj2;
+	delete obj3;
+	delete obj4;
+	delete obj5;
 }
 
-void GameScene::Init()
+void GameScene::Init(ID3D12Resource* texbuff)
 {
 	//Lich
 	objA->SetPosition(XMFLOAT3(0.0f, 65.0f, -400.0f));
@@ -130,6 +152,8 @@ void GameScene::Init()
 		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
 
 	cameraY = Camera::GetEye().y;
+
+	objC->AddTexture(texbuff);
 }
 
 void GameScene::Update()
@@ -573,26 +597,28 @@ void GameScene::Update()
 	fbxObj1->Update();
 	/*----------Update,Setter----------*/
 
-	obj1->Update();
+	obj1->Update(true);
 	obj2->Update();
 	obj3->Update();
 	obj4->Update();
 	obj5->Update();
 }
 
-void GameScene::Draw()
+void GameScene::Draw(ID3D12Resource* texbuff)
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//objA->Draw();
-	objB->Draw();
-	//objC->Draw();
-	//objD->Draw();
+	//objA->Draw(pipelineSet);
+	//objC->AddTexture(texbuff);
+	objC->Draw(pipelineSet);
+	objB->Draw(shadow2);
+	//objB->Draw(pipelineSet);
+	//objD->Draw(pipelineSet);
 
-	obj1->Draw();
-	obj2->Draw();
-	obj3->Draw();
-	obj4->Draw();
-	obj5->Draw();
+	//obj1->Draw();
+	//obj2->Draw();
+	//obj3->Draw();
+	//obj4->Draw();
+	//obj5->Draw();
 	Object::PostDraw();
 
 	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
@@ -605,8 +631,16 @@ void GameScene::Draw()
 void GameScene::LuminanceDraw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//objC->Draw();
-	obj2->Draw();
-	obj4->Draw();
+	objC->Draw(pipelineSet);
+	//obj2->Draw();
+	//obj4->Draw();
+	Object::PostDraw();
+}
+
+void GameScene::ShadowDraw()
+{
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	obj1->Draw(shadow);
+	//objC->Draw(shadow);
 	Object::PostDraw();
 }

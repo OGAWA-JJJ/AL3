@@ -40,7 +40,11 @@ public:
 	//初期化
 	void Init(const std::string& modelname, bool smoothing);
 	//描画
-	void Draw(ID3D12GraphicsCommandList* cmdList);
+	void Draw(ID3D12GraphicsCommandList* cmdList,
+		ComPtr<ID3D12DescriptorHeap> srv = nullptr,
+		UINT rootParamIndex = 0,
+		bool isAddTexture = false
+	);
 	//メッシュコンテナの取得
 	inline const std::vector<Mesh*>& GetMeshes() { return meshes; }
 

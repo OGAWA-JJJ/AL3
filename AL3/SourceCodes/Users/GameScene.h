@@ -15,6 +15,10 @@ private:
 	const float EASE_CAMERA_TIMER = 0.006f;
 
 private:
+	PipelineSet pipelineSet;
+	PipelineSet shadow;
+	PipelineSet shadow2;
+
 	XMFLOAT3 cameraAngle;
 	float cameraMoveEase = 0.0f;
 	float cameraY = 0.0f;
@@ -51,8 +55,9 @@ private:
 public:
 	GameScene();
 	~GameScene();
-	void Init();
+	void Init(ID3D12Resource* texbuff = nullptr);
 	void Update();
-	void Draw();
+	void Draw(ID3D12Resource* texbuff = nullptr);
 	void LuminanceDraw();
+	void ShadowDraw();
 };

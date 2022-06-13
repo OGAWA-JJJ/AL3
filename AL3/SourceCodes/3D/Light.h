@@ -13,6 +13,7 @@ public:
 	struct ConstBufferData {
 		XMVECTOR lightv; //ライトへの方向を表すベクトル
 		XMFLOAT3 lightcolor; //ライトの色
+		XMMATRIX lightViewproj;
 	};
 
 private:

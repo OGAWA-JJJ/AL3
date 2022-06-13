@@ -1,4 +1,6 @@
 #include "Light.h"
+#include "../DirectX/ConstantBuffer.h"
+#include "../../imgui/ImguiControl.h"
 
 ID3D12Device* Light::device = nullptr;
 
@@ -42,14 +44,32 @@ void Light::Init()
 void Light::TransferConstBuffer()
 {
 	HRESULT result;
+
+	//影用
+	XMFLOAT3 eye = { 0,100,0 };
+	XMFLOAT3 target = { 0,0,0 };
+	XMFLOAT3 up = { 0,0,-1 };
+
+	XMMATRIX matView = XMMatrixLookAtLH(
+		XMLoadFloat3(&eye),
+		XMLoadFloat3(&target),
+		XMLoadFloat3(&up));
+
+	float fov = ImguiControl::Imgui_fov;
+	XMMATRIX lightMatPerspective = XMMatrixPerspectiveFovLH(
+		XMConvertToRadians(fov),
+		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
+		0.1f, ImguiControl::Imgui_far_z); //前端、奥端
+
+	const XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
+
 	//定数バッファへデータ転送
-	ConstBufferData* constMap = nullptr;
-	result = constBuff->Map(0, nullptr, (void**)&constMap);
-	if (SUCCEEDED(result)) {
-		constMap->lightv = -lightdir;
-		constMap->lightcolor = lightcolor;
-		constBuff->Unmap(0, nullptr);
-	}
+	ConstBufferData constMap;
+	constMap.lightv = -lightdir;
+	constMap.lightcolor = lightcolor;
+	constMap.lightViewproj = lightMatViewProjection;
+
+	ConstantBuffer::CopyToVRAM(constBuff, &constMap, sizeof(ConstBufferData));
 }
 
 void Light::SetLightDir(const XMVECTOR& lightdir)
@@ -72,6 +92,32 @@ void Light::Update()
 		TransferConstBuffer();
 		dirty = false;
 	}
+
+	//影用
+	XMFLOAT3 eye = { 0,150,0 };
+	XMFLOAT3 target = { 0,0,0 };
+	XMFLOAT3 up = { 0,0,-1 };
+
+	XMMATRIX matView = XMMatrixLookAtLH(
+		XMLoadFloat3(&eye),
+		XMLoadFloat3(&target),
+		XMLoadFloat3(&up));
+
+	float fov = ImguiControl::Imgui_fov;
+	XMMATRIX lightMatPerspective = XMMatrixPerspectiveFovLH(
+		XMConvertToRadians(fov),
+		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
+		0.1f, ImguiControl::Imgui_far_z); //前端、奥端
+
+	const XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
+
+	//定数バッファへデータ転送
+	ConstBufferData constMap;
+	constMap.lightv = -lightdir;
+	constMap.lightcolor = lightcolor;
+	constMap.lightViewproj = lightMatViewProjection;
+
+	ConstantBuffer::CopyToVRAM(constBuff, &constMap, sizeof(ConstBufferData));
 }
 
 void Light::Draw(ID3D12GraphicsCommandList* cmdList, UINT rootParameterIndex)
