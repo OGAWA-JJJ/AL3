@@ -162,6 +162,15 @@
     <ClCompile Include="SourceCodes\3D\PointLight.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\Input\FunaInput.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\ConstantBuffer.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -317,6 +326,15 @@
     <ClInclude Include="SourceCodes\3D\PointLight.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCodes\Input\FunaInput.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\ShadowMap.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\ConstantBuffer.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BasicGeometryShader.hlsl">
@@ -367,6 +385,12 @@
     <FxCompile Include="Resources\Shaders\GaussianBlurVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\ShadowMapVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ShadowMapPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BasicShaderHeader.hlsli">
@@ -388,6 +412,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\GaussianBlurShaderHeader.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowMapShaderHeader.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
