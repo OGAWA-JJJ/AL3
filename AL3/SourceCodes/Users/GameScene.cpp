@@ -56,14 +56,20 @@ GameScene::GameScene()
 	//fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	//fbxObj1->PlayAnimation();
 
-	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
-	GH2 = Sprite::Create(0, XMFLOAT2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2));
-	GH3 = Sprite::Create(0, XMFLOAT2(0, 0));
-	GH1->SetSize(XMFLOAT2(64, 64));
-	GH2->SetSize(XMFLOAT2(64, 64));
-	GH3->SetSize(XMFLOAT2(64, 64));
+	Sprite::LoadTexture(0, L"Resources/circle.png");
+	Sprite::LoadTexture(1, L"Resources/bar.png");
+	Sprite::LoadTexture(2, L"Resources/bar2.png");
 
+	GH1 = Sprite::Create(0, XMFLOAT2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2));
+	GH1->SetAnchorPoint({ 0.5,0.5 });
+	GH2 = Sprite::Create(1, XMFLOAT2(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2));
+	GH2->SetAnchorPoint({ 0.5,0.5 });
+	GH3 = Sprite::Create(2, XMFLOAT2(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2));
+	GH3->SetAnchorPoint({ 0.5,0.5 });
+
+	GH1->SetSize(XMFLOAT2(64, 64));
+	GH2->SetSize(XMFLOAT2(1, 128));
+	GH3->SetSize(XMFLOAT2(1, 128));
 }
 
 GameScene::~GameScene()
@@ -172,25 +178,56 @@ void GameScene::Update()
 #pragma endregion
 
 	/*---MT4---*/
-	const float dist = 150.0f;
-	XMFLOAT2 pos = { 0,0 };
-	XMFLOAT2 pos2 = { 0,0 };
+	isHit = false;
+	const float speed = 2.0f;
+	if (Input::isKey(DIK_RIGHT))
+	{
+		barBottom.x += speed;
+		barTip.x += speed;
+	}
+	if (Input::isKey(DIK_LEFT))
+	{
+		barBottom.x -= speed;
+		barTip.x -= speed;
+	}
+	if (Input::isKey(DIK_DOWN))
+	{
+		barBottom.y += speed;
+		barTip.y += speed;
+	}
+	if (Input::isKey(DIK_UP))
+	{
+		barBottom.y -= speed;
+		barTip.y -= speed;
+	}
 
-	if (Input::isKey(DIK_UP)) { dist2 += 3.0f; }
+	const float circleRad = 32.0f;
+	const XMFLOAT2 circleCenter = { WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 };
 
-	pos = {
-		WINDOW_WIDTH / 2 + sinf(radian.x) * dist,
-		WINDOW_HEIGHT / 2 + cosf(radian.y) * dist };
+	XMFLOAT2 bottomToTip = { barTip.x - barBottom.x,  barTip.y - barBottom.y };
+	XMFLOAT2 tipToCenter = { circleCenter.x - barTip.x, circleCenter.y - barTip.y };
+	XMFLOAT2 bottomToCenter = { circleCenter.x - barBottom.x, circleCenter.y - barBottom.y };
 
-	pos2 = {
-		WINDOW_WIDTH / 2 + sinf(radian.x) * dist2,
-		WINDOW_HEIGHT / 2 + cosf(radian.y) * dist2 };
+	float length = sqrtf(powf(bottomToTip.x, 2) + powf(bottomToTip.y, 2));
+	XMFLOAT2 normalizeVec = { bottomToTip.x / length,bottomToTip.y / length };
 
-	radian.x += 0.05f;
-	radian.y += 0.05f;
+	float dist = bottomToCenter.x * normalizeVec.y - normalizeVec.x * bottomToCenter.y;
 
-	GH1->SetPosition(pos);
-	GH3->SetPosition(pos2);
+	if (fabs(dist) < circleRad)
+	{
+		float dot1 = bottomToCenter.x * bottomToTip.x + bottomToCenter.y * bottomToTip.y;
+		float dot2 = tipToCenter.x * bottomToTip.x + tipToCenter.y * bottomToTip.y;
+
+		if (dot1 * dot2 <= 0.0f) { isHit = true; }
+	}
+
+	float length2 = sqrtf(powf(tipToCenter.x, 2) + powf(tipToCenter.y, 2));
+	float length3 = sqrtf(powf(bottomToCenter.x, 2) + powf(bottomToCenter.y, 2));
+	if (length2 < circleRad || length3 < circleRad) { isHit = true; }
+
+	XMFLOAT2 size = { barTip.x,barTip.y - 64 };
+	GH2->SetPosition(size);
+	GH3->SetPosition(size);
 }
 
 void GameScene::Draw()
@@ -206,6 +243,6 @@ void GameScene::Draw()
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	GH1->Draw();
 	GH2->Draw();
-	GH3->Draw();
+	if (isHit) { GH3->Draw(); }
 	Sprite::PostDraw();
 }

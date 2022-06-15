@@ -36,8 +36,9 @@ private:
 	Sprite* GH3 = nullptr;
 
 private:	//MT4
-	float dist2 = 250.0f;
-	XMFLOAT2 radian = { 0,0 };
+	XMFLOAT2 barBottom = { WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 - 64 };
+	XMFLOAT2 barTip = { WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 64 };
+	bool isHit = false;
 
 public:
 	GameScene();
