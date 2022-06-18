@@ -158,21 +158,11 @@ void GameScene::Init(ID3D12Resource* texbuff)
 
 void GameScene::Update()
 {
+
+#pragma region Calc
+
 	//FunaInput
 	FunaInput::Update();
-
-	////x
-	//if (0.5f < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)))
-	//{
-	//	float f = fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE));
-	//	int a = 0;
-	//}
-	////y
-	//if (0.5f < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
-	//{
-	//	float f = fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT));
-	//	int a = 0;
-	//}
 
 	light->SetLightColor(
 		{
@@ -578,6 +568,8 @@ void GameScene::Update()
 			objC->GetRotation().z
 		));
 	}
+
+#pragma endregion
 
 	/*----------Update,Setter----------*/
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));

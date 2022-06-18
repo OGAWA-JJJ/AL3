@@ -6,6 +6,7 @@
 const std::string Model::baseDirectory = "Resources/";
 ID3D12Device* Model::device = nullptr;
 UINT Model::descriptorHandleIncrementSize = 0;
+ID3D12DescriptorHeap* Model::descHeap;
 
 Model::Model()
 {
@@ -290,7 +291,7 @@ void Model::Draw(ID3D12GraphicsCommandList* cmdList,
 {
 	//デスクリプタヒープの配列
 	if (descHeap) {
-		ID3D12DescriptorHeap* ppHeaps[] = { descHeap.Get() };
+		ID3D12DescriptorHeap* ppHeaps[] = { descHeap };
 		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
@@ -299,9 +300,7 @@ void Model::Draw(ID3D12GraphicsCommandList* cmdList,
 			CD3DX12_GPU_DESCRIPTOR_HANDLE(
 				srv->GetGPUDescriptorHandleForHeapStart(),
 				0,
-				device->GetDescriptorHandleIncrementSize(
-					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-				)));
+				descriptorHandleIncrementSize));
 	}
 
 	//全メッシュを描画
@@ -416,7 +415,7 @@ void Model::CreateDescriptorHeap()
 		D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
 		descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダから見えるように
-		descHeapDesc.NumDescriptors = (UINT)count;					// シェーダーリソースビューの数
+		descHeapDesc.NumDescriptors = (UINT)count + 1;					// シェーダーリソースビューの数
 		result = device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeap));//生成
 		if (FAILED(result)) {
 			assert(0);

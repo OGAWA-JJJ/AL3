@@ -76,7 +76,7 @@ protected:
 
 private:
 	//SRV用デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeapSRV;
+	ID3D12DescriptorHeap* modelDescHeap;
 
 	bool isAddTexture = false;
 

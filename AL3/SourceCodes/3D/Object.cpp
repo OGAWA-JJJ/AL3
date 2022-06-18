@@ -359,7 +359,7 @@ void Object::Draw(PipelineSet pipelineSet)
 	light->Draw(cmdList, 3);
 
 	//モデル描画
-	model->Draw(cmdList, descHeapSRV, 4, isAddTexture);
+	model->Draw(cmdList, modelDescHeap, 4, isAddTexture);
 }
 
 void Object::SetCollider(BaseCollider* collider)
@@ -377,6 +377,7 @@ void Object::AddTexture(ID3D12Resource* texbuff)
 	isAddTexture = true;
 	//1枚のみ対応
 	HRESULT result;
+	modelDescHeap = Model::GetDescHeap();
 
 	D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
 	srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -386,7 +387,7 @@ void Object::AddTexture(ID3D12Resource* texbuff)
 	//SRV用デスクリプタヒープを作成
 	result = DirectXImportant::dev->CreateDescriptorHeap(
 		&srvDescHeapDesc,
-		IID_PPV_ARGS(&descHeapSRV));
+		IID_PPV_ARGS(&modelDescHeap));
 
 	assert(SUCCEEDED(result));
 
@@ -407,7 +408,7 @@ void Object::AddTexture(ID3D12Resource* texbuff)
 		texbuff,
 		&srvDesc,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			descHeapSRV->GetCPUDescriptorHandleForHeapStart(),
+			modelDescHeap->GetCPUDescriptorHandleForHeapStart(),
 			0,
 			device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 		));

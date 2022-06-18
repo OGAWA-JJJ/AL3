@@ -25,13 +25,15 @@ private:
 	//デフォルトマテリアル
 	Material* defaultMaterial = nullptr;
 	//デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeap;
+	static ID3D12DescriptorHeap* descHeap;
 
 public:
 	//静的初期化
 	static void StaticInit(ID3D12Device* device);
 	//メッシュ生成
 	static Model* CreateFromObj(const std::string& modelname, bool smoothing = false);
+	//デスクリプタヒープを取得
+	static ID3D12DescriptorHeap* GetDescHeap() { return descHeap; }
 
 public:
 	Model();
