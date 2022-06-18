@@ -402,7 +402,7 @@ void Object::AddTexture(ID3D12Resource* texbuff)
 	/*device->CreateShaderResourceView(
 		texbuff,
 		&srvDesc,
-		descHeapSRV->GetCPUDescriptorHandleForHeapStart());*/
+		modelDescHeap->GetCPUDescriptorHandleForHeapStart());*/
 
 	device->CreateShaderResourceView(
 		texbuff,
