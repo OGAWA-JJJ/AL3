@@ -17,3 +17,20 @@ VSOutput VSmain(float4 pos : POSITION, float3 normal : NORMAL, float2 uv : TEXCO
     output.uv = uv;
     return output;
 }
+
+PSOutput VSShadowMain(float4 pos : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD)
+{
+    float4 wnormal = normalize(mul(world, float4(normal, 0)));
+    float4 wpos = mul(world, pos);
+    
+    PSOutput output;
+    output.svpos = mul(mul(viewproj, world), pos);
+    //output.worldpos = wpos;
+    output.normal = wnormal.xyz;
+    output.uv = uv;
+    //output.uv = 0.9f;
+    
+    output.posInLVP = mul(lightViewProj, wpos);
+    
+    return output;
+}

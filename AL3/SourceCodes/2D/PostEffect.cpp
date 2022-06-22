@@ -157,7 +157,7 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 
 	//デスクリプタヒープにSRVを作成
 	DirectXImportant::dev->CreateShaderResourceView(
-		texbuff.Get(),	//ビューと関連付けるバッファ
+		texbuff,	//ビューと関連付けるバッファ
 		&srvDesc,
 		descHeapSRV->GetCPUDescriptorHandleForHeapStart()
 	);
@@ -176,7 +176,7 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 
 	//デスクリプタヒープにRTVを作成(本当はダブルバッファリングするべき)
 	DirectXImportant::dev->CreateRenderTargetView(
-		texbuff.Get(),
+		texbuff,
 		nullptr,
 		descHeapRTV->GetCPUDescriptorHandleForHeapStart()
 	);
@@ -287,7 +287,7 @@ void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteIn
 	//リソースバリアを変更
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
+		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			D3D12_RESOURCE_STATE_RENDER_TARGET)
 	);
@@ -330,7 +330,7 @@ void PostEffect::PostDrawScene(ID3D12GraphicsCommandList* cmdList)
 {
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
+		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff,
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 	);

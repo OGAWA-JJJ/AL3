@@ -101,6 +101,23 @@ void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIP
 	);
 }
 
+//void Material::AddTexture(ID3D12Resource* texbuff)
+//{
+//	//シェーダリソースビュー作成
+//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
+//	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
+//
+//	srvDesc.Format = resDesc.Format;
+//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
+//	srvDesc.Texture2D.MipLevels = 1;
+//
+//	device->CreateShaderResourceView(texbuff, //ビューと関連付けるバッファ
+//		&srvDesc, //テクスチャ設定情報
+//		cpuDescHandleSRV
+//	);
+//}
+
 void Material::Update()
 {
 	HRESULT result;

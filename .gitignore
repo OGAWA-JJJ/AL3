@@ -3,8 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+<<<<<<< HEAD
+#Mylib
+=======
 #MyLib
 lib/
+>>>>>>> parent of 5cc2ebe... SDKとsponza
 
 # User-specific files
 *.rsuser

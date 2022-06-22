@@ -53,8 +53,8 @@ void Hantei::Update()
 void Hantei::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objA->Draw();
-	objB->Draw();
+	//objA->Draw();
+	//objB->Draw();
 	Object::PostDraw();
 
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());

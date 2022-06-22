@@ -9,20 +9,27 @@
 #include "Light.h"
 #include "../Math/CollisionInfo.h"
 
+struct ObjectInitData
+{
+	const char* m_vsEntryPoint = "VSmain";
+	const char* m_psEntryPoint = "PSmain";
+};
+
+//パイプラインセット
+struct PipelineSet
+{
+	//ルートシグネチャ
+	ID3D12RootSignature* rootsignature;
+	//パイプラインステートオブジェクト
+	ID3D12PipelineState* pipelinestate;
+};
+
+
 class BaseCollider;
 
 class Object
 {
 public:
-	//パイプラインセット
-	struct PipelineSet
-	{
-		//ルートシグネチャ
-		ComPtr<ID3D12RootSignature> rootsignature;
-		//パイプラインステートオブジェクト
-		ComPtr<ID3D12PipelineState> pipelinestate;
-	};
-
 	//定数バッファ用データ構造体B0
 	struct ConstBufferDataB0
 	{
@@ -67,11 +74,17 @@ protected:
 	//コライダー
 	BaseCollider* collider = nullptr;
 
+private:
+	//SRV用デスクリプタヒープ
+	ID3D12DescriptorHeap* modelDescHeap;
+
+	bool isAddTexture = false;
+
 public:
 	//静的初期化
 	static void StaticInit(ID3D12Device* device);
 	//グラフィックパイプラインの生成
-	static void CreateGraphicsPipeline();
+	static PipelineSet CreateGraphicsPipeline(const ObjectInitData& objectInitData);
 	//描画前処理
 	static void PreDraw(ID3D12GraphicsCommandList* cmdList);
 	//描画後処理
@@ -93,11 +106,11 @@ public:
 
 	//毎フレーム処理
 	//void Update();
-	virtual void Update();
+	virtual void Update(bool isShadowCamera = false);
 
 	//描画
 	//void Draw();
-	virtual void Draw();
+	virtual void Draw(PipelineSet pipelineSet);
 
 public:
 	//座標の取得
@@ -125,5 +138,7 @@ public:
 	virtual void OnCollision(const CollisionInfo& info) {}
 	//モデルを取得
 	inline Model* GetModel() { return model; }
+	//テクスチャ追加（マルチテクスチャ）
+	void AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv);
 };
 

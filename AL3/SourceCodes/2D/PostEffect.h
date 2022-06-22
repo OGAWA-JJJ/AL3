@@ -80,7 +80,7 @@ private:
 
 private:
 	//テクスチャバッファ
-	ComPtr<ID3D12Resource> texbuff;
+	ID3D12Resource* texbuff;
 	//SRv用デスクリプタヒープ
 	ComPtr<ID3D12DescriptorHeap> descHeapSRV;
 	//深度バッファ
@@ -117,6 +117,7 @@ public:
 	void PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteInitData& spriteInitData, const float* clearColor);
 	//シーン描画後処理
 	void PostDrawScene(ID3D12GraphicsCommandList* cmdList);
+	ID3D12Resource* GetTexbuffer() { return texbuff; }
 
 private:
 	//パイプライン生成(中身汎用性高めて細かく関数化した方がいいかも)

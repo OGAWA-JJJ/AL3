@@ -6,10 +6,13 @@
 #include "2D/PostEffect.h"
 #include "3D/FbxLoader.h"
 #include "2D/RenderTarget.h"
+#include "2D/ShadowMap.h"
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	//ReportLiveObjects();
+
 	//ウィンドウタイトル
 	LPCTSTR WindowTitle = L"OgwJ Engine";
 	//背景の色
@@ -17,7 +20,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		0.0f,
 		0.0f,
 		0.0f,
-		0.0f };
+		1.0f };
 
 #ifdef _DEBUG
 	Window::Debuglayer();
@@ -36,10 +39,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		return 1;
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
-
-	GameScene* Gamescene = nullptr;
-	Gamescene = new GameScene();
-	Gamescene->Init();
 
 	//輝度抽出用
 	SpriteInitData luminanceData;
@@ -123,66 +122,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	copyToFrameBufferSprite = new PostEffect();
 	copyToFrameBufferSprite->Init(spriteInitData);
 
+	//影
+	ShadowMap* shadow = nullptr;
+	shadow = new ShadowMap();
+	shadow->Init();
+
+	//メイン
+	GameScene* Gamescene = nullptr;
+	Gamescene = new GameScene();
+	Gamescene->Init(shadow->GetTexbuffer());
+
 
 	/*----------宣言　ここから----------*/
 
-	/*GameScene* Gamescene = nullptr;
-	Gamescene = new GameScene();
-	Gamescene->Init();*/
+
 
 	/*----------宣言　ここまで----------*/
 
 	while (Window::flag)
 	{
-		//WindowColor[0] = ImguiControl::Imgui_backColor_r;
-		//WindowColor[1] = ImguiControl::Imgui_backColor_g;
-		//WindowColor[2] = ImguiControl::Imgui_backColor_b;
-		//PostEffect::clearColor[0] = ImguiControl::Imgui_backColor_r;
-		//PostEffect::clearColor[1] = ImguiControl::Imgui_backColor_g;
-		//PostEffect::clearColor[2] = ImguiControl::Imgui_backColor_b;
-
-		//これ違う
-		//xBlurSprite->SetClearColor(WindowColor);
-		//yBlurSprite->SetClearColor(WindowColor);
-		//copyToFrameBufferSprite->SetClearColor(WindowColor);
-
 		Window::Msg();
 		Input::Update();
 
 		Gamescene->Update();
+
+		//luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
 		//Gamescene->Draw();
+		//Gamescene->LuminanceDraw();
+		//luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
-		//Gamescene->Draw();
-		Gamescene->LuminanceDraw();
-		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		//xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);
+		//luminanceSprite->Draw(DirectXImportant::cmdList.Get());
+		//xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);
-		luminanceSprite->Draw(DirectXImportant::cmdList.Get());
-		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		//yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData, WindowColor);
+		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		//yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData, WindowColor);
-		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		//copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
+		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		//copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
-		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		shadow->PreDraw(DirectXImportant::cmdList.Get());
+		Gamescene->ShadowDraw();
+		shadow->PostDraw(DirectXImportant::cmdList.Get());
 
 		DirectXBase::BeforeDraw(WindowColor);
 
 		/*----------DirectX毎フレーム処理　ここから----------*/
 
 		//luminanceSprite->Draw(DirectXImportant::cmdList.Get());
-		Gamescene->Draw();
+		//Gamescene->Draw();
 		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
+		//copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
+		//shadow->Draw(DirectXImportant::cmdList.Get());
+		Gamescene->Draw();
 
 		/*----------DirextX毎フレーム処理　ここまで----------*/
 
-
+#ifdef _DEBUG
 		Dx12Wrapper::Draw(true);
+#endif
+
 		DirectXBase::AfterDraw();
 		if (Input::isKeyTrigger(DIK_ESCAPE)) {
 			break;
