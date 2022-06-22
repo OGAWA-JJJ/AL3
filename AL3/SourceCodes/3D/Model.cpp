@@ -6,7 +6,7 @@
 const std::string Model::baseDirectory = "Resources/";
 ID3D12Device* Model::device = nullptr;
 UINT Model::descriptorHandleIncrementSize = 0;
-ID3D12DescriptorHeap* Model::descHeap;
+//ID3D12DescriptorHeap* Model::descHeap;
 
 Model::Model()
 {
@@ -410,7 +410,7 @@ void Model::CreateDescriptorHeap()
 	//マテリアルの数
 	size_t count = materials.size();
 
-	//デスクリプタヒープを生成	
+	//デスクリプタヒープを生成(1つにまとめた方が楽！0~100が定数バッファ,101~200がSRV...)←cmdListを呼ぶ回数が減る
 	if (count > 0) {
 		D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
 		descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;

@@ -153,7 +153,7 @@ void GameScene::Init(ID3D12Resource* texbuff)
 
 	cameraY = Camera::GetEye().y;
 
-	objC->AddTexture(texbuff);
+	objC->AddTexture(texbuff, modelC->GetDescHeap());
 }
 
 void GameScene::Update()
@@ -429,6 +429,7 @@ void GameScene::Update()
 				Camera::SetEye(cameraPos);
 				Camera::SetTarget(targetPos);
 				objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
 			}
 		}
 	}
@@ -574,6 +575,10 @@ void GameScene::Update()
 	/*----------Update,Setter----------*/
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
 	objC->SetPosition(objCpos);
+	objCpos.x *= -1;
+	objCpos.y *= -1;
+	objCpos.z *= -1;
+	obj1->SetPosition(objCpos);
 	objD->SetPosition(Camera::GetTarget());
 
 	Object::SetLight(light);
@@ -600,7 +605,7 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	//objA->Draw(pipelineSet);
-	//objC->AddTexture(texbuff);
+	//objC->AddTexture(texbuff, modelC->GetDescHeap());
 	objC->Draw(pipelineSet);
 	objB->Draw(shadow2);
 	//objB->Draw(pipelineSet);

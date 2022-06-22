@@ -139,6 +139,6 @@ public:
 	//モデルを取得
 	inline Model* GetModel() { return model; }
 	//テクスチャ追加（マルチテクスチャ）
-	void AddTexture(ID3D12Resource* texbuff);
+	void AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv);
 };
 

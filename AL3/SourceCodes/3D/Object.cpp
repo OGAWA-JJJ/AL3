@@ -306,7 +306,7 @@ void Object::Update(bool isShadowCamera)
 		//影用
 		XMFLOAT3 eye = { 0,150,0 };
 		XMFLOAT3 target = { 0,0,0 };
-		XMFLOAT3 up = { 0,0,-1 };
+		XMFLOAT3 up = { 0,0,1 };
 
 		XMMATRIX matView = XMMatrixLookAtLH(
 			XMLoadFloat3(&eye),
@@ -372,24 +372,25 @@ void Object::SetCollider(BaseCollider* collider)
 	collider->Update();
 }
 
-void Object::AddTexture(ID3D12Resource* texbuff)
+void Object::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
 {
 	isAddTexture = true;
 	//1枚のみ対応
 	HRESULT result;
-	modelDescHeap = Model::GetDescHeap();
+	modelDescHeap = srv;
+	if (srv == nullptr) { assert(0); }
 
-	D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
-	srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	srvDescHeapDesc.NumDescriptors = 1;
+	//D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
+	//srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	//srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	//srvDescHeapDesc.NumDescriptors = 1;
 
 	//SRV用デスクリプタヒープを作成
-	result = DirectXImportant::dev->CreateDescriptorHeap(
-		&srvDescHeapDesc,
-		IID_PPV_ARGS(&modelDescHeap));
+	//result = DirectXImportant::dev->CreateDescriptorHeap(
+		//&srvDescHeapDesc,
+		//IID_PPV_ARGS(&modelDescHeap));
 
-	assert(SUCCEEDED(result));
+	//assert(SUCCEEDED(result));
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
 	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();

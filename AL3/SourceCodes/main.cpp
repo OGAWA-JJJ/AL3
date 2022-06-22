@@ -182,7 +182,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/*----------DirextX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚Ü‚Å----------*/
 
 #ifdef _DEBUG
-		Dx12Wrapper::Draw(false);
+		Dx12Wrapper::Draw(true);
 #endif
 
 		DirectXBase::AfterDraw();

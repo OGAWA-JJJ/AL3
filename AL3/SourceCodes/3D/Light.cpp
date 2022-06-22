@@ -1,6 +1,7 @@
 #include "Light.h"
 #include "../DirectX/ConstantBuffer.h"
 #include "../../imgui/ImguiControl.h"
+#include "../DirectX/Camera.h"
 
 ID3D12Device* Light::device = nullptr;
 
@@ -94,7 +95,7 @@ void Light::Update()
 	}
 
 	//影用
-	XMFLOAT3 eye = { 0,150,0 };
+	XMFLOAT3 eye = { 0,100,0 };
 	XMFLOAT3 target = { 0,0,0 };
 	XMFLOAT3 up = { 0,0,-1 };
 
@@ -104,12 +105,13 @@ void Light::Update()
 		XMLoadFloat3(&up));
 
 	float fov = ImguiControl::Imgui_fov;
+
 	XMMATRIX lightMatPerspective = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(fov),
 		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
 		0.1f, ImguiControl::Imgui_far_z); //前端、奥端
 
-	const XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
+	XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
 
 	//定数バッファへデータ転送
 	ConstBufferData constMap;
