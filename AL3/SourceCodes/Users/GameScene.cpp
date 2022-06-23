@@ -26,7 +26,10 @@ GameScene::GameScene()
 	const float objA_Scale = 40.0f;
 	const float objB_Scale = 20.0f;
 	const float objC_Scale = 20.0f;
+	//const float fbx1_Scale = 0.05f;
 	const float fbx1_Scale = 10.0f;
+	const float fbx2_Scale = 10.0f;
+	const float fbx3_Scale = 10.0f;
 
 	XMFLOAT3 camera = Camera::GetEye();
 	OgaJHelper::ConvertToRadian(camera.y);
@@ -68,13 +71,30 @@ GameScene::GameScene()
 	FbxObject3D::CreateGraphicsPipeline();
 
 	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
+	//fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
+	//fbxModel3 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
 
 	fbxObj1 = new FbxObject3D();
 	fbxObj1->Init();
 	fbxObj1->SetModel(fbxModel1);
+	fbxObj1->SetPosition(XMFLOAT3(0, 30, 0));
 	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
 	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj1->PlayAnimation();
+
+	//fbxObj2 = new FbxObject3D();
+	//fbxObj2->Init();
+	//fbxObj2->SetModel(fbxModel2);
+	//fbxObj2->SetScale(XMFLOAT3(fbx2_Scale, fbx2_Scale, fbx2_Scale));
+	//fbxObj2->SetRotation(XMFLOAT3(0, 0, 0));
+	//fbxObj2->PlayAnimation();
+
+	//fbxObj3 = new FbxObject3D();
+	//fbxObj3->Init();
+	//fbxObj3->SetModel(fbxModel3);
+	//fbxObj3->SetScale(XMFLOAT3(fbx3_Scale, fbx3_Scale, fbx3_Scale));
+	//fbxObj3->SetRotation(XMFLOAT3(0, 0, 0));
+	//fbxObj3->PlayAnimation();
 
 	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
 	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
@@ -112,6 +132,10 @@ GameScene::~GameScene()
 	delete objD;
 	delete fbxModel1;
 	delete fbxObj1;
+	delete fbxModel2;
+	delete fbxObj2;
+	delete fbxModel3;
+	delete fbxObj3;
 	delete GH1;
 
 	delete obj1;
@@ -591,6 +615,10 @@ void GameScene::Update()
 	objC->Update();
 	objD->Update();
 
+	if (Input::isKeyTrigger(DIK_1)) { fbxObj1->StopAnimation(); }
+	if (Input::isKeyTrigger(DIK_2)) { fbxObj1->ResetAnimation(); }
+	if (Input::isKeyTrigger(DIK_3)) { fbxObj1->ReplayAnimation(); }
+
 	fbxObj1->Update();
 	/*----------Update,Setter----------*/
 
@@ -618,7 +646,7 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 	//obj5->Draw();
 	Object::PostDraw();
 
-	//fbxObj1->Draw(DirectXImportant::cmdList.Get());
+	fbxObj1->Draw(DirectXImportant::cmdList.Get());
 
 	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//GH1->Draw();

@@ -286,7 +286,7 @@ void FbxObject3D::Update()
 	//ボーン配列
 	std::vector<FbxModel::Bone>& bones = model->GetBones();
 
-	//定数バッファへデータ転送
+	//定数バッファへデータ転送(pmx->fbxにしたデータだとここがぶっ飛んだ値になる)
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	for (int i = 0; i < bones.size(); i++) {
@@ -301,7 +301,9 @@ void FbxObject3D::Update()
 		FbxLoader::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
 
 		//合成してスキニング行列に
-		constMapSkin->bones[i] = bones[i].invInitialPose * matCurrentPose;
+		XMMATRIX inverse = XMMatrixInverse(nullptr, model->GetModelTransform());
+		XMMATRIX trans = model->GetModelTransform();
+		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
 	}
 	constBuffSkin->Unmap(0, nullptr);
 }
