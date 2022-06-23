@@ -17,7 +17,7 @@ float ImguiControl::Imgui_lightColor_b = 0.6f;
 float ImguiControl::Imgui_lightDir_x = 0.1f;
 float ImguiControl::Imgui_lightDir_y = 0.0f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
-float ImguiControl::Imgui_ground_y = -10.0f;
+float ImguiControl::Imgui_ground_y = 0.0f;
 
 void ImguiControl::Update()
 {

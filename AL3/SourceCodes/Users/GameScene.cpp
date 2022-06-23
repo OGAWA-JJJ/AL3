@@ -7,6 +7,8 @@
 
 GameScene::GameScene()
 {
+	animationType = STAND;
+
 	ObjectInitData objInitData;
 	objInitData.m_psEntryPoint = "PSmain";
 	objInitData.m_vsEntryPoint = "VSmain";
@@ -22,14 +24,13 @@ GameScene::GameScene()
 	objData.m_vsEntryPoint = "VSShadowMain";
 	shadow2 = Object::CreateGraphicsPipeline(objData);
 
-
 	const float objA_Scale = 40.0f;
-	const float objB_Scale = 20.0f;
+	const float objB_Scale = 100.0f;
 	const float objC_Scale = 20.0f;
-	//const float fbx1_Scale = 0.05f;
-	const float fbx1_Scale = 10.0f;
-	const float fbx2_Scale = 10.0f;
-	const float fbx3_Scale = 10.0f;
+	const float fbx1_Scale = 0.02f;
+	//const float fbx1_Scale = 10.0f;
+	//const float fbx2_Scale = 0.05f;
+	//const float fbx3_Scale = 0.05f;
 
 	XMFLOAT3 camera = Camera::GetEye();
 	OgaJHelper::ConvertToRadian(camera.y);
@@ -70,31 +71,33 @@ GameScene::GameScene()
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
 	FbxObject3D::CreateGraphicsPipeline();
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
-	//fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
-	//fbxModel3 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
+	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
+	fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
+	fbxModel3 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
 
 	fbxObj1 = new FbxObject3D();
 	fbxObj1->Init();
 	fbxObj1->SetModel(fbxModel1);
-	fbxObj1->SetPosition(XMFLOAT3(0, 30, 0));
+	fbxObj1->SetPosition(XMFLOAT3(0, 0, 0));
 	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
 	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj1->PlayAnimation();
 
-	//fbxObj2 = new FbxObject3D();
-	//fbxObj2->Init();
-	//fbxObj2->SetModel(fbxModel2);
-	//fbxObj2->SetScale(XMFLOAT3(fbx2_Scale, fbx2_Scale, fbx2_Scale));
-	//fbxObj2->SetRotation(XMFLOAT3(0, 0, 0));
-	//fbxObj2->PlayAnimation();
+	fbxObj2 = new FbxObject3D();
+	fbxObj2->Init();
+	fbxObj2->SetModel(fbxModel2);
+	fbxObj2->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxObj2->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	fbxObj2->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxObj2->PlayAnimation();
 
-	//fbxObj3 = new FbxObject3D();
-	//fbxObj3->Init();
-	//fbxObj3->SetModel(fbxModel3);
-	//fbxObj3->SetScale(XMFLOAT3(fbx3_Scale, fbx3_Scale, fbx3_Scale));
-	//fbxObj3->SetRotation(XMFLOAT3(0, 0, 0));
-	//fbxObj3->PlayAnimation();
+	fbxObj3 = new FbxObject3D();
+	fbxObj3->Init();
+	fbxObj3->SetModel(fbxModel3);
+	fbxObj3->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxObj3->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	fbxObj3->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxObj3->PlayAnimation();
 
 	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
 	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
@@ -152,28 +155,43 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	objA->SetRotation(XMFLOAT3(0, -100, 0));
 
 	//skydome or sponza
-	objB->SetPosition(XMFLOAT3(0.0f, -10.0f, 0.0f));
+	objB->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	objB->SetRotation(XMFLOAT3(0, 90, 0));
 
 	//monkey
 	objC->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	objC->SetRotation(XMFLOAT3(0, 180, 0));
 
+	fbxObj1->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	fbxObj2->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	fbxObj3->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+
 	//eye
 	objD->SetBillboard(true);
 
 	Camera::SetTarget(XMFLOAT3(
+		fbxObj1->GetPosition().x,
+		fbxObj1->GetPosition().y,
+		fbxObj1->GetPosition().z));
+
+	/*Camera::SetTarget(XMFLOAT3(
 		objC->GetPosition().x,
 		objC->GetPosition().y,
-		objC->GetPosition().z));
+		objC->GetPosition().z));*/
 
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), fbxObj1->GetPosition());
+	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
 	Camera::SetEye(XMFLOAT3(
+		fbxObj1->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
+		50.0f,
+		fbxObj1->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+
+	/*Camera::SetEye(XMFLOAT3(
 		objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
 		50.0f,
-		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));*/
 
 	cameraY = Camera::GetEye().y;
 
@@ -202,12 +220,15 @@ void GameScene::Update()
 		});
 
 	//ŠeŽí•Ï”
-	XMFLOAT3 objCpos = objC->GetPosition();
+	XMFLOAT3 objCpos = fbxObj1->GetPosition();
+	//XMFLOAT3 objCpos = fbxObj1->GetPosition();
 	XMFLOAT3 cameraPos = Camera::GetEye();
 	XMFLOAT3 targetPos = Camera::GetTarget();
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), fbxObj1->GetPosition());
+	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objC->GetPosition());
+	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxObj1->GetPosition());
+	//XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objC->GetPosition());
 	cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
 
 	if (!isTarget)
@@ -224,6 +245,8 @@ void GameScene::Update()
 			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
 				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
+				animationType = RUN;
+
 				XMFLOAT3 vec = { 0,0,0 };
 				vec.x = FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 				vec.z = FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
@@ -253,17 +276,23 @@ void GameScene::Update()
 
 				Camera::SetEye(cameraPos);
 				Camera::SetTarget(targetPos);
-				objC->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 			}
+
+			else { animationType = STAND; }
 
 			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
 				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
 			{
 				//‚±‚±‚ð‚Ç‚¤‚É‚©‚µ‚½‚¢,target‚ÍÅˆ«•âŠ®‚©‚¯‚é
-				XMFLOAT3 objc = objC->GetPosition();
+				XMFLOAT3 objc = fbxObj1->GetPosition();
+				//XMFLOAT3 objc = objC->GetPosition();
 				XMFLOAT3 eye = Camera::GetEye();
 
-				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(objC->GetPosition(), Camera::GetEye());
+				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxObj1->GetPosition(), Camera::GetEye());
+				//XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(objC->GetPosition(), Camera::GetEye());
 				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
 
 				float xz = atan2(playerToCamera.x, playerToCamera.z);
@@ -378,6 +407,8 @@ void GameScene::Update()
 			//ˆÚ“®‚Æ‰ñ“]
 			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
 			{
+				animationType = RUN;
+
 				XMFLOAT2 vec = { 0,0 };
 
 				if (Input::isKey(DIK_W))
@@ -452,9 +483,15 @@ void GameScene::Update()
 
 				Camera::SetEye(cameraPos);
 				Camera::SetTarget(targetPos);
-				objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
+				fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
 			}
+
+			else { animationType = STAND; }
 		}
 	}
 
@@ -473,6 +510,8 @@ void GameScene::Update()
 			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
 				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
+				animationType = RUN;
+
 				XMFLOAT3 vec = { 0,0,0 };
 				vec.x += FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 				vec.z += FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
@@ -486,6 +525,8 @@ void GameScene::Update()
 				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
 				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 			}
+
+			else { animationType = STAND; }
 		}
 
 		else
@@ -500,6 +541,8 @@ void GameScene::Update()
 			//ˆÚ“®
 			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
 			{
+				animationType = RUN;
+
 				if (Input::isKey(DIK_W))
 				{
 					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
@@ -527,6 +570,8 @@ void GameScene::Update()
 					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
 			}
+
+			else { animationType = STAND; }
 		}
 
 		//ƒS[ƒ‹’n“_
@@ -578,27 +623,51 @@ void GameScene::Update()
 		Camera::SetEye(eye);
 
 		//Œü‚«
-		float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
+		float pRadian = atan2(cosf(fbxObj1->GetRotation().z), sinf(fbxObj1->GetRotation().x));
+		//float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
 		OgaJHelper::ConvertToDegree(pRadian);
 		float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
 		OgaJHelper::ConvertToDegree(cRadian);
 		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
 		//float sub = objC->GetRotation().y - rot;
 		float diff = 0;
-		if (objC->GetRotation().y - rot > 0) { diff = 2.0f; }
-		else if (objC->GetRotation().y - rot < 0) { diff = -2.0f; }
-		objC->SetRotation(XMFLOAT3(
+		if (fbxObj1->GetRotation().y - rot > 0) { diff = 2.0f; }
+		//if (objC->GetRotation().y - rot > 0) { diff = 2.0f; }
+		else if (fbxObj1->GetRotation().y - rot < 0) { diff = -2.0f; }
+		//else if (objC->GetRotation().y - rot < 0) { diff = -2.0f; }
+		fbxObj1->SetRotation(XMFLOAT3(
+			fbxObj1->GetRotation().x,
+			rot + diff,
+			fbxObj1->GetRotation().z
+		));
+
+		fbxObj2->SetRotation(XMFLOAT3(
+			fbxObj1->GetRotation().x,
+			rot + diff,
+			fbxObj1->GetRotation().z
+		));
+
+		fbxObj3->SetRotation(XMFLOAT3(
+			fbxObj1->GetRotation().x,
+			rot + diff,
+			fbxObj1->GetRotation().z
+		));
+
+		/*objC->SetRotation(XMFLOAT3(
 			objC->GetRotation().x,
 			rot + diff,
 			objC->GetRotation().z
-		));
+		));*/
 	}
 
 #pragma endregion
 
 	/*----------Update,Setter----------*/
 	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
-	objC->SetPosition(objCpos);
+	fbxObj1->SetPosition(objCpos);
+	fbxObj2->SetPosition(objCpos);
+	fbxObj3->SetPosition(objCpos);
+	//objC->SetPosition(objCpos);
 	objCpos.x *= -1;
 	objCpos.y *= -1;
 	objCpos.z *= -1;
@@ -615,11 +684,13 @@ void GameScene::Update()
 	objC->Update();
 	objD->Update();
 
-	if (Input::isKeyTrigger(DIK_1)) { fbxObj1->StopAnimation(); }
-	if (Input::isKeyTrigger(DIK_2)) { fbxObj1->ResetAnimation(); }
-	if (Input::isKeyTrigger(DIK_3)) { fbxObj1->ReplayAnimation(); }
+	//if (Input::isKeyTrigger(DIK_1)) { fbxObj1->StopAnimation(); }
+	//if (Input::isKeyTrigger(DIK_2)) { fbxObj1->ResetAnimation(); }
+	//if (Input::isKeyTrigger(DIK_3)) { fbxObj1->ReplayAnimation(); }
 
 	fbxObj1->Update();
+	fbxObj2->Update();
+	fbxObj3->Update();
 	/*----------Update,Setter----------*/
 
 	obj1->Update(true);
@@ -634,7 +705,7 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	//objA->Draw(pipelineSet);
 	//objC->AddTexture(texbuff, modelC->GetDescHeap());
-	objC->Draw(pipelineSet);
+	//objC->Draw(pipelineSet);
 	objB->Draw(shadow2);
 	//objB->Draw(pipelineSet);
 	//objD->Draw(pipelineSet);
@@ -646,7 +717,9 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 	//obj5->Draw();
 	Object::PostDraw();
 
-	fbxObj1->Draw(DirectXImportant::cmdList.Get());
+	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get()); }
+	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get()); }
+	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get()); }
 
 	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//GH1->Draw();

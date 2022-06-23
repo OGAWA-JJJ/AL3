@@ -9,6 +9,12 @@
 class GameScene
 {
 private:
+	enum AnimationType
+	{
+		STAND, SLOWRUN, RUN
+	};
+
+private:
 	const float MAX_DISTANCE = 125.0f;
 	const float MAX_MOVE_SPEED = 2.0f;
 	const float MAX_CAMERA_MOVE_SPEED = 2.0f;
@@ -24,6 +30,8 @@ private:
 	float cameraY = 0.0f;
 	bool isTarget = false;
 	bool isEase = false;
+
+	int animationType;
 
 private:
 	Light* light = nullptr;
