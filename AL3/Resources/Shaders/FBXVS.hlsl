@@ -18,9 +18,9 @@ SkinOutput ComputeSkin(VSInput input)
     matrix m; //スキニング行列
     
     //スキニング行列を無視すると普通に描画されます
-    output.pos = input.pos;
-    output.normal = input.normal;
-    return output;
+    //output.pos = input.pos;
+    //output.normal = input.normal;
+    //return output;
     
     //ボーン0
     iBone = input.boneIndices.x;

@@ -301,7 +301,9 @@ void FbxObject3D::Update()
 		FbxLoader::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
 
 		//合成してスキニング行列に
-		constMapSkin->bones[i] = bones[i].invInitialPose * matCurrentPose;
+		XMMATRIX inverse = XMMatrixInverse(nullptr, model->GetModelTransform());
+		XMMATRIX trans = model->GetModelTransform();
+		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
 	}
 	constBuffSkin->Unmap(0, nullptr);
 }

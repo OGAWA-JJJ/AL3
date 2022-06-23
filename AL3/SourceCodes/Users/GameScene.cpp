@@ -26,7 +26,8 @@ GameScene::GameScene()
 	const float objA_Scale = 40.0f;
 	const float objB_Scale = 20.0f;
 	const float objC_Scale = 20.0f;
-	const float fbx1_Scale = 0.05f;
+	//const float fbx1_Scale = 0.05f;
+	const float fbx1_Scale = 10.0f;
 	const float fbx2_Scale = 10.0f;
 	const float fbx3_Scale = 10.0f;
 
@@ -69,7 +70,7 @@ GameScene::GameScene()
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
 	FbxObject3D::CreateGraphicsPipeline();
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
+	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
 	//fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
 	//fbxModel3 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
 
