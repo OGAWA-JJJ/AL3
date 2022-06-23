@@ -13,16 +13,21 @@ SkinOutput ComputeSkin(VSInput input)
     //ゼロクリア
     SkinOutput output = (SkinOutput) 0;
     
-    uint iBone;     //計算するボーン番号
-    float weight;   //ボーンウェイト(重み)
-    matrix m;       //スキニング行列
+    uint iBone; //計算するボーン番号
+    float weight; //ボーンウェイト(重み)
+    matrix m; //スキニング行列
+    
+    //スキニング行列を無視すると普通に描画されます
+    output.pos = input.pos;
+    output.normal = input.normal;
+    return output;
     
     //ボーン0
     iBone = input.boneIndices.x;
     weight = input.boneWeights.x;
     m = matSkinning[iBone];
     output.pos += weight * mul(m, input.pos);
-    output.normal += weight * mul((float3x3)m, input.normal);
+    output.normal += weight * mul((float3x3) m, input.normal);
     
     //ボーン1
     iBone = input.boneIndices.y;

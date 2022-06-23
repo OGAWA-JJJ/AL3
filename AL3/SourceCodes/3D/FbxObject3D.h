@@ -124,5 +124,16 @@ public:
 	const XMFLOAT3& GetScale() { return scale; }
 	const XMFLOAT3& GetRotation() { return rotation; }
 	const XMFLOAT3& GetPosition() { return position; }
+
+	void StopAnimation() { isPlay = false; }
+	void ResetAnimation() { currentTime = startTime; }
+	void ReplayAnimation() { isPlay = true; }
+
+	const FbxTime& GetStartTime() { return startTime; }
+	const FbxTime& GetEndTime() { return endTime; }
+	const FbxTime& GetNowTime() { return currentTime; }
+	void SetStartTime(FbxTime& startTime) { this->startTime = startTime; }
+	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
+	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }
 };
 

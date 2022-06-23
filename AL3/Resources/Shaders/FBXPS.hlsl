@@ -8,6 +8,8 @@ SamplerState smp : register(s0);
 //エントリーポイント
 float4 PSmain(VSOutput input):SV_TARGET
 {
+    return float4(1, 1, 0, 1);
+    
      //テクスチャマッピング
     float4 texcolor = tex.Sample(smp, input.uv);
     

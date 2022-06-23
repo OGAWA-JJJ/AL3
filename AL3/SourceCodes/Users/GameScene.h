@@ -43,6 +43,12 @@ private:
 	FbxModel* fbxModel1 = nullptr;
 	FbxObject3D* fbxObj1 = nullptr;
 
+	FbxModel* fbxModel2 = nullptr;
+	FbxObject3D* fbxObj2 = nullptr;
+
+	FbxModel* fbxModel3 = nullptr;
+	FbxObject3D* fbxObj3 = nullptr;
+
 	Sprite* GH1 = nullptr;
 
 private:

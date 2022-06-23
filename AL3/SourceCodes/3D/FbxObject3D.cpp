@@ -286,7 +286,7 @@ void FbxObject3D::Update()
 	//ボーン配列
 	std::vector<FbxModel::Bone>& bones = model->GetBones();
 
-	//定数バッファへデータ転送
+	//定数バッファへデータ転送(pmx->fbxにしたデータだとここがぶっ飛んだ値になる)
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	for (int i = 0; i < bones.size(); i++) {
