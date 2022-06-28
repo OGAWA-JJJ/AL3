@@ -20,6 +20,12 @@ public:
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
 	static float Imgui_ground_y;
+	static float Imgui_Sword_x;
+	static float Imgui_Sword_y;
+	static float Imgui_Sword_z;
+	static float Imgui_Sword_rotx;
+	static float Imgui_Sword_roty;
+	static float Imgui_Sword_rotz;
 
 public:
 	//InguiControl();

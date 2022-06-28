@@ -59,6 +59,9 @@ private:
 
 	Sprite* GH1 = nullptr;
 
+	Model* sword = nullptr;
+	Object* objSword = nullptr;
+
 private:
 	Object* obj1 = nullptr;
 	Object* obj2 = nullptr;

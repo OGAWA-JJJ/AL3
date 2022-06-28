@@ -105,6 +105,11 @@ protected:
 	//アニメーション再生中
 	bool isPlay = false;
 
+	//ボーンの名前と行列(Update後に更新)
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affineTrans;
+	//Test
+	DirectX::XMMATRIX matrix;
+
 public:
 	//初期化
 	void Init();
@@ -135,5 +140,8 @@ public:
 	void SetStartTime(FbxTime& startTime) { this->startTime = startTime; }
 	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
 	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }
+
+	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>& GetAffineTrans() { return affineTrans; }
+	XMMATRIX GetMatrix() { return matrix; }
 };
 

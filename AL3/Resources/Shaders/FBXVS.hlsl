@@ -17,7 +17,7 @@ SkinOutput ComputeSkin(VSInput input)
     float weight; //ボーンウェイト(重み)
     matrix m; //スキニング行列
     
-    //スキニング行列を無視すると普通に描画されます
+    //スキニング行列を無視すると普通に描画されます←治った
     //output.pos = input.pos;
     //output.normal = input.normal;
     //return output;

@@ -19,6 +19,14 @@ float ImguiControl::Imgui_lightDir_y = 0.0f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 float ImguiControl::Imgui_ground_y = 0.0f;
 
+float ImguiControl::Imgui_Sword_x = 6.504f;
+float ImguiControl::Imgui_Sword_y = 8.943f;
+float ImguiControl::Imgui_Sword_z = 21.138f;
+
+float ImguiControl::Imgui_Sword_rotx = 90.0f;
+float ImguiControl::Imgui_Sword_roty = 0.0f;
+float ImguiControl::Imgui_Sword_rotz = 180.0f;
+
 void ImguiControl::Update()
 {
 	//static float Imgui_eye[3] = { Imgui_eye_x,Imgui_eye_y,Imgui_eye_z };
@@ -42,6 +50,14 @@ void ImguiControl::Update()
 	ImGui::SliderFloat("LIGHT_DIR_Z", &Imgui_lightDir_z, -1.0f, 1.0f);
 
 	ImGui::SliderFloat("GROUND_Y", &Imgui_ground_y, -100.0f, 100.0f);
+
+	ImGui::SliderFloat("Sword_X", &Imgui_Sword_x, -100.0f, 100.0f);
+	ImGui::SliderFloat("Sword_Y", &Imgui_Sword_y, -100.0f, 100.0f);
+	ImGui::SliderFloat("Sword_Z", &Imgui_Sword_z, -100.0f, 100.0f);
+
+	ImGui::SliderFloat("Sword_rotX", &Imgui_Sword_rotx, 0.0f, 360.0f);
+	ImGui::SliderFloat("Sword_rotY", &Imgui_Sword_roty, 0.0f, 360.0f);
+	ImGui::SliderFloat("Sword_rotZ", &Imgui_Sword_rotz, 0.0f, 360.0f);
 
 	//ImGui::SliderInt("WINDOWSIZE_X", &Imgui_windowSize_x, 400, 800);
 	//ImGui::SliderInt("WINDOWSIZE_Y", &Imgui_windowSize_y, 200, 800);

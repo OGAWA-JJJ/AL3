@@ -267,7 +267,7 @@ void Object::Update(bool isShadowCamera)
 	HRESULT result;
 	XMMATRIX matScale, matRot, matTrans;
 
-	// スケール、回転、平行移動行列の計算
+	//スケール、回転、平行移動行列の計算
 	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
 	matRot = XMMatrixIdentity();
 	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));
@@ -275,11 +275,20 @@ void Object::Update(bool isShadowCamera)
 	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));
 	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
 
-	// ワールド行列の合成
-	matWorld = XMMatrixIdentity(); // 変形をリセット
-	matWorld *= matScale; // ワールド行列にスケーリングを反映
-	matWorld *= matRot; // ワールド行列に回転を反映
-	matWorld *= matTrans; // ワールド行列に平行移動を反映
+	//ワールド行列の合成
+	matWorld = XMMatrixIdentity();	//変形をリセット
+	matWorld *= matScale;			//ワールド行列にスケーリングを反映
+	matWorld *= matRot;				//ワールド行列に回転を反映
+	matWorld *= matTrans;			//ワールド行列に平行移動を反映
+	if (isAffine)
+	{
+		//matrix.r[3].m128_f32[0] = 1;
+		//matrix.r[3].m128_f32[1] = 1;
+		//matrix.r[3].m128_f32[2] = 1;
+		//matrix.r[3].m128_f32[3] = 1;
+
+		matWorld *= matrix;
+	}
 
 	if (isBillboard) {
 		const XMMATRIX& matBillboard = Camera::BillboardMatrix();

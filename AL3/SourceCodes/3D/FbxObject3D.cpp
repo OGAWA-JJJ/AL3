@@ -285,11 +285,13 @@ void FbxObject3D::Update()
 
 	//ボーン配列
 	std::vector<FbxModel::Bone>& bones = model->GetBones();
+	std::vector<std::pair<std::string, XMMATRIX>> fbxData;
 
-	//定数バッファへデータ転送(pmx->fbxにしたデータだとここがぶっ飛んだ値になる)
+	//定数バッファへデータ転送(pmx->fbxにしたデータだとここがぶっ飛んだ値になる)←治った
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	for (int i = 0; i < bones.size(); i++) {
+
 		//今の姿勢行列
 		XMMATRIX matCurrentPose;
 
@@ -297,15 +299,30 @@ void FbxObject3D::Update()
 		FbxAMatrix fbxCurrentPose =
 			bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
 
+
 		//XMMATRIXに変換
 		FbxLoader::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
+
+		//FbxData取得用
+		fbxData.push_back(std::make_pair(bones[i].name, matCurrentPose));
 
 		//合成してスキニング行列に
 		XMMATRIX inverse = XMMatrixInverse(nullptr, model->GetModelTransform());
 		XMMATRIX trans = model->GetModelTransform();
 		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
+
+		//Test(16番目に右手の情報が入ってる)
+		if (i == 16)
+		{
+			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
+			FbxLoader::ConvertMatrixFromFbx(&matrix, fbxMatrix);
+			matrix = trans * bones[i].invInitialPose * matrix * inverse;
+		}
 	}
 	constBuffSkin->Unmap(0, nullptr);
+
+	affineTrans.clear();
+	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
 }
 
 void FbxObject3D::Draw(ID3D12GraphicsCommandList* cmdList)

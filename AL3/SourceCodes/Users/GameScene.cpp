@@ -41,16 +41,19 @@ GameScene::GameScene()
 	//modelB = Model::CreateFromObj("sponza");
 	modelC = Model::CreateFromObj("monkey");
 	modelD = Model::CreateFromObj("triangle");
+	sword = Model::CreateFromObj("Sword");
 
 	objA = Object::Create(modelA);
 	objB = Object::Create(modelB);
 	objC = Object::Create(modelC);
 	objD = Object::Create(modelD);
+	objSword = Object::Create(sword);
 
 	objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
 	objB->SetScale(XMFLOAT3(objB_Scale, objB_Scale, objB_Scale));
 	objC->SetScale(XMFLOAT3(objC_Scale, objC_Scale, objC_Scale));
 	objD->SetScale(XMFLOAT3(5, 5, 5));
+	objSword->SetScale(XMFLOAT3(1, 1, 1));
 
 	light = Light::Create();
 	light->SetLightColor(
@@ -161,6 +164,9 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	//monkey
 	objC->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	objC->SetRotation(XMFLOAT3(0, 180, 0));
+
+	objSword->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
+	objSword->SetRotation(XMFLOAT3(90, 0, 180));
 
 	fbxObj1->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	fbxObj2->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -684,13 +690,55 @@ void GameScene::Update()
 	objC->Update();
 	objD->Update();
 
-	//if (Input::isKeyTrigger(DIK_1)) { fbxObj1->StopAnimation(); }
-	//if (Input::isKeyTrigger(DIK_2)) { fbxObj1->ResetAnimation(); }
-	//if (Input::isKeyTrigger(DIK_3)) { fbxObj1->ReplayAnimation(); }
+	objSword->SetPosition(XMFLOAT3(
+		ImguiControl::Imgui_Sword_x,
+		ImguiControl::Imgui_Sword_y,
+		ImguiControl::Imgui_Sword_z));
+
+	objSword->SetRotation(XMFLOAT3(
+		ImguiControl::Imgui_Sword_rotx,
+		ImguiControl::Imgui_Sword_roty,
+		ImguiControl::Imgui_Sword_rotz));
+
+	objSword->Update();
+
+	if (Input::isKeyTrigger(DIK_1))
+	{
+		fbxObj1->StopAnimation();
+		fbxObj2->StopAnimation();
+		fbxObj3->StopAnimation();
+	}
+	if (Input::isKeyTrigger(DIK_2))
+	{
+		fbxObj1->ResetAnimation();
+		fbxObj2->ResetAnimation();
+		fbxObj3->ResetAnimation();
+	}
+	if (Input::isKeyTrigger(DIK_3))
+	{
+		fbxObj1->ReplayAnimation();
+		fbxObj2->ReplayAnimation();
+		fbxObj3->ReplayAnimation();
+	}
 
 	fbxObj1->Update();
 	fbxObj2->Update();
 	fbxObj3->Update();
+
+	//std::vector<pair<std::string, DirectX::XMMATRIX>> affine = fbxObj1->GetAffineTrans();
+	if (animationType == STAND)
+	{
+		objSword->MultiMatrix(fbxObj1->GetMatrix());
+	}
+	else if (animationType == SLOWRUN)
+	{
+		objSword->MultiMatrix(fbxObj2->GetMatrix());
+	}
+	else if (animationType == RUN)
+	{
+		objSword->MultiMatrix(fbxObj3->GetMatrix());
+	}
+
 	/*----------Update,Setter----------*/
 
 	obj1->Update(true);
@@ -707,6 +755,7 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 	//objC->AddTexture(texbuff, modelC->GetDescHeap());
 	//objC->Draw(pipelineSet);
 	objB->Draw(shadow2);
+	objSword->Draw(pipelineSet);
 	//objB->Draw(pipelineSet);
 	//objD->Draw(pipelineSet);
 

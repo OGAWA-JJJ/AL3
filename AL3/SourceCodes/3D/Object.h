@@ -78,6 +78,11 @@ private:
 	//SRV用デスクリプタヒープ
 	ID3D12DescriptorHeap* modelDescHeap;
 
+	//親子構造用
+	DirectX::XMMATRIX matrix;
+	bool isAffine = false;
+
+	//texbuffを追加するか
 	bool isAddTexture = false;
 
 public:
@@ -140,5 +145,11 @@ public:
 	inline Model* GetModel() { return model; }
 	//テクスチャ追加（マルチテクスチャ）
 	void AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv);
+	//アフィン変換行列を乗算する(Update後)
+	void MultiMatrix(DirectX::XMMATRIX matrix)
+	{
+		isAffine = true;
+		this->matrix = matrix;
+	}
 };
 
