@@ -62,12 +62,9 @@ private:
 	Model* sword = nullptr;
 	Object* objSword = nullptr;
 
-private:
-	Object* obj1 = nullptr;
-	Object* obj2 = nullptr;
-	Object* obj3 = nullptr;
-	Object* obj4 = nullptr;
-	Object* obj5 = nullptr;
+	FbxObject3D* fbx1 = nullptr;
+	FbxObject3D* fbx2 = nullptr;
+	FbxObject3D* fbx3 = nullptr;
 
 public:
 	GameScene();

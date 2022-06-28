@@ -104,25 +104,6 @@ GameScene::GameScene()
 
 	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
 	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
-
-	obj1 = Object::Create(modelC);
-	obj2 = Object::Create(modelC);
-	obj3 = Object::Create(modelC);
-	obj4 = Object::Create(modelC);
-	obj5 = Object::Create(modelC);
-
-	obj1->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
-	obj2->SetPosition(XMFLOAT3(-50, 0, 0));
-	obj3->SetPosition(XMFLOAT3(0, 0, 0));
-	obj4->SetPosition(XMFLOAT3(50, 0, 0));
-	obj5->SetPosition(XMFLOAT3(100, 0, 0));
-
-	const float obj_Scale = 20.0f;
-	obj1->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj2->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj3->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj4->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
-	obj5->SetScale(XMFLOAT3(obj_Scale, obj_Scale, obj_Scale));
 }
 
 GameScene::~GameScene()
@@ -143,12 +124,6 @@ GameScene::~GameScene()
 	delete fbxModel3;
 	delete fbxObj3;
 	delete GH1;
-
-	delete obj1;
-	delete obj2;
-	delete obj3;
-	delete obj4;
-	delete obj5;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
@@ -674,10 +649,10 @@ void GameScene::Update()
 	fbxObj2->SetPosition(objCpos);
 	fbxObj3->SetPosition(objCpos);
 	//objC->SetPosition(objCpos);
-	objCpos.x *= -1;
-	objCpos.y *= -1;
-	objCpos.z *= -1;
-	obj1->SetPosition(objCpos);
+	//objCpos.x *= -1;
+	//objCpos.y *= -1;
+	//objCpos.z *= -1;
+	//obj1->SetPosition(objCpos);
 	objD->SetPosition(Camera::GetTarget());
 
 	Object::SetLight(light);
@@ -741,11 +716,7 @@ void GameScene::Update()
 
 	/*----------Update,Setter----------*/
 
-	obj1->Update(true);
-	obj2->Update();
-	obj3->Update();
-	obj4->Update();
-	obj5->Update();
+	//obj1->Update(true);
 }
 
 void GameScene::Draw(ID3D12Resource* texbuff)
@@ -786,8 +757,8 @@ void GameScene::LuminanceDraw()
 
 void GameScene::ShadowDraw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj1->Draw(shadow);
+	//Object::PreDraw(DirectXImportant::cmdList.Get());
+	//obj1->Draw(shadow);
 	//objC->Draw(shadow);
-	Object::PostDraw();
+	//Object::PostDraw();
 }
