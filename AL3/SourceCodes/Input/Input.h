@@ -1,5 +1,6 @@
 #pragma once
 #include "../DirectX/DirectXImportant.h"
+#include <dinput.h>
 
 //DirectInputのバージョン指定
 #define DIRECTINPUT_VERSION 0x0800

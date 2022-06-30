@@ -4,33 +4,26 @@
 #include "../../imgui/ImguiControl.h"
 #include "../Math/OgaJHelper.h"
 #include "../Input/FunaInput.h"
+#include "../Input/Input.h"
 
 GameScene::GameScene()
 {
 	animationType = STAND;
 
-	ObjectInitData objInitData;
-	objInitData.m_psEntryPoint = "PSmain";
-	objInitData.m_vsEntryPoint = "VSmain";
-	pipelineSet = Object::CreateGraphicsPipeline(objInitData);
+	ObjectInitData normalInit;
+	normalInit.m_psEntryPoint = "PSmain";
+	normalInit.m_vsEntryPoint = "VSmain";
+	normal = Object::CreateGraphicsPipeline(normalInit);
 
-	ObjectInitData shadowInitData;
-	shadowInitData.m_psEntryPoint = "PSBlack";
-	shadowInitData.m_vsEntryPoint = "VSShadowMain";
-	shadow = Object::CreateGraphicsPipeline(shadowInitData);
+	ObjectInitData shadowInit;
+	shadowInit.m_psEntryPoint = "PSBlack";
+	shadowInit.m_vsEntryPoint = "VSShadowMain";
+	shadow = Object::CreateGraphicsPipeline(shadowInit);
 
-	ObjectInitData objData;
-	objData.m_psEntryPoint = "PSShadowMain";
-	objData.m_vsEntryPoint = "VSShadowMain";
-	shadow2 = Object::CreateGraphicsPipeline(objData);
-
-	const float objA_Scale = 40.0f;
-	const float objB_Scale = 100.0f;
-	const float objC_Scale = 20.0f;
-	const float fbx1_Scale = 0.02f;
-	//const float fbx1_Scale = 10.0f;
-	//const float fbx2_Scale = 0.05f;
-	//const float fbx3_Scale = 0.05f;
+	ObjectInitData receiveInit;
+	receiveInit.m_psEntryPoint = "PSShadowMain";
+	receiveInit.m_vsEntryPoint = "VSShadowMain";
+	receiveShadow = Object::CreateGraphicsPipeline(receiveInit);
 
 	XMFLOAT3 camera = Camera::GetEye();
 	OgaJHelper::ConvertToRadian(camera.y);
@@ -48,12 +41,21 @@ GameScene::GameScene()
 	objC = Object::Create(modelC);
 	objD = Object::Create(modelD);
 	objSword = Object::Create(sword);
+	objShadowSword = Object::Create(sword);
+
+	const float objA_Scale = 40.0f;
+	const float objB_Scale = 100.0f;
+	const float objC_Scale = 20.0f;
+	const float objD_Scale = 5.0f;
+	const float objSword_Scale = 1.0f;
+	const float fbx_Scale = 0.02f;
 
 	objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
 	objB->SetScale(XMFLOAT3(objB_Scale, objB_Scale, objB_Scale));
 	objC->SetScale(XMFLOAT3(objC_Scale, objC_Scale, objC_Scale));
-	objD->SetScale(XMFLOAT3(5, 5, 5));
-	objSword->SetScale(XMFLOAT3(1, 1, 1));
+	objD->SetScale(XMFLOAT3(objD_Scale, objD_Scale, objD_Scale));
+	objSword->SetScale(XMFLOAT3(objSword_Scale, objSword_Scale, objSword_Scale));
+	objShadowSword->SetScale(XMFLOAT3(objSword_Scale, objSword_Scale, objSword_Scale));
 
 	light = Light::Create();
 	light->SetLightColor(
@@ -72,7 +74,16 @@ GameScene::GameScene()
 	Object::SetLight(light);
 
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
-	FbxObject3D::CreateGraphicsPipeline();
+
+	FbxInitData fbxNormalInit;
+	fbxNormalInit.m_vsEntryPoint = "PSmain";
+	fbxNormalInit.m_vsEntryPoint = "VSmain";
+	fbx_normal = FbxObject3D::CreateGraphicsPipeline(fbxNormalInit);
+
+	FbxInitData fbxShadowInit;
+	fbxShadowInit.m_psEntryPoint = "PSBlack";
+	fbxShadowInit.m_vsEntryPoint = "VSShadowMain";
+	fbx_shadow = FbxObject3D::CreateGraphicsPipeline(fbxShadowInit);
 
 	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
 	fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
@@ -82,7 +93,7 @@ GameScene::GameScene()
 	fbxObj1->Init();
 	fbxObj1->SetModel(fbxModel1);
 	fbxObj1->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj1->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	fbxObj1->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
 	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj1->PlayAnimation();
 
@@ -90,7 +101,7 @@ GameScene::GameScene()
 	fbxObj2->Init();
 	fbxObj2->SetModel(fbxModel2);
 	fbxObj2->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj2->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	fbxObj2->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
 	fbxObj2->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj2->PlayAnimation();
 
@@ -98,12 +109,38 @@ GameScene::GameScene()
 	fbxObj3->Init();
 	fbxObj3->SetModel(fbxModel3);
 	fbxObj3->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj3->SetScale(XMFLOAT3(fbx1_Scale, fbx1_Scale, fbx1_Scale));
+	fbxObj3->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
 	fbxObj3->SetRotation(XMFLOAT3(0, 0, 0));
 	fbxObj3->PlayAnimation();
 
+
+	fbxShadow1 = new FbxObject3D();
+	fbxShadow1->Init();
+	fbxShadow1->SetModel(fbxModel1);
+	fbxShadow1->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxShadow1->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
+	fbxShadow1->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxShadow1->PlayAnimation();
+
+	fbxShadow2 = new FbxObject3D();
+	fbxShadow2->Init();
+	fbxShadow2->SetModel(fbxModel2);
+	fbxShadow2->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxShadow2->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
+	fbxShadow2->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxShadow2->PlayAnimation();
+
+	fbxShadow3 = new FbxObject3D();
+	fbxShadow3->Init();
+	fbxShadow3->SetModel(fbxModel3);
+	fbxShadow3->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxShadow3->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
+	fbxShadow3->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxShadow3->PlayAnimation();
+
 	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, XMFLOAT2(0, 0));
+	GH1 = Sprite::Create(0, XMFLOAT2(0, WINDOW_HEIGHT / 2));
+	GH1->SetSize(XMFLOAT2(32, 32));
 }
 
 GameScene::~GameScene()
@@ -124,6 +161,10 @@ GameScene::~GameScene()
 	delete fbxModel3;
 	delete fbxObj3;
 	delete GH1;
+
+	delete fbxShadow1;
+	delete fbxShadow2;
+	delete fbxShadow3;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
@@ -140,9 +181,11 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	objC->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	objC->SetRotation(XMFLOAT3(0, 180, 0));
 
+	//Sword
 	objSword->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
 	objSword->SetRotation(XMFLOAT3(90, 0, 180));
 
+	//Miku
 	fbxObj1->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	fbxObj2->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	fbxObj3->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -155,13 +198,7 @@ void GameScene::Init(ID3D12Resource* texbuff)
 		fbxObj1->GetPosition().y,
 		fbxObj1->GetPosition().z));
 
-	/*Camera::SetTarget(XMFLOAT3(
-		objC->GetPosition().x,
-		objC->GetPosition().y,
-		objC->GetPosition().z));*/
-
 	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), fbxObj1->GetPosition());
-	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
 	Camera::SetEye(XMFLOAT3(
@@ -169,14 +206,9 @@ void GameScene::Init(ID3D12Resource* texbuff)
 		50.0f,
 		fbxObj1->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
 
-	/*Camera::SetEye(XMFLOAT3(
-		objC->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
-		50.0f,
-		objC->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));*/
-
 	cameraY = Camera::GetEye().y;
 
-	objC->AddTexture(texbuff, modelC->GetDescHeap());
+	objB->AddTexture(texbuff, modelB->GetDescHeap());
 }
 
 void GameScene::Update()
@@ -236,7 +268,7 @@ void GameScene::Update()
 				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				rad += XM_PI / 2;
+				rad += DirectX::XM_PI / 2;
 				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
 				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 
@@ -260,6 +292,10 @@ void GameScene::Update()
 				fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+
+				fbxShadow1->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxShadow2->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxShadow3->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 			}
 
 			else { animationType = STAND; }
@@ -425,7 +461,7 @@ void GameScene::Update()
 				if (Input::isKey(DIK_D))
 				{
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad += XM_PI / 2;
+					cameraRad += DirectX::XM_PI / 2;
 					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 
@@ -442,7 +478,7 @@ void GameScene::Update()
 
 				if (Input::isKey(DIK_A)) {
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad -= XM_PI / 2;
+					cameraRad -= DirectX::XM_PI / 2;
 					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 
@@ -470,6 +506,10 @@ void GameScene::Update()
 				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 				//obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
+
+				fbxShadow1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxShadow2->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxShadow3->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 			}
 
 			else { animationType = STAND; }
@@ -502,7 +542,7 @@ void GameScene::Update()
 				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				rad += XM_PI / 2;
+				rad += DirectX::XM_PI / 2;
 				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
 				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 			}
@@ -539,14 +579,14 @@ void GameScene::Update()
 				if (Input::isKey(DIK_D))
 				{
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad += XM_PI / 2;
+					cameraRad += DirectX::XM_PI / 2;
 					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
 
 				if (Input::isKey(DIK_A)) {
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad -= XM_PI / 2;
+					cameraRad -= DirectX::XM_PI / 2;
 					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
@@ -648,17 +688,15 @@ void GameScene::Update()
 	fbxObj1->SetPosition(objCpos);
 	fbxObj2->SetPosition(objCpos);
 	fbxObj3->SetPosition(objCpos);
-	//objC->SetPosition(objCpos);
-	//objCpos.x *= -1;
-	//objCpos.y *= -1;
-	//objCpos.z *= -1;
-	//obj1->SetPosition(objCpos);
+
+	fbxShadow1->SetPosition(objCpos);
+	fbxShadow2->SetPosition(objCpos);
+	fbxShadow3->SetPosition(objCpos);
+
 	objD->SetPosition(Camera::GetTarget());
 
 	Object::SetLight(light);
 	FbxObject3D::SetLight(light);
-
-	light->Update();
 
 	objA->Update();
 	objB->Update();
@@ -675,71 +713,87 @@ void GameScene::Update()
 		ImguiControl::Imgui_Sword_roty,
 		ImguiControl::Imgui_Sword_rotz));
 
-	objSword->Update();
-
 	if (Input::isKeyTrigger(DIK_1))
 	{
 		fbxObj1->StopAnimation();
 		fbxObj2->StopAnimation();
 		fbxObj3->StopAnimation();
+		fbxShadow1->StopAnimation();
+		fbxShadow2->StopAnimation();
+		fbxShadow3->StopAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_2))
 	{
 		fbxObj1->ResetAnimation();
 		fbxObj2->ResetAnimation();
 		fbxObj3->ResetAnimation();
+		fbxShadow1->ResetAnimation();
+		fbxShadow2->ResetAnimation();
+		fbxShadow3->ResetAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_3))
 	{
 		fbxObj1->ReplayAnimation();
 		fbxObj2->ReplayAnimation();
 		fbxObj3->ReplayAnimation();
+		fbxShadow1->ReplayAnimation();
+		fbxShadow2->ReplayAnimation();
+		fbxShadow3->ReplayAnimation();
 	}
 
-	fbxObj1->Update();
-	fbxObj2->Update();
-	fbxObj3->Update();
+	fbxShadow1->Update(true);
+	fbxShadow2->Update(true);
+	fbxShadow3->Update(true);
 
-	//std::vector<pair<std::string, DirectX::XMMATRIX>> affine = fbxObj1->GetAffineTrans();
 	if (animationType == STAND)
 	{
+		fbxObj1->Update();
 		objSword->MultiMatrix(fbxObj1->GetMatrix());
+		objShadowSword->MultiMatrix(fbxObj1->GetMatrix());
 	}
 	else if (animationType == SLOWRUN)
 	{
+		fbxObj2->Update();
 		objSword->MultiMatrix(fbxObj2->GetMatrix());
+		objShadowSword->MultiMatrix(fbxObj2->GetMatrix());
 	}
 	else if (animationType == RUN)
 	{
+		fbxObj3->Update();
 		objSword->MultiMatrix(fbxObj3->GetMatrix());
+		objShadowSword->MultiMatrix(fbxObj3->GetMatrix());
 	}
 
-	/*----------Update,Setter----------*/
+	objSword->Update();
+	objShadowSword->SetRotation(objSword->GetRotation());
+	objShadowSword->Update(true);
 
-	//obj1->Update(true);
+	XMFLOAT3 shadowCameraPos = light->GetShadowLigitEye();
+	light->SetShadowLigitEye(XMFLOAT3(
+		fbxObj1->GetPosition().x,
+		shadowCameraPos.y,
+		fbxObj1->GetPosition().z));
+	light->SetShadowLigitTarget(fbxObj1->GetPosition());
+	light->Update();
+
+	//if (Input::isKeyTrigger(DIK_R)) t = 0.0f;
+	//x = (WINDOW_WIDTH - 32 - 0) * OgaJEase::easeInCubic(t) + 0;
+	//if (t < 0.99f) t += 0.01f;
+	//GH1->SetPosition(XMFLOAT2(x, WINDOW_HEIGHT / 2));
+
+	/*----------Update,Setter----------*/
 }
 
 void GameScene::Draw(ID3D12Resource* texbuff)
 {
+	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//objA->Draw(pipelineSet);
-	//objC->AddTexture(texbuff, modelC->GetDescHeap());
-	//objC->Draw(pipelineSet);
-	objB->Draw(shadow2);
-	objSword->Draw(pipelineSet);
-	//objB->Draw(pipelineSet);
-	//objD->Draw(pipelineSet);
-
-	//obj1->Draw();
-	//obj2->Draw();
-	//obj3->Draw();
-	//obj4->Draw();
-	//obj5->Draw();
+	objB->Draw(receiveShadow);
+	objSword->Draw(normal);
 	Object::PostDraw();
-
-	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get()); }
-	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get()); }
-	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get()); }
 
 	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//GH1->Draw();
@@ -748,17 +802,18 @@ void GameScene::Draw(ID3D12Resource* texbuff)
 
 void GameScene::LuminanceDraw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objC->Draw(pipelineSet);
-	//obj2->Draw();
-	//obj4->Draw();
-	Object::PostDraw();
+	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
 }
 
 void GameScene::ShadowDraw()
 {
-	//Object::PreDraw(DirectXImportant::cmdList.Get());
-	//obj1->Draw(shadow);
-	//objC->Draw(shadow);
-	//Object::PostDraw();
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	objShadowSword->Draw(shadow);
+	Object::PostDraw();
+
+	if (animationType == STAND) { fbxShadow1->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
+	else if (animationType == SLOWRUN) { fbxShadow2->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
+	else if (animationType == RUN) { fbxShadow3->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
 }

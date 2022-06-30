@@ -134,11 +134,17 @@ void Mesh::CalculateSmoothedVertexNormals()
 		//各面用の共通コレクション
 		std::vector<unsigned short>& v = itr->second;
 		//全頂点の法線を平均する
-		XMVECTOR normal = {};
+		DirectX::XMVECTOR normal = {};
 		for (unsigned short index : v) {
-			normal += XMVectorSet(vertices[index].normal.x, vertices[index].normal.y, vertices[index].normal.z, 0);
+			DirectX::XMVECTOR xmvector = DirectX::XMVectorSet(vertices[index].normal.x, vertices[index].normal.y, vertices[index].normal.z, 0);
+			//normal += DirectX::XMVectorSet(vertices[index].normal.x, vertices[index].normal.y, vertices[index].normal.z, 0);
+			normal = DirectX::XMVectorAdd(normal, xmvector);
 		}
-		normal = XMVector3Normalize(normal / (float)v.size());
+		normal.m128_f32[0] = normal.m128_f32[0] / (float)v.size();
+		normal.m128_f32[1] = normal.m128_f32[1] / (float)v.size();
+		normal.m128_f32[2] = normal.m128_f32[2] / (float)v.size();
+		normal.m128_f32[3] = normal.m128_f32[3] / (float)v.size();
+		normal = DirectX::XMVector3Normalize(normal);
 		//共通法線を使用する全ての頂点データに書き込む
 		for (unsigned short index : v) {
 			vertices[index].normal = { normal.m128_f32[0],normal.m128_f32[1],normal.m128_f32[2] };

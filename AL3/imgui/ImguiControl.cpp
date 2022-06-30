@@ -6,40 +6,26 @@ float ImguiControl::Imgui_eye_y = 50.0f;
 float ImguiControl::Imgui_eye_z = -100.0f;
 float ImguiControl::Imgui_fov = 60.0f;
 float ImguiControl::Imgui_far_z = 4000.0f;
-//float ImguiControl::Imgui_backColor_r = 0.2f;
-//float ImguiControl::Imgui_backColor_g = 0.2f;
-//float ImguiControl::Imgui_backColor_b = 0.2f;
-//int ImguiControl::Imgui_windowSize_x = 400;
-//int ImguiControl::Imgui_windowSize_y = 200;
 float ImguiControl::Imgui_lightColor_r = 0.6f;
 float ImguiControl::Imgui_lightColor_g = 0.6f;
 float ImguiControl::Imgui_lightColor_b = 0.6f;
-float ImguiControl::Imgui_lightDir_x = 0.1f;
-float ImguiControl::Imgui_lightDir_y = 0.0f;
+float ImguiControl::Imgui_lightDir_x = 0.0f;
+float ImguiControl::Imgui_lightDir_y = -1.0f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 float ImguiControl::Imgui_ground_y = 0.0f;
 
-float ImguiControl::Imgui_Sword_x = 6.504f;
-float ImguiControl::Imgui_Sword_y = 8.943f;
-float ImguiControl::Imgui_Sword_z = 21.138f;
+float ImguiControl::Imgui_Sword_x = 0.0f;
+float ImguiControl::Imgui_Sword_y = 0.0f;
+float ImguiControl::Imgui_Sword_z = 0.0f;
 
-float ImguiControl::Imgui_Sword_rotx = 90.0f;
-float ImguiControl::Imgui_Sword_roty = 0.0f;
-float ImguiControl::Imgui_Sword_rotz = 180.0f;
+float ImguiControl::Imgui_Sword_rotx = 310.0f;
+float ImguiControl::Imgui_Sword_roty = 300.0f;
+float ImguiControl::Imgui_Sword_rotz = 310.0f;
 
 void ImguiControl::Update()
 {
-	//static float Imgui_eye[3] = { Imgui_eye_x,Imgui_eye_y,Imgui_eye_z };
-	//ImGui::SliderFloat("EYE_X", &Imgui_eye_x, -200.0f, 200.0f);
-	//ImGui::SliderFloat("EYE_Y", &Imgui_eye_y, -200.0f, 200.0f);
-	//ImGui::SliderFloat("EYE_Z", &Imgui_eye_z, -200.0f, 200.0f);
-
 	ImGui::SliderFloat("FOV", &Imgui_fov, 30.0f, 150.0f);
 	ImGui::SliderFloat("FAR_Z", &Imgui_far_z, 50.0f, 5000.0f);
-
-	//ImGui::SliderFloat("BACK_COLOR_R", &Imgui_backColor_r, 0.0f, 1.0f);
-	//ImGui::SliderFloat("BACK_COLOR_G", &Imgui_backColor_g, 0.0f, 1.0f);
-	//ImGui::SliderFloat("BACK_COLOR_B", &Imgui_backColor_b, 0.0f, 1.0f);
 
 	ImGui::SliderFloat("LIGHT_COLOR_R", &Imgui_lightColor_r, 0.0f, 1.0f);
 	ImGui::SliderFloat("LIGHT_COLOR_G", &Imgui_lightColor_g, 0.0f, 1.0f);
@@ -58,9 +44,4 @@ void ImguiControl::Update()
 	ImGui::SliderFloat("Sword_rotX", &Imgui_Sword_rotx, 0.0f, 360.0f);
 	ImGui::SliderFloat("Sword_rotY", &Imgui_Sword_roty, 0.0f, 360.0f);
 	ImGui::SliderFloat("Sword_rotZ", &Imgui_Sword_rotz, 0.0f, 360.0f);
-
-	//ImGui::SliderInt("WINDOWSIZE_X", &Imgui_windowSize_x, 400, 800);
-	//ImGui::SliderInt("WINDOWSIZE_Y", &Imgui_windowSize_y, 200, 800);
-	//static float BackColor[3] = { Imgui_backColor_r ,Imgui_backColor_g,Imgui_backColor_b };
-	//ImGui::ColorPicker3("BACK_COLOR", BackColor);
 }

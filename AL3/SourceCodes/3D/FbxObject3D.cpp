@@ -1,34 +1,37 @@
 #include "FbxObject3D.h"
 #include "../3D/FbxLoader.h"
 #include "../DirectX/Camera.h"
+#include "../../imgui/ImguiControl.h"
 #include <d3dcompiler.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-using namespace Microsoft::WRL;
-using namespace DirectX;
+//using namespace Microsoft::WRL;
+//using namespace DirectX;
 
 ID3D12Device* FbxObject3D::device = nullptr;
-ComPtr<ID3D12RootSignature> FbxObject3D::rootsignature;
-ComPtr<ID3D12PipelineState> FbxObject3D::pipelinestate;
+//ComPtr<ID3D12RootSignature> FbxObject3D::rootsignature;
+//ComPtr<ID3D12PipelineState> FbxObject3D::pipelinestate;
+FbxPipelineSet FbxObject3D::pipelineSet;
 Light* FbxObject3D::light = nullptr;
 
-void FbxObject3D::CreateGraphicsPipeline()
+FbxPipelineSet FbxObject3D::CreateGraphicsPipeline(const FbxInitData& fbxInitdata)
 {
 	HRESULT result = S_FALSE;
-	ComPtr<ID3DBlob> vsBlob; // 頂点シェーダオブジェクト
-	ComPtr<ID3DBlob> psBlob;    // ピクセルシェーダオブジェクト
-	ComPtr<ID3DBlob> errorBlob; // エラーオブジェクト
+	ComPtr<ID3DBlob> vsBlob;	//頂点シェーダオブジェクト
+	ComPtr<ID3DBlob> psBlob;	//ピクセルシェーダオブジェクト
+	ComPtr<ID3DBlob> errorBlob;	//エラーオブジェクト
 
 	assert(device);
 
-	// 頂点シェーダの読み込みとコンパイル
+	//頂点シェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/FBXVS.hlsl",    // シェーダファイル名
+		L"Resources/Shaders/FBXVS.hlsl",					//シェーダファイル名
 		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE, // インクルード可能にする
-		"VSmain", "vs_5_0",    // エントリーポイント名、シェーダーモデル指定
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // デバッグ用設定
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
+		fbxInitdata.m_vsEntryPoint,							//エントリーポイント名、
+		"vs_5_0",											//シェーダーモデル指定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&vsBlob, &errorBlob);
 	if (FAILED(result)) {
@@ -45,13 +48,14 @@ void FbxObject3D::CreateGraphicsPipeline()
 		exit(1);
 	}
 
-	// ピクセルシェーダの読み込みとコンパイル
+	//ピクセルシェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/FBXPS.hlsl",    // シェーダファイル名
+		L"Resources/Shaders/FBXPS.hlsl",					//シェーダファイル名
 		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE, // インクルード可能にする
-		"PSmain", "ps_5_0",    // エントリーポイント名、シェーダーモデル指定
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // デバッグ用設定
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
+		fbxInitdata.m_psEntryPoint,							//エントリーポイント名
+		"ps_5_0",											//シェーダーモデル指定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&psBlob, &errorBlob);
 	if (FAILED(result)) {
@@ -68,52 +72,52 @@ void FbxObject3D::CreateGraphicsPipeline()
 		exit(1);
 	}
 
-	// 頂点レイアウト
+	//頂点レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-		{ // xy座標(1行で書いたほうが見やすい)
+		{ //xy座標(1行で書いたほうが見やすい)
 			"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
-		{ // 法線ベクトル(1行で書いたほうが見やすい)
+		{ //法線ベクトル(1行で書いたほうが見やすい)
 			"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
-		{ // uv座標(1行で書いたほうが見やすい)
+		{ //uv座標(1行で書いたほうが見やすい)
 			"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
-		{ // 影響を受けるボーン番号(4つ)
+		{ //影響を受けるボーン番号(4つ)
 			"BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
-		{ // ボーンのスキンウェイト(4つ)
+		{ //ボーンのスキンウェイト(4つ)
 			"BONEWEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
 	};
 
-	// グラフィックスパイプラインの流れを設定
+	//グラフィックスパイプラインの流れを設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpipeline{};
 	gpipeline.VS = CD3DX12_SHADER_BYTECODE(vsBlob.Get());
 	gpipeline.PS = CD3DX12_SHADER_BYTECODE(psBlob.Get());
 
-	// サンプルマスク
-	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // 標準設定
-	// ラスタライザステート
+	//サンプルマスク
+	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;	//標準設定
+	//ラスタライザステート
 	gpipeline.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	//gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	//gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	// デプスステンシルステート
+	//デプスステンシルステート
 	gpipeline.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 
-	// レンダーターゲットのブレンド設定
+	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC blenddesc{};
-	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;    // RBGA全てのチャンネルを描画
+	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;	//RBGA全てのチャンネルを描画
 	blenddesc.BlendEnable = true;
 	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
 	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
@@ -123,61 +127,64 @@ void FbxObject3D::CreateGraphicsPipeline()
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 
-	// ブレンドステートの設定
+	//ブレンドステートの設定
 	gpipeline.BlendState.RenderTarget[0] = blenddesc;
 
-	// 深度バッファのフォーマット
+	//深度バッファのフォーマット
 	gpipeline.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
-	// 頂点レイアウトの設定
+	//頂点レイアウトの設定
 	gpipeline.InputLayout.pInputElementDescs = inputLayout;
 	gpipeline.InputLayout.NumElements = _countof(inputLayout);
 
-	// 図形の形状設定（三角形）
+	//図形の形状設定（三角形）
 	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-	gpipeline.NumRenderTargets = 1;    // 描画対象は1つ
-	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM; // 0～255指定のRGBA
-	gpipeline.SampleDesc.Count = 1; // 1ピクセルにつき1回サンプリング
+	gpipeline.NumRenderTargets = 1;							//描画対象は1つ
+	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;	//0～255指定のRGBA
+	gpipeline.SampleDesc.Count = 1;							//1ピクセルにつき1回サンプリング
 
-	// デスクリプタレンジ
+	//デスクリプタレンジ
 	CD3DX12_DESCRIPTOR_RANGE descRangeSRV;
-	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0 レジスタ
+	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);	//t0 レジスタ
 
-	// ルートパラメータ
+	//ルートパラメータ
 	//CD3DX12_ROOT_PARAMETER rootparams[2];
 	CD3DX12_ROOT_PARAMETER rootparams[5];
 
-	// CBV（座標変換行列用）
+	//CBV（座標変換行列用）
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
-	// SRV（テクスチャ）
+	//SRV（テクスチャ）
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
-	// CBV（スキニング用）
+	//CBV（スキニング用）
 	rootparams[2].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
-	// ライト情報転送用
+	//ライト情報転送用
 	rootparams[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
-	// 反射光情報転送用
+	//反射光情報転送用
 	rootparams[4].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 
-	// スタティックサンプラー
+	//スタティックサンプラー
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 
-	// ルートシグネチャの設定
+	//ルートシグネチャの設定
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.Init_1_0(_countof(rootparams), rootparams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> rootSigBlob;
-	// バージョン自動判定のシリアライズ
+	//バージョン自動判定のシリアライズ
 	result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
-	// ルートシグネチャの生成
-	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(rootsignature.ReleaseAndGetAddressOf()));
+	//ルートシグネチャの生成
+	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
+		IID_PPV_ARGS(&pipelineSet.rootsignature));
 	if (FAILED(result)) { assert(0); }
 
-	gpipeline.pRootSignature = rootsignature.Get();
+	gpipeline.pRootSignature = pipelineSet.rootsignature;
 
-	// グラフィックスパイプラインの生成
-	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(pipelinestate.ReleaseAndGetAddressOf()));
+	//グラフィックスパイプラインの生成
+	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineSet.pipelinestate));
 	if (FAILED(result)) { assert(0); }
+
+	return pipelineSet;
 }
 
 void FbxObject3D::Init()
@@ -221,12 +228,12 @@ void FbxObject3D::Init()
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	for (int i = 0; i < MAX_BONES; i++) {
-		constMapSkin->bones[i] = XMMatrixIdentity();
+		constMapSkin->bones[i] = DirectX::XMMatrixIdentity();
 	}
 	constBuffSkin->Unmap(0, nullptr);
 }
 
-void FbxObject3D::Update()
+void FbxObject3D::Update(bool isShadowCamera)
 {
 	XMMATRIX matScale, matRot, matTrans;
 
@@ -240,15 +247,15 @@ void FbxObject3D::Update()
 	}
 
 	// スケール、回転、平行移動行列の計算
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot = XMMatrixIdentity();
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	matRot = DirectX::XMMatrixIdentity();
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	// ワールド行列の合成
-	matWorld = XMMatrixIdentity(); // 変形をリセット
+	matWorld = DirectX::XMMatrixIdentity(); // 変形をリセット
 	matWorld *= matScale; // ワールド行列にスケーリングを反映
 	matWorld *= matRot; // ワールド行列に回転を反映
 	matWorld *= matTrans; // ワールド行列に平行移動を反映
@@ -256,6 +263,24 @@ void FbxObject3D::Update()
 	const XMMATRIX& matViewProjection =
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 	const XMFLOAT3& cameraPos = Camera::GetEye();
+
+	XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
+	if (isShadowCamera)
+	{
+		//影用
+		XMMATRIX matView = DirectX::XMMatrixLookAtLH(
+			XMLoadFloat3(&light->GetShadowLigitEye()),
+			XMLoadFloat3(&light->GetShadowLigitTarget()),
+			XMLoadFloat3(&light->GetShadowLigitUp()));
+
+		float fov = ImguiControl::Imgui_fov;
+		XMMATRIX lightMatPerspective = DirectX::XMMatrixPerspectiveFovLH(
+			DirectX::XMConvertToRadians(fov),
+			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
+			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
+
+		lightMatViewProjection = matView * lightMatPerspective;
+	}
 
 	//モデルのメッシュトランスフォーム
 	const XMMATRIX& modelTransform = model->GetModelTransform();
@@ -266,7 +291,8 @@ void FbxObject3D::Update()
 	ConstBufferDataTransform* constMap = nullptr;
 	result = constBuffTransform->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(result)) {
-		constMap->viewproj = matViewProjection;
+		if (isShadowCamera) { constMap->viewproj = lightMatViewProjection; }
+		else { constMap->viewproj = matViewProjection; }
 		constMap->world = modelTransform * matWorld;
 		constMap->cameraPos = cameraPos;
 		constBuffTransform->Unmap(0, nullptr);
@@ -311,12 +337,12 @@ void FbxObject3D::Update()
 		XMMATRIX trans = model->GetModelTransform();
 		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
 
-		//Test(16番目に右手の情報が入ってる)
-		if (i == 16)
+		//Test
+		if (bones[i].name.find("RightHand", 0) != std::string::npos)
 		{
 			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
 			FbxLoader::ConvertMatrixFromFbx(&matrix, fbxMatrix);
-			matrix = trans * bones[i].invInitialPose * matrix * inverse;
+			matrix = trans * matrix * matWorld;
 		}
 	}
 	constBuffSkin->Unmap(0, nullptr);
@@ -325,15 +351,15 @@ void FbxObject3D::Update()
 	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
 }
 
-void FbxObject3D::Draw(ID3D12GraphicsCommandList* cmdList)
+void FbxObject3D::Draw(ID3D12GraphicsCommandList* cmdList, const FbxPipelineSet& pipelineSet)
 {
 	//モデルの割り当てがなければ描画しない
 	if (model == nullptr) { return; }
 
 	//パイプラインステートの設定
-	cmdList->SetPipelineState(pipelinestate.Get());
+	cmdList->SetPipelineState(pipelineSet.pipelinestate);
 	//ルートシグネチャの設定
-	cmdList->SetGraphicsRootSignature(rootsignature.Get());
+	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature);
 	//プリミティブ形状を設定
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//定数バッファビューをセット
@@ -383,4 +409,58 @@ void FbxObject3D::PlayAnimation()
 
 	//再生中にする
 	isPlay = true;
+}
+
+void FbxObject3D::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
+{
+	//1枚のみ対応
+	HRESULT result;
+	fbxDescHeap = srv;
+	if (srv == nullptr) { assert(0); }
+
+	//D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
+	//srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	//srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	//srvDescHeapDesc.NumDescriptors = 1;
+
+	//SRV用デスクリプタヒープを作成
+	//result = DirectXImportant::dev->CreateDescriptorHeap(
+		//&srvDescHeapDesc,
+		//IID_PPV_ARGS(&modelDescHeap));
+
+	//assert(SUCCEEDED(result));
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
+	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
+
+	srvDesc.Format = resDesc.Format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = 1;
+
+	/*device->CreateShaderResourceView(
+		texbuff,
+		&srvDesc,
+		modelDescHeap->GetCPUDescriptorHandleForHeapStart());*/
+
+	device->CreateShaderResourceView(
+		texbuff,
+		&srvDesc,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			fbxDescHeap->GetCPUDescriptorHandleForHeapStart(),
+			0,
+			device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+		));
+}
+
+void FbxObject3D::ShadowDraw(ID3D12GraphicsCommandList* cmdList, ID3D12DescriptorHeap* srv)
+{
+	UINT size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	cmdList->SetGraphicsRootDescriptorTable(
+		4,
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			srv->GetGPUDescriptorHandleForHeapStart(),
+			0,
+			size));
 }

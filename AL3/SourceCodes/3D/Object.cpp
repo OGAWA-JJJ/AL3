@@ -13,7 +13,7 @@
 
 ID3D12Device* Object::device = nullptr;
 ID3D12GraphicsCommandList* Object::cmdList = nullptr;
-PipelineSet Object::pipelineSet;
+ObjPipelineSet Object::pipelineSet;
 Light* Object::light = nullptr;
 
 void Object::StaticInit(ID3D12Device* device)
@@ -33,21 +33,21 @@ void Object::StaticInit(ID3D12Device* device)
 	Model::StaticInit(device);
 }
 
-PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
+ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 {
 	HRESULT result = S_FALSE;
-	ComPtr<ID3DBlob> vsBlob; //頂点シェーダオブジェクト
-	ComPtr<ID3DBlob> psBlob;    //ピクセルシェーダオブジェクト
-	ComPtr<ID3DBlob> errorBlob; //エラーオブジェクト
+	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob;	//頂点シェーダオブジェクト
+	Microsoft::WRL::ComPtr<ID3DBlob> psBlob;	//ピクセルシェーダオブジェクト
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;	//エラーオブジェクト
 
 	//頂点シェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/ObjVS.hlsl",    //シェーダファイル名
+		L"Resources/Shaders/ObjVS.hlsl",					//シェーダファイル名
 		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE, //インクルード可能にする
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
 		objectInitData.m_vsEntryPoint,
 		"vs_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, //デバッグ用設定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&vsBlob, &errorBlob);
 	if (FAILED(result)) {
@@ -66,12 +66,12 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 
 	//ピクセルシェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"Resources/Shaders/ObjPS.hlsl",    //シェーダファイル名
+		L"Resources/Shaders/ObjPS.hlsl",					//シェーダファイル名
 		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE, //インクルード可能にする
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
 		objectInitData.m_psEntryPoint,
 		"ps_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, //デバッグ用設定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
 		&psBlob, &errorBlob);
 	if (FAILED(result)) {
@@ -113,7 +113,7 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 	gpipeline.PS = CD3DX12_SHADER_BYTECODE(psBlob.Get());
 
 	//サンプルマスク
-	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // 標準設定
+	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;	//標準設定
 	//ラスタライザステート
 	gpipeline.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
@@ -124,7 +124,7 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC blenddesc{};
-	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;    // RBGA全てのチャンネルを描画
+	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;	//RBGA全てのチャンネルを描画
 	blenddesc.BlendEnable = true;
 	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
 	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
@@ -147,9 +147,9 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 	//図形の形状設定（三角形）
 	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-	gpipeline.NumRenderTargets = 1;    //描画対象は1つ
-	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM; //0～255指定のRGBA
-	gpipeline.SampleDesc.Count = 1; //1ピクセルにつき1回サンプリング
+	gpipeline.NumRenderTargets = 1;							//描画対象は1つ
+	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;	//0～255指定のRGBA
+	gpipeline.SampleDesc.Count = 1;							//1ピクセルにつき1回サンプリング
 
 	//デスクリプタレンジ
 	CD3DX12_DESCRIPTOR_RANGE descRangeSRV0;
@@ -159,7 +159,7 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 	descRangeSRV1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); //t1 レジスタ
 
 	//ルートパラメータ
-	CD3DX12_ROOT_PARAMETER rootparams[5];
+	CD3DX12_ROOT_PARAMETER rootparams[5] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[2].InitAsDescriptorTable(1, &descRangeSRV0, D3D12_SHADER_VISIBILITY_ALL);
@@ -173,7 +173,7 @@ PipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.Init_1_0(_countof(rootparams), rootparams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	ComPtr<ID3DBlob> rootSigBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> rootSigBlob;
 	//バージョン自動判定のシリアライズ
 	result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
 	//ルートシグネチャの生成
@@ -265,35 +265,30 @@ bool Object::Init()
 void Object::Update(bool isShadowCamera)
 {
 	HRESULT result;
-	XMMATRIX matScale, matRot, matTrans;
+	DirectX::XMMATRIX matScale, matRot, matTrans;
 
 	//スケール、回転、平行移動行列の計算
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot = XMMatrixIdentity();
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	matRot = DirectX::XMMatrixIdentity();
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	//ワールド行列の合成
-	matWorld = XMMatrixIdentity();	//変形をリセット
+	matWorld = DirectX::XMMatrixIdentity();	//変形をリセット
 	matWorld *= matScale;			//ワールド行列にスケーリングを反映
 	matWorld *= matRot;				//ワールド行列に回転を反映
 	matWorld *= matTrans;			//ワールド行列に平行移動を反映
 	if (isAffine)
 	{
-		//matrix.r[3].m128_f32[0] = 1;
-		//matrix.r[3].m128_f32[1] = 1;
-		//matrix.r[3].m128_f32[2] = 1;
-		//matrix.r[3].m128_f32[3] = 1;
-
 		matWorld *= matrix;
 	}
 
 	if (isBillboard) {
-		const XMMATRIX& matBillboard = Camera::BillboardMatrix();
+		const DirectX::XMMATRIX& matBillboard = Camera::BillboardMatrix();
 
-		matWorld = XMMatrixIdentity();
+		matWorld = DirectX::XMMatrixIdentity();
 		matWorld *= matScale; // ワールド行列にスケーリングを反映
 		matWorld *= matRot; // ワールド行列に回転を反映
 		matWorld *= matBillboard;
@@ -306,25 +301,21 @@ void Object::Update(bool isShadowCamera)
 		matWorld *= parent->matWorld;
 	}
 
-	const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	const XMFLOAT3& cameraPos = Camera::GetEye();
+	const DirectX::XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
+	const DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
 
-	XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
+	DirectX::XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//影用
-		XMFLOAT3 eye = { 0,150,0 };
-		XMFLOAT3 target = { 0,0,0 };
-		XMFLOAT3 up = { 0,0,1 };
-
-		XMMATRIX matView = XMMatrixLookAtLH(
-			XMLoadFloat3(&eye),
-			XMLoadFloat3(&target),
-			XMLoadFloat3(&up));
+		DirectX::XMMATRIX matView = DirectX::XMMatrixLookAtLH(
+			XMLoadFloat3(&light->GetShadowLigitEye()),
+			XMLoadFloat3(&light->GetShadowLigitTarget()),
+			XMLoadFloat3(&light->GetShadowLigitUp()));
 
 		float fov = ImguiControl::Imgui_fov;
-		XMMATRIX lightMatPerspective = XMMatrixPerspectiveFovLH(
-			XMConvertToRadians(fov),
+		DirectX::XMMATRIX lightMatPerspective = DirectX::XMMatrixPerspectiveFovLH(
+			DirectX::XMConvertToRadians(fov),
 			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
 			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
 
@@ -346,7 +337,7 @@ void Object::Update(bool isShadowCamera)
 	}
 }
 
-void Object::Draw(PipelineSet pipelineSet)
+void Object::Draw(const ObjPipelineSet& pipelineSet)
 {
 	//nullptrチェック
 	assert(device);

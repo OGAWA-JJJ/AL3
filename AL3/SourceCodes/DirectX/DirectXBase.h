@@ -1,5 +1,6 @@
 #pragma once
 #include "../DirectX/DirectXImportant.h"
+#include <vector>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -8,13 +9,13 @@ class DirectXBase
 {
 private:
 	static HRESULT result;
-	static ComPtr<IDXGIAdapter> tmpAdapter;
+	static Microsoft::WRL::ComPtr<IDXGIAdapter> tmpAdapter;
 	static D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	static ComPtr<ID3D12Resource> depthBuffer;
-	static ComPtr<ID3D12DescriptorHeap> dsvHeap;
-	static ComPtr<ID3D12Fence> fence;
+	static Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer;
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
+	static Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	static UINT64 fenceVal;
-	static std::vector<ComPtr<ID3D12Resource>>backBuffers;
+	static std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>backBuffers;
 	static D3D12_CPU_DESCRIPTOR_HANDLE rtvH;
 	static D3D12_CPU_DESCRIPTOR_HANDLE dsvH;
 	static UINT bbIndex;

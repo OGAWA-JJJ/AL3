@@ -34,24 +34,24 @@ void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIP
 	HRESULT result = S_FALSE;
 
 	//WICテクスチャのロード
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
 	//ファイルパスを結合
-	string filepath = directoryPath + textureFilename;
+	std::string filepath = directoryPath + textureFilename;
 	wchar_t wfilepath[128];
 
 	//ユニコード文字列に変換
 	MultiByteToWideChar(CP_ACP, 0, filepath.c_str(), -1, wfilepath, _countof(wfilepath));
 
 	result = LoadFromWICFile(
-		wfilepath, WIC_FLAGS_NONE,
+		wfilepath, DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 	if (FAILED(result)) {
 		assert(0);
 	}
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	//リソース設定
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(

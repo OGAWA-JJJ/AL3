@@ -1,8 +1,16 @@
 #include "Shape.h"
+#include <DirectXTex.h>
+#include <d3dcompiler.h>
+#include <string>
+#include <d3dx12.h>
+#include "../Input/Input.h"
+//#include <dinput.h>
 
-const XMFLOAT3 operator+(const XMFLOAT3& lhs, const XMFLOAT3& rhs)
+#pragma comment(lib,"d3dcompiler.lib")
+
+const DirectX::XMFLOAT3 operator+(const DirectX::XMFLOAT3& lhs, const DirectX::XMFLOAT3& rhs)
 {
-	XMFLOAT3 result;
+	DirectX::XMFLOAT3 result;
 	result.x = lhs.x + rhs.x;
 	result.y = lhs.y + rhs.y;
 	result.z = lhs.z + rhs.z;
@@ -78,15 +86,15 @@ void Shape::CreateCube(float r, const wchar_t* filename)
 	};
 
 	/*WICテクスチャのロード*/
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
 	result = LoadFromWICFile(
 		filename,
-		WIC_FLAGS_NONE,
+		DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	/*テクスチャバッファの生成*/
 	D3D12_HEAP_PROPERTIES texHeapProp{};                       //テクスチャヒープ設定
@@ -150,19 +158,19 @@ void Shape::CreateCube(float r, const wchar_t* filename)
 		unsigned short index2 = CubeIndices[i * 3 + 2];
 
 		//三角形を構成する頂点座標をベクトルに代入
-		XMVECTOR p0 = XMLoadFloat3(&CubeVertices[index0].pos);
-		XMVECTOR p1 = XMLoadFloat3(&CubeVertices[index1].pos);
-		XMVECTOR p2 = XMLoadFloat3(&CubeVertices[index2].pos);
+		DirectX::XMVECTOR p0 = XMLoadFloat3(&CubeVertices[index0].pos);
+		DirectX::XMVECTOR p1 = XMLoadFloat3(&CubeVertices[index1].pos);
+		DirectX::XMVECTOR p2 = XMLoadFloat3(&CubeVertices[index2].pos);
 
 		//p0→p1ベクトル、p0→p2ベクトルを計算（ベクトルの減算）
-		XMVECTOR v1 = XMVectorSubtract(p1, p0);
-		XMVECTOR v2 = XMVectorSubtract(p2, p0);
+		DirectX::XMVECTOR v1 = DirectX::XMVectorSubtract(p1, p0);
+		DirectX::XMVECTOR v2 = DirectX::XMVectorSubtract(p2, p0);
 
 		//外積は両方から垂直なベクトル
-		XMVECTOR normal = XMVector3Cross(v1, v2);
+		DirectX::XMVECTOR normal = DirectX::XMVector3Cross(v1, v2);
 
 		//正規化
-		normal = XMVector3Normalize(normal);
+		normal = DirectX::XMVector3Normalize(normal);
 
 		//求めた法線を頂点データに代入
 		XMStoreFloat3(&CubeVertices[index0].normal, normal);
@@ -301,9 +309,9 @@ void Shape::CreateCube(float r, const wchar_t* filename)
 	ibView.SizeInBytes = sizeIB;
 	//ibView.SizeInBytes = indices.size();
 
-	ComPtr<ID3DBlob> vsBlob = nullptr;
-	ComPtr<ID3DBlob> gsBlob = nullptr;
-	ComPtr<ID3DBlob> psBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> gsBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> psBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 
 	//頂点シェーダの読み込みとコンパイル
@@ -555,7 +563,7 @@ void Shape::CreateCube(float r, const wchar_t* filename)
 	result = constBuff->Map(0, nullptr, (void**)&constMap);
 
 	//RGBA
-	constMap->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	constMap->color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//平行投影変換
 	/*constMap->mat = XMMatrixOrthographicOffCenterLH(
@@ -565,44 +573,44 @@ void Shape::CreateCube(float r, const wchar_t* filename)
 	);*/
 
 	//ワールド変換行列
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 
 	/*スケーリング（拡縮）*/
 	//XMMATRIX matScale;
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 
 	/*回転*/
 	//XMMATRIX matRot; //回転行列
-	matRot = XMMatrixIdentity();
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸回りに45度回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸回りに45度回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸回りに45度回転
+	matRot = DirectX::XMMatrixIdentity();
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z)); //Z軸回りに45度回転
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x)); //X軸回りに45度回転
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y)); //Y軸回りに45度回転
 
 	/*平行移動*/
 	//XMMATRIX matTrans;
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	matWorld *= matScale;
 	matWorld *= matRot;
 	matWorld *= matTrans;
 
-	XMMATRIX matView;
-	XMMATRIX matPerspective;
-	XMFLOAT3 eye;
-	XMFLOAT3 target;
-	XMFLOAT3 up;
+	DirectX::XMMATRIX matView;
+	DirectX::XMMATRIX matPerspective;
+	DirectX::XMFLOAT3 eye;
+	DirectX::XMFLOAT3 target;
+	DirectX::XMFLOAT3 up;
 	float fov;
 
 	eye = { 45,0,-100 };
 	target = { 0,0,0 };
 	up = { 0,1,0 };
 	fov = 60.0f;
-	matView = XMMatrixLookAtLH(
+	matView = DirectX::XMMatrixLookAtLH(
 		XMLoadFloat3(&eye),
 		XMLoadFloat3(&target),
 		XMLoadFloat3(&up));
-	matPerspective = XMMatrixPerspectiveFovLH(
-		XMConvertToRadians(fov),
+	matPerspective = DirectX::XMMatrixPerspectiveFovLH(
+		DirectX::XMConvertToRadians(fov),
 		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
 		0.1f, 1000.0f); //前端、奥端
 
@@ -774,13 +782,13 @@ void Shape::DrawCube()
 {
 	HRESULT result = S_OK;
 
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));        //Z軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));        //X軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));        //Y軸回転
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));        //Z軸回転
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));        //X軸回転
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));        //Y軸回転
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
 
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 	matWorld *= matScale;
 	matWorld *= matRot;
 	matWorld *= matTrans;
@@ -892,15 +900,15 @@ void Shape::CreateSphere(float r)
 	}
 
 	/*WICテクスチャのロード*/
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
 	result = LoadFromWICFile(
 		L"Resources/Slime2.png",
-		WIC_FLAGS_NONE,
+		DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	/*テクスチャバッファの生成*/
 	D3D12_HEAP_PROPERTIES texHeapProp{};                       //テクスチャヒープ設定
@@ -964,19 +972,19 @@ void Shape::CreateSphere(float r)
 		unsigned short index2 = SphereIndices[i * 3 + 2];
 
 		//三角形を構成する頂点座標をベクトルに代入
-		XMVECTOR p0 = XMLoadFloat3(&SphereVertices[index0].pos);
-		XMVECTOR p1 = XMLoadFloat3(&SphereVertices[index1].pos);
-		XMVECTOR p2 = XMLoadFloat3(&SphereVertices[index2].pos);
+		DirectX::XMVECTOR p0 = XMLoadFloat3(&SphereVertices[index0].pos);
+		DirectX::XMVECTOR p1 = XMLoadFloat3(&SphereVertices[index1].pos);
+		DirectX::XMVECTOR p2 = XMLoadFloat3(&SphereVertices[index2].pos);
 
 		//p0→p1ベクトル、p0→p2ベクトルを計算（ベクトルの減算）
-		XMVECTOR v1 = XMVectorSubtract(p1, p0);
-		XMVECTOR v2 = XMVectorSubtract(p2, p0);
+		DirectX::XMVECTOR v1 = DirectX::XMVectorSubtract(p1, p0);
+		DirectX::XMVECTOR v2 = DirectX::XMVectorSubtract(p2, p0);
 
 		//外積は両方から垂直なベクトル
-		XMVECTOR normal = XMVector3Cross(v1, v2);
+		DirectX::XMVECTOR normal = DirectX::XMVector3Cross(v1, v2);
 
 		//正規化
-		normal = XMVector3Normalize(normal);
+		normal = DirectX::XMVector3Normalize(normal);
 
 		//求めた法線を頂点データに代入
 		XMStoreFloat3(&SphereVertices[index0].normal, normal);
@@ -1355,7 +1363,7 @@ void Shape::CreateSphere(float r)
 	result = constBuff->Map(0, nullptr, (void**)&constMap);
 
 	//RGBA
-	constMap->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	constMap->color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//平行投影変換
 	/*constMap->mat = XMMatrixOrthographicOffCenterLH(
@@ -1365,22 +1373,22 @@ void Shape::CreateSphere(float r)
 	);*/
 
 	//ワールド変換行列
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 
 	/*スケーリング（拡縮）*/
 	//XMMATRIX matScale;
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 
 	/*回転*/
 	//XMMATRIX matRot; //回転行列
-	matRot = XMMatrixIdentity();
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸回りに45度回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸回りに45度回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸回りに45度回転
+	matRot = DirectX::XMMatrixIdentity();
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z)); //Z軸回りに45度回転
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x)); //X軸回りに45度回転
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y)); //Y軸回りに45度回転
 
 	/*平行移動*/
 	//XMMATRIX matTrans;
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	matWorld *= matScale;
 	matWorld *= matRot;
@@ -1551,13 +1559,13 @@ void Shape::DrawSphere()
 {
 	HRESULT result = S_OK;
 
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));        //Z軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));        //X軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));        //Y軸回転
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));        //Z軸回転
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));        //X軸回転
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));        //Y軸回転
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
 
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 	matWorld *= matScale;
 	matWorld *= matRot;
 	matWorld *= matTrans;
@@ -1656,15 +1664,15 @@ void Shape::CreateGeometry(const wchar_t* filename)
 	particles.resize(10);
 
 	/*WICテクスチャのロード*/
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
 	result = LoadFromWICFile(
 		filename,
-		WIC_FLAGS_NONE,
+		DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	/*テクスチャバッファの生成*/
 	D3D12_HEAP_PROPERTIES texHeapProp{};                       //テクスチャヒープ設定
@@ -1819,9 +1827,9 @@ void Shape::CreateGeometry(const wchar_t* filename)
 	//vbView.SizeInBytes = vertices.size();
 	//vbView.StrideInBytes = sizeof(XMFLOAT3);
 
-	ComPtr<ID3DBlob> vsBlob = nullptr;
-	ComPtr<ID3DBlob> gsBlob = nullptr;
-	ComPtr<ID3DBlob> psBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> gsBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> psBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 
 	//頂点シェーダの読み込みとコンパイル
@@ -2233,13 +2241,13 @@ void Shape::DrawGeometry()
 {
 	HRESULT result = S_OK;
 
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));        //Z軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));        //X軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));        //Y軸回転
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));        //Z軸回転
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));        //X軸回転
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));        //Y軸回転
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z); //平行移動行列再計算
 
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 	matWorld *= matScale;
 	matWorld *= matRot;
 	matWorld *= matTrans;
@@ -2288,8 +2296,8 @@ void Shape::DrawGeometry()
 	//定数バッファへデータ転送
 	GSConstBufferData* GSconstMap = nullptr;
 	result = constBuff->Map(0, nullptr, (void**)&GSconstMap);
-	XMMATRIX camera = Camera::ViewMatrix();
-	XMMATRIX shisuidai = Camera::PerspectiveMatrix();
+	DirectX::XMMATRIX camera = Camera::ViewMatrix();
+	DirectX::XMMATRIX shisuidai = Camera::PerspectiveMatrix();
 	/*GSconstMap->mat = Camera::ViewMatrix() * Camera::PerspectiveMatrix();*/
 	GSconstMap->mat = camera * shisuidai;
 	GSconstMap->matBillBoard = Camera::BillboardMatrix();
@@ -2337,7 +2345,7 @@ void Shape::DrawGeometry()
 	DirectXImportant::cmdList->DrawInstanced((UINT)std::distance(particles.begin(), particles.end()), 1, 0, 0);
 }
 
-void Shape::Add(int life, XMFLOAT3 position, XMFLOAT3 velocity, XMFLOAT3 accel, float start_scale, float end_scale)
+void Shape::Add(int life, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 velocity, DirectX::XMFLOAT3 accel, float start_scale, float end_scale)
 {
 	particles.emplace_front();
 	Particle& p = particles.front();

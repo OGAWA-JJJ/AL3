@@ -1,11 +1,16 @@
 #include "DirectX2D.h"
 #include <cassert>
+#include <d3dcompiler.h>
+#include <string>
+#include <d3dx12.h>
+
+#pragma comment(lib,"d3dcompiler.lib")
 
 DirectX2D::DirectX2D()
 {
 	/*SpriteDraw 初期化*/
 	sprData.spriteRotation = 0.0f;
-	sprData.spriteMatProjection = XMMatrixOrthographicOffCenterLH(
+	sprData.spriteMatProjection = DirectX::XMMatrixOrthographicOffCenterLH(
 		0.0f,
 		WINDOW_WIDTH,
 		WINDOW_HEIGHT,
@@ -94,14 +99,14 @@ HRESULT DirectX2D::SpriteLoadTexture(UINT texnumber, const wchar_t* filename)
 	HRESULT result;
 
 	/*WICテクスチャのロード*/
-	ScratchImage scratchImg{};
+	DirectX::ScratchImage scratchImg{};
 
 	result = LoadFromWICFile(
 		filename,
-		WIC_FLAGS_NONE,
+		DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	/*リソース設定*/
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -326,7 +331,7 @@ void DirectX2D::RootSignature()
 		&samplerDesc,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	ComPtr<ID3DBlob> rootSigBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> rootSigBlob;
 
 	result = D3DX12SerializeVersionedRootSignature(
 		&rootSignatureDesc,
@@ -441,7 +446,7 @@ HRESULT DirectX2D::CreateSpriteInit()
 	spriteVertBuff->Unmap(0, nullptr);
 
 	//リソース設定
-	ComPtr<ID3D12Resource> depthBuffer;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer;
 	CD3DX12_RESOURCE_DESC depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_D32_FLOAT,
 		WINDOW_WIDTH,
@@ -463,7 +468,7 @@ HRESULT DirectX2D::CreateSpriteInit()
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	ComPtr<ID3D12DescriptorHeap> dsvHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
 	result = DirectXImportant::dev->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
 
 	/*深度ステンシルビューの作成*/
@@ -509,8 +514,8 @@ HRESULT DirectX2D::CreateSpriteInit()
 		nullptr,
 		(void**)&constMap);
 	//assert(SUCCEEDED(result));
-	constMap->color = XMFLOAT4(1, 1, 1, 1);
-	constMap->mat = XMMatrixOrthographicOffCenterLH(
+	constMap->color = DirectX::XMFLOAT4(1, 1, 1, 1);
+	constMap->mat = DirectX::XMMatrixOrthographicOffCenterLH(
 		0.0f,
 		1280, //要修正
 		720,
@@ -541,9 +546,9 @@ void DirectX2D::SpriteDraw(bool isDraw)
 	}
 
 	/*ワールド行列の更新*/
-	sprData.spriteMatWorld = XMMatrixIdentity();
-	sprData.spriteMatWorld *= XMMatrixRotationZ(XMConvertToRadians(sprData.spriteRotation));
-	sprData.spriteMatWorld *= XMMatrixTranslationFromVector(sprData.spritePosition);
+	sprData.spriteMatWorld = DirectX::XMMatrixIdentity();
+	sprData.spriteMatWorld *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(sprData.spriteRotation));
+	sprData.spriteMatWorld *= DirectX::XMMatrixTranslationFromVector(sprData.spritePosition);
 
 	/*行列の転送*/
 	ConstBufferData* constMap = nullptr;

@@ -41,7 +41,7 @@ public:
 	void Init(const std::string& modelname, bool smoothing);
 	//•`‰æ
 	void Draw(ID3D12GraphicsCommandList* cmdList,
-		ComPtr<ID3D12DescriptorHeap> srv = nullptr,
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv = nullptr,
 		UINT rootParamIndex = 0,
 		bool isAddTexture = false
 	);

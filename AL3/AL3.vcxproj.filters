@@ -126,9 +126,6 @@
     <ClCompile Include="SourceCodes\2D\Sprite.cpp">
       <Filter>SourceCodes\2D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\Users\Hantei.cpp">
-      <Filter>SourceCodes\Users</Filter>
-    </ClCompile>
     <ClCompile Include="SourceCodes\Math\SphereCollider.cpp">
       <Filter>SourceCodes\Math</Filter>
     </ClCompile>
@@ -265,9 +262,6 @@
     </ClInclude>
     <ClInclude Include="SourceCodes\2D\Sprite.h">
       <Filter>SourceCodes\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodes\Users\Hantei.h">
-      <Filter>SourceCodes\Users</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\Math\Easing.h">
       <Filter>SourceCodes\Math</Filter>

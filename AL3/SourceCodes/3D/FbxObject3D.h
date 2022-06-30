@@ -9,6 +9,21 @@
 #include <DirectXMath.h>
 #include <string>
 
+struct FbxInitData
+{
+	const char* m_vsEntryPoint = "VSmain";
+	const char* m_psEntryPoint = "PSmain";
+};
+
+//パイプラインセット
+struct FbxPipelineSet
+{
+	//ルートシグネチャ
+	ID3D12RootSignature* rootsignature;
+	//パイプラインステートオブジェクト
+	ID3D12PipelineState* pipelinestate;
+};
+
 class FbxObject3D
 {
 protected:
@@ -53,9 +68,11 @@ private:
 	//デバイス
 	static ID3D12Device* device;
 	//ルートシグネチャ
-	static ComPtr<ID3D12RootSignature> rootsignature;
+	//static ComPtr<ID3D12RootSignature> rootsignature;
 	//パイプラインステートオブジェクト
-	static ComPtr<ID3D12PipelineState> pipelinestate;
+	//static ComPtr<ID3D12PipelineState> pipelinestate;
+	//パイプライン
+	static FbxPipelineSet pipelineSet;
 	//ライト
 	static Light* light;
 
@@ -63,7 +80,7 @@ public:
 	//Setter
 	static void SetDevice(ID3D12Device* device) { FbxObject3D::device = device; }
 	//グラフィックスパイプラインの生成
-	static void CreateGraphicsPipeline();
+	static FbxPipelineSet CreateGraphicsPipeline(const FbxInitData& fbxInitdata);
 	//ライトのセット
 	static void SetLight(Light* light) { FbxObject3D::light = light; }
 
@@ -89,7 +106,7 @@ protected:
 	//ローカル座標
 	XMFLOAT3 position = { 0,0,0 };
 	//ローカルワールド変換行列
-	XMMATRIX matWorld;
+	XMMATRIX matWorld = DirectX::XMMatrixIdentity();
 	//モデル
 	FbxModel* model = nullptr;
 	//定数バッファ(スキン)
@@ -105,20 +122,27 @@ protected:
 	//アニメーション再生中
 	bool isPlay = false;
 
+	//SRV用デスクリプタヒープ
+	ID3D12DescriptorHeap* fbxDescHeap;
+
 	//ボーンの名前と行列(Update後に更新)
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affineTrans;
 	//Test
-	DirectX::XMMATRIX matrix;
+	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
 
 public:
 	//初期化
 	void Init();
 	//毎フレーム処理
-	void Update();
+	void Update(bool isShadowCamera = false);
 	//描画
-	void Draw(ID3D12GraphicsCommandList* cmdList);
+	void Draw(ID3D12GraphicsCommandList* cmdList, const FbxPipelineSet& pipelineSet);
 	//アニメーション開始
 	void PlayAnimation();
+	//テクスチャ追加
+	void AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv);
+	//強制描画用(AddTexture後)
+	void ShadowDraw(ID3D12GraphicsCommandList* cmdList, ID3D12DescriptorHeap* srv);
 
 public:
 	void SetModel(FbxModel* model) { this->model = model; }

@@ -13,9 +13,9 @@ class Mesh
 public:
 	struct VertexPosNormalUv
 	{
-		XMFLOAT3 pos; // xyz座標
-		XMFLOAT3 normal; // 法線ベクトル
-		XMFLOAT2 uv;  // uv座標
+		DirectX::XMFLOAT3 pos; // xyz座標
+		DirectX::XMFLOAT3 normal; // 法線ベクトル
+		DirectX::XMFLOAT2 uv;  // uv座標
 	};
 
 private:
@@ -26,9 +26,9 @@ private:
 	//名前
 	std::string name;
 	//頂点バッファ
-	ComPtr<ID3D12Resource> vertBuff;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertBuff;
 	//インデックスバッファ
-	ComPtr<ID3D12Resource> indexBuff;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuff;
 	//頂点バッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vbView = {};
 	//インデックスバッファビュー

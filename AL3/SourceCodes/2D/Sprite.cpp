@@ -8,17 +8,17 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-using namespace DirectX;
-using namespace Microsoft::WRL;
+//using namespace DirectX;
+//using namespace Microsoft::WRL;
 
 ID3D12Device* Sprite::device = nullptr;
 UINT Sprite::descriptorHandleIncrementSize;
 ID3D12GraphicsCommandList* Sprite::cmdList = nullptr;
-ComPtr<ID3D12RootSignature> Sprite::rootSignature;
-ComPtr<ID3D12PipelineState> Sprite::pipelineState;
-XMMATRIX Sprite::matProjection;
-ComPtr<ID3D12DescriptorHeap> Sprite::descHeap;
-ComPtr<ID3D12Resource> Sprite::texBuff[srvCount];
+Microsoft::WRL::ComPtr<ID3D12RootSignature> Sprite::rootSignature;
+Microsoft::WRL::ComPtr<ID3D12PipelineState> Sprite::pipelineState;
+DirectX::XMMATRIX Sprite::matProjection;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Sprite::descHeap;
+Microsoft::WRL::ComPtr<ID3D12Resource> Sprite::texBuff[srvCount];
 //CD3DX12_RESOURCE_DESC Sprite::m_textureDesc;
 
 bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window_height)
@@ -146,10 +146,10 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 
 	//デスクリプタレンジ
 	CD3DX12_DESCRIPTOR_RANGE descRangeSRV;
-	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0 レジスタ
+	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); //t0 レジスタ
 
 	//ルートパラメータ
-	CD3DX12_ROOT_PARAMETER rootparams[2];
+	CD3DX12_ROOT_PARAMETER rootparams[2] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -185,7 +185,7 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 	}
 
 	//射影行列計算
-	matProjection = XMMatrixOrthographicOffCenterLH(
+	matProjection = DirectX::XMMatrixOrthographicOffCenterLH(
 		0.0f, (float)window_width,
 		(float)window_height, 0.0f,
 		0.0f, 1.0f);
@@ -211,18 +211,18 @@ bool Sprite::LoadTexture(UINT texnumber, const wchar_t* filename)
 
 	HRESULT result;
 	//WICテクスチャのロード
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
 	result = LoadFromWICFile(
-		filename, WIC_FLAGS_NONE,
+		filename, DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 	if (FAILED(result)) {
 		assert(0);
 		return false;
 	}
 
-	const Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
 
 	//リソース設定
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -327,12 +327,12 @@ Sprite* Sprite::Create(UINT texNumber, XMFLOAT2 position, XMFLOAT4 color, XMFLOA
 	return sprite;
 }
 
-Sprite::Sprite(UINT texNumber, XMFLOAT2 position, XMFLOAT2 size, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY)
+Sprite::Sprite(UINT texNumber, DirectX::XMFLOAT2 position, XMFLOAT2 size, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY)
 {
 	this->position = position;
 	this->size = size;
 	this->anchorpoint = anchorpoint;
-	this->matWorld = XMMatrixIdentity();
+	this->matWorld = DirectX::XMMatrixIdentity();
 	this->color = color;
 	this->texNumber = texNumber;
 	this->isFlipX = isFlipX;
@@ -458,9 +458,9 @@ void Sprite::SetColor(XMFLOAT4 color)
 void Sprite::Draw()
 {
 	//ワールド行列の更新
-	this->matWorld = XMMatrixIdentity();
-	this->matWorld *= XMMatrixRotationZ(XMConvertToRadians(rotation));
-	this->matWorld *= XMMatrixTranslation(position.x, position.y, 0.0f);
+	this->matWorld = DirectX::XMMatrixIdentity();
+	this->matWorld *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation));
+	this->matWorld *= DirectX::XMMatrixTranslation(position.x, position.y, 0.0f);
 
 	//定数バッファにデータ転送
 	ConstBufferData* constMap = nullptr;

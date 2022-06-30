@@ -2,11 +2,11 @@
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_win32.h"
 #include "../imgui/imgui_impl_dx12.h"
-#include "../SourceCodes/DirectX/DirectXImportant.h"
+#include <wrl.h>
 
 class Dx12Wrapper {
 private:
-	static ComPtr<ID3D12DescriptorHeap> _heapForImgui;
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _heapForImgui;
 	static bool bInResult;
 
 public:
@@ -17,7 +17,7 @@ public:
 	static void Draw(bool isDraw = true);
 
 private:
-	static ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeapForImgui();
-	static ComPtr<ID3D12DescriptorHeap> GetHeapForImgui();
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeapForImgui();
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetHeapForImgui();
 };
 

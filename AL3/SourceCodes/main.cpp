@@ -7,6 +7,7 @@
 #include "3D/FbxLoader.h"
 #include "2D/RenderTarget.h"
 #include "2D/ShadowMap.h"
+#include "Input/Input.h"
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -20,7 +21,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		0.0f,
 		0.0f,
 		0.0f,
-		1.0f };
+		0.0f };
 
 #ifdef _DEBUG
 	Window::Debuglayer();
@@ -56,23 +57,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	luminanceSprite->Init(luminanceData);
 
 	//重み係数
-	const float gaussSigma = 30.0f;
+	const float gaussSigma = 8.0f;
 
 	//横ブラー用のスプライトを初期化
 	SpriteInitData xBlurSpriteInitData;
 	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	//xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
-	//xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
-
 	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
 	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
 	xBlurSpriteInitData.m_gaussianSigma = gaussSigma;
-
-	//xBlurSpriteInitData.m_vsEntryPoint = "VSmain";
-	//xBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
 	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
@@ -86,16 +81,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	//yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
-	//yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
-
 	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
 	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
 	yBlurSpriteInitData.m_gaussianSigma = gaussSigma;
-
-	//yBlurSpriteInitData.m_vsEntryPoint = "VSmain";
-	//yBlurSpriteInitData.m_psEntryPoint = "PSmain";
 
 	yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
@@ -146,22 +135,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Gamescene->Update();
 
-		//luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
-		//Gamescene->Draw();
-		//Gamescene->LuminanceDraw();
-		//luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
+		Gamescene->LuminanceDraw();
+		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		//xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);
-		//luminanceSprite->Draw(DirectXImportant::cmdList.Get());
-		//xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		xBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), xBlurSpriteInitData, WindowColor);
+		luminanceSprite->Draw(DirectXImportant::cmdList.Get());
+		xBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		//yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData, WindowColor);
-		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		//yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		yBlurSprite->PreDrawScene(DirectXImportant::cmdList.Get(), yBlurSpriteInitData, WindowColor);
+		xBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		yBlurSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
-		//copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
-		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		//copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
+		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
+		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
 		shadow->PreDraw(DirectXImportant::cmdList.Get());
 		Gamescene->ShadowDraw();
@@ -175,9 +163,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//Gamescene->Draw();
 		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		//copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
-		//shadow->Draw(DirectXImportant::cmdList.Get());
 		Gamescene->Draw();
+		copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
+		//shadow->Draw(DirectXImportant::cmdList.Get());
+		//Gamescene->Draw();
 
 		/*----------DirextX毎フレーム処理　ここまで----------*/
 

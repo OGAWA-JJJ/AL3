@@ -8,7 +8,7 @@ void Model3DManager::Init()
 {
 }
 
-void Model3DManager::CreateModel(const string& modelName)
+void Model3DManager::CreateModel(const std::string& modelName)
 {
 	model3D.CreateDescriptorHeap();
 	model3D.CreateGraphicsPipeline();
@@ -26,12 +26,12 @@ void Model3DManager::DrawModel(bool isDraw)
 	model3D.Draw();
 }
 
-void Model3DManager::SetPos(XMFLOAT3 pos)
+void Model3DManager::SetPos(DirectX::XMFLOAT3 pos)
 {
 	model3D.position = pos;
 }
 
-void Model3DManager::SetScale(XMFLOAT3 scale)
+void Model3DManager::SetScale(DirectX::XMFLOAT3 scale)
 {
 	model3D.scale = scale;
 }

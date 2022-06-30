@@ -1,10 +1,10 @@
 #include "DirectXImportant.h"
 
-ComPtr<ID3D12Device> DirectXImportant::dev;
-ComPtr<IDXGIFactory6> DirectXImportant::dxgiFactory;
-ComPtr<IDXGISwapChain4> DirectXImportant::swapchain;
-ComPtr<ID3D12CommandAllocator> DirectXImportant::cmdAllocator;
-ComPtr<ID3D12GraphicsCommandList> DirectXImportant::cmdList;
+Microsoft::WRL::ComPtr<ID3D12Device> DirectXImportant::dev;
+Microsoft::WRL::ComPtr<IDXGIFactory6> DirectXImportant::dxgiFactory;
+Microsoft::WRL::ComPtr<IDXGISwapChain4> DirectXImportant::swapchain;
+Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DirectXImportant::cmdAllocator;
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectXImportant::cmdList;
 //Å´ÉèÉìÉ`ÉÉÉìïKóvÇ»Ç¢Ç©Ç‡
-ComPtr<ID3D12CommandQueue> DirectXImportant::cmdQueue;
-ComPtr<ID3D12DescriptorHeap> DirectXImportant::rtvHeaps;
+Microsoft::WRL::ComPtr<ID3D12CommandQueue> DirectXImportant::cmdQueue;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXImportant::rtvHeaps;

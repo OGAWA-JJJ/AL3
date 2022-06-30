@@ -9,6 +9,13 @@
 class GameScene
 {
 private:
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using XMFLOAT2 = DirectX::XMFLOAT2;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMMATRIX = DirectX::XMMATRIX;
+
+private:
 	enum AnimationType
 	{
 		STAND, SLOWRUN, RUN
@@ -21,9 +28,12 @@ private:
 	const float EASE_CAMERA_TIMER = 0.006f;
 
 private:
-	PipelineSet pipelineSet;
-	PipelineSet shadow;
-	PipelineSet shadow2;
+	ObjPipelineSet normal;
+	ObjPipelineSet shadow;
+	ObjPipelineSet receiveShadow;
+
+	FbxPipelineSet fbx_normal;
+	FbxPipelineSet fbx_shadow;
 
 	XMFLOAT3 cameraAngle;
 	float cameraMoveEase = 0.0f;
@@ -32,6 +42,9 @@ private:
 	bool isEase = false;
 
 	int animationType;
+
+	//float x = 0.0f;
+	//float t = 0.0f;
 
 private:
 	Light* light = nullptr;
@@ -62,9 +75,14 @@ private:
 	Model* sword = nullptr;
 	Object* objSword = nullptr;
 
-	FbxObject3D* fbx1 = nullptr;
-	FbxObject3D* fbx2 = nullptr;
-	FbxObject3D* fbx3 = nullptr;
+	FbxObject3D* fbxShadow1 = nullptr;
+	FbxObject3D* fbxShadow2 = nullptr;
+	FbxObject3D* fbxShadow3 = nullptr;
+
+	Object* objShadowSword = nullptr;
+
+private:
+	//Object* obj1 = nullptr;
 
 public:
 	GameScene();

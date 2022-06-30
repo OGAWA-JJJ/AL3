@@ -105,7 +105,7 @@ private:
 	//インデックスバッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView = {};
 	//SRV用デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeapSRV;
+	ID3D12DescriptorHeap* descHeapSRV;
 	//ボーン配列
 	std::vector<Bone> bones;
 	//FBXシーン
@@ -125,5 +125,7 @@ public:
 	//Getter
 	std::vector<Bone>& GetBones() { return bones; }
 	FbxScene* GetFbxScene() { return fbxScene; }
+
+	ID3D12DescriptorHeap* GetDescHeap() { return descHeapSRV; }
 };
 

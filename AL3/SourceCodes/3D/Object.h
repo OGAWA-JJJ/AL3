@@ -16,14 +16,13 @@ struct ObjectInitData
 };
 
 //パイプラインセット
-struct PipelineSet
+struct ObjPipelineSet
 {
 	//ルートシグネチャ
 	ID3D12RootSignature* rootsignature;
 	//パイプラインステートオブジェクト
 	ID3D12PipelineState* pipelinestate;
 };
-
 
 class BaseCollider;
 
@@ -34,9 +33,9 @@ public:
 	struct ConstBufferDataB0
 	{
 		//XMMATRIX mat;	// ３Ｄ変換行列
-		XMMATRIX viewproj; //ビュープロジェクション行列
-		XMMATRIX world; //ワールド行列
-		XMFLOAT3 cameraPos; //カメラ座標（ワールド座標）
+		DirectX::XMMATRIX viewproj; //ビュープロジェクション行列
+		DirectX::XMMATRIX world; //ワールド行列
+		DirectX::XMFLOAT3 cameraPos; //カメラ座標（ワールド座標）
 	};
 
 private:
@@ -45,23 +44,23 @@ private:
 	//コマンドリスト
 	static ID3D12GraphicsCommandList* cmdList;
 	//パイプライン
-	static PipelineSet pipelineSet;
+	static ObjPipelineSet pipelineSet;
 	//ライト
 	static Light* light;
 
 protected:
 	//定数バッファ
-	ComPtr<ID3D12Resource> constBuffB0;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffB0;
 	//色
-	XMFLOAT4 color = { 1,1,1,1 };
+	DirectX::XMFLOAT4 color = { 1,1,1,1 };
 	//ローカルスケール
-	XMFLOAT3 scale = { 1,1,1 };
+	DirectX::XMFLOAT3 scale = { 1,1,1 };
 	//X,Y,Z軸回りのローカル回転角
-	XMFLOAT3 rotation = { 0,0,0 };
+	DirectX::XMFLOAT3 rotation = { 0,0,0 };
 	//ローカル座標
-	XMFLOAT3 position = { 0,0,0 };
+	DirectX::XMFLOAT3 position = { 0,0,0 };
 	//ローカルワールド変換行列
-	XMMATRIX matWorld;
+	DirectX::XMMATRIX matWorld;
 	//親オブジェクト
 	Object* parent = nullptr;
 	//モデル
@@ -89,7 +88,7 @@ public:
 	//静的初期化
 	static void StaticInit(ID3D12Device* device);
 	//グラフィックパイプラインの生成
-	static PipelineSet CreateGraphicsPipeline(const ObjectInitData& objectInitData);
+	static ObjPipelineSet CreateGraphicsPipeline(const ObjectInitData& objectInitData);
 	//描画前処理
 	static void PreDraw(ID3D12GraphicsCommandList* cmdList);
 	//描画後処理
@@ -115,28 +114,28 @@ public:
 
 	//描画
 	//void Draw();
-	virtual void Draw(PipelineSet pipelineSet);
+	virtual void Draw(const ObjPipelineSet& pipelineSet);
 
 public:
 	//座標の取得
-	const XMFLOAT3& GetPosition() { return position; }
+	const DirectX::XMFLOAT3& GetPosition() { return position; }
 	//回転角の取得
-	const XMFLOAT3& GetRotation() { return rotation; }
+	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	//座標の設定
-	void SetPosition(XMFLOAT3 position) { this->position = position; }
+	void SetPosition(DirectX::XMFLOAT3 position) { this->position = position; }
 	//回転角の設定
-	void SetRotation(XMFLOAT3 rotation) { this->rotation = rotation; }
+	void SetRotation(DirectX::XMFLOAT3 rotation) { this->rotation = rotation; }
 	//スケールの設定
-	void SetScale(XMFLOAT3 scale) { this->scale = scale; }
+	void SetScale(DirectX::XMFLOAT3 scale) { this->scale = scale; }
 	//モデルのセット
 	void SetModel(Model* model) { this->model = model; }
 	//ビルボードフラグのセット
 	void SetBillboard(bool isBillboard) { this->isBillboard = isBillboard; }
 	//色設定
-	void SetColor(XMFLOAT4 color) { this->color = color; }
+	void SetColor(DirectX::XMFLOAT4 color) { this->color = color; }
 
 	//ワールド行列取得
-	const XMMATRIX& GetMatWorld() { return matWorld; }
+	const DirectX::XMMATRIX& GetMatWorld() { return matWorld; }
 	//コライダーセット
 	void SetCollider(BaseCollider* collider);
 	//衝突時コールバック

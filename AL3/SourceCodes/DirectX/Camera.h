@@ -1,16 +1,17 @@
 #pragma once
 #include "../DirectX/DirectXImportant.h"
+#include <DirectXMath.h>
 
 class Camera
 {
 private:
-	static XMMATRIX matView;
-	static XMMATRIX matPerspective;
+	static DirectX::XMMATRIX matView;
+	static DirectX::XMMATRIX matPerspective;
 
 private:
-	static XMFLOAT3 eye;
-	static XMFLOAT3 target;
-	static XMFLOAT3 up;
+	static DirectX::XMFLOAT3 eye;
+	static DirectX::XMFLOAT3 target;
+	static DirectX::XMFLOAT3 up;
 	static float fov;
 
 public:
@@ -18,26 +19,26 @@ public:
 	//static void SetTarget(XMFLOAT3 Target);
 
 	/*通常カメラ*/
-	static XMMATRIX ViewMatrix();
-	static XMMATRIX PerspectiveMatrix();
+	static DirectX::XMMATRIX ViewMatrix();
+	static DirectX::XMMATRIX PerspectiveMatrix();
 	static void InverseMatrix();//?
-	static void SetEye(XMFLOAT3 eye);
-	static void SetTarget(XMFLOAT3 target);
-	static void SetUp(XMFLOAT3 up);
+	static void SetEye(DirectX::XMFLOAT3 eye);
+	static void SetTarget(DirectX::XMFLOAT3 target);
+	static void SetUp(DirectX::XMFLOAT3 up);
 	static void SetFov(float fov);
-	static XMFLOAT3 GetEye() { return eye; }
-	static XMFLOAT3 GetTarget() { return target; }
-	static XMFLOAT3 GetUp() { return up; }
+	static DirectX::XMFLOAT3 GetEye() { return eye; }
+	static DirectX::XMFLOAT3 GetTarget() { return target; }
+	static DirectX::XMFLOAT3 GetUp() { return up; }
 
 	//static void MoveEye(XMFLOAT3 eye);
 	//static void MoveTarget(XMFLOAT3 target);
 	//static void MoveUp(XMFLOAT3 up);
 
 	/*追従カメラ*/
-	static XMMATRIX FollowCamera(float dist, XMFLOAT3 Rotation, XMMATRIX matRot);
+	static DirectX::XMMATRIX FollowCamera(float dist, DirectX::XMFLOAT3 Rotation, DirectX::XMMATRIX matRot);
 
 	/*ビルボード*/
-	static XMMATRIX BillboardMatrix();
-	static XMMATRIX BillboardYMatrix();
+	static DirectX::XMMATRIX BillboardMatrix();
+	static DirectX::XMMATRIX BillboardYMatrix();
 };
 

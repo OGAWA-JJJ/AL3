@@ -2,7 +2,7 @@
 #include "BaseCollider.h"
 #include "Collision.h"
 
-using namespace DirectX;
+//using namespace DirectX;
 
 CollisionManager* CollisionManager::GetInstance()
 {
@@ -44,7 +44,7 @@ bool CollisionManager::Raycast(const Ray& ray, RaycastHit* hitInfo, float maxDis
 	//今までで最も近いコライダーの距離を記録する変数
 	float distance = maxDistance;
 	//今までで最も近いコライダーとの交点を記録する変数
-	XMVECTOR inter;
+	DirectX::XMVECTOR inter;
 
 	//全てのコライダーとの総当たりチェック
 	it = colliders.begin();
@@ -54,7 +54,7 @@ bool CollisionManager::Raycast(const Ray& ray, RaycastHit* hitInfo, float maxDis
 		if (colA->GetShapeType() == COLLISIONSHAPE_SHPERE) {
 			Sphere* sphere = dynamic_cast<Sphere*>(colA);
 			float tempDistance;
-			XMVECTOR tempInter;
+			DirectX::XMVECTOR tempInter;
 			//当たらなければ除外
 			if (!Collision::CheakRay2Sphere(
 				ray, *sphere, &tempDistance, &tempInter)) continue;

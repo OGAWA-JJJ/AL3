@@ -1,7 +1,8 @@
 #include "Dx12Wrapper.h"
 #include "ImguiControl.h"
+#include "../SourceCodes/DirectX/DirectXImportant.h"
 
-ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::_heapForImgui;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::_heapForImgui;
 bool Dx12Wrapper::bInResult;
 
 Dx12Wrapper::Dx12Wrapper()
@@ -96,9 +97,9 @@ void Dx12Wrapper::Draw(bool isDraw)
 		DirectXImportant::cmdList.Get());
 }
 
-ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::CreateDescriptorHeapForImgui()
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::CreateDescriptorHeapForImgui()
 {
-	ComPtr<ID3D12DescriptorHeap> ret;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> ret;
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	desc.NodeMask = 0;
@@ -112,7 +113,7 @@ ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::CreateDescriptorHeapForImgui()
 	return ret;
 }
 
-ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::GetHeapForImgui()
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Dx12Wrapper::GetHeapForImgui()
 {
 	return _heapForImgui;
 }

@@ -11,6 +11,6 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //サンプリングしたカラーの明るさを計算
     float t = dot(texcolor.xyz, float3(0.2125f, 0.7154f, 0.0721f));
     
-    clip(t - 0.8f);
+    //clip(t - 0.8f);
     return texcolor;
 }

@@ -8,40 +8,40 @@
 #include "../DirectX/DirectXImportant.h"
 #include "../DirectX/Camera.h"
 
-using namespace std;
+//using namespace std;
 
 class Model3D
 {
 private:
 	struct Vertex {
-		XMFLOAT3 pos;
-		XMFLOAT3 normal;
-		XMFLOAT2 uv;
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT3 normal;
+		DirectX::XMFLOAT2 uv;
 	};
 
 	struct ConstBufferDataB0 {
-		XMMATRIX mat;
+		DirectX::XMMATRIX mat;
 	};
 	ConstBufferDataB0* constMapB0 = nullptr;
 
 	struct ConstBufferDataB1 {
-		XMFLOAT3 ambient;
+		DirectX::XMFLOAT3 ambient;
 		float pad1;
-		XMFLOAT3 diffuse;
+		DirectX::XMFLOAT3 diffuse;
 		float pad2;
-		XMFLOAT3 specular;
+		DirectX::XMFLOAT3 specular;
 		float alpha;
 	};
 	ConstBufferDataB1* constMapB1 = nullptr;
 
 	struct Material
 	{
-		string name;
-		XMFLOAT3 ambient;
-		XMFLOAT3 diffuse;
-		XMFLOAT3 specular;
+		std::string name;
+		DirectX::XMFLOAT3 ambient;
+		DirectX::XMFLOAT3 diffuse;
+		DirectX::XMFLOAT3 specular;
 		float alpha;
-		string textureFilename;
+		std::string textureFilename;
 
 		Material() {
 			ambient = { 0.3f,0.3f,0.3f };
@@ -52,41 +52,41 @@ private:
 	};
 
 public:
-	static vector<Vertex> vertices;
-	static vector<unsigned short> indices;
+	static std::vector<Vertex> vertices;
+	static std::vector<unsigned short> indices;
 	static Material material;
 
 private:
-	ComPtr<ID3D12Resource> vertBuff = nullptr;
-	ComPtr<ID3D12Resource> indexBuff = nullptr;
-	ComPtr<ID3D12Resource> constBuffB0;
-	ComPtr<ID3D12Resource> constBuffB1;
-	ComPtr<ID3D12Resource> texbuff;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertBuff = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuff = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffB0;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffB1;
+	Microsoft::WRL::ComPtr<ID3D12Resource> texbuff;
 	D3D12_VERTEX_BUFFER_VIEW vbView{};
 	D3D12_INDEX_BUFFER_VIEW ibView{};
 	D3D12_CPU_DESCRIPTOR_HANDLE basicHeapHandle;
-	ComPtr<ID3D12DescriptorHeap> basicDescHeap = nullptr;
-	ComPtr<ID3D12PipelineState> pipelinestate = nullptr;
-	ComPtr<ID3D12RootSignature> rootsignature;
-	XMMATRIX matWorld;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelinestate = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootsignature;
+	DirectX::XMMATRIX matWorld;
 
 public:
-	XMFLOAT3 scale;
-	XMFLOAT3 rotation;
-	XMFLOAT3 position;
-	XMMATRIX matRot;
+	DirectX::XMFLOAT3 scale;
+	DirectX::XMFLOAT3 rotation;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMMATRIX matRot;
 
 public:
 	Model3D();
 	void CreateDescriptorHeap();
 	void CreateGraphicsPipeline();
-	void LoadTexture(const string& directoryPath, const string& filename);
-	void LoadMaterial(const string& directoryPath, const string& filename);
-	void CreateModel(const string& modelName);
+	void LoadTexture(const std::string& directoryPath, const std::string& filename);
+	void LoadMaterial(const std::string& directoryPath, const std::string& filename);
+	void CreateModel(const std::string& modelName);
 	void Init();
 	void Update();
 	void Draw();
-	XMMATRIX GetmatRot();
-	XMFLOAT3 GetPosition();
+	DirectX::XMMATRIX GetmatRot();
+	DirectX::XMFLOAT3 GetPosition();
 };
 

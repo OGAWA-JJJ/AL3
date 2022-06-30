@@ -1,7 +1,12 @@
 #include "Object3D.h"
+#include <d3dcompiler.h>
+#include <d3dx12.h>
+#include <DirectXTex.h>
 
-vector<Model3D::Vertex>  Model3D::vertices;
-vector<unsigned short>  Model3D::indices;
+#pragma comment(lib,"d3dcompiler.lib")
+
+std::vector<Model3D::Vertex>  Model3D::vertices;
+std::vector<unsigned short>  Model3D::indices;
 Model3D::Material Model3D::material;
 
 Model3D::Model3D()
@@ -29,9 +34,9 @@ void Model3D::CreateGraphicsPipeline()
 	if (pipelinestate != nullptr) return;
 
 	HRESULT result = S_FALSE;
-	ComPtr<ID3DBlob> vsBlob;
-	ComPtr<ID3DBlob> psBlob;
-	ComPtr<ID3DBlob> errorBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 
 	//頂点シェーダの読み込みとコンパイル
 	result = D3DCompileFromFile(
@@ -152,7 +157,7 @@ void Model3D::CreateGraphicsPipeline()
 	CD3DX12_DESCRIPTOR_RANGE descRangeSRV;
 	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
-	CD3DX12_ROOT_PARAMETER rootparams[3];
+	CD3DX12_ROOT_PARAMETER rootparams[3] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[2].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
@@ -162,7 +167,7 @@ void Model3D::CreateGraphicsPipeline()
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.Init_1_0(_countof(rootparams), rootparams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	ComPtr<ID3DBlob> rootSigBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> rootSigBlob;
 	result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
 	result = DirectXImportant::dev->CreateRootSignature(0,
 		rootSigBlob->GetBufferPointer(),
@@ -174,14 +179,14 @@ void Model3D::CreateGraphicsPipeline()
 	result = DirectXImportant::dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelinestate));
 }
 
-void Model3D::LoadTexture(const string& directoryPath, const string& filename)
+void Model3D::LoadTexture(const std::string& directoryPath, const std::string& filename)
 {
 	HRESULT result = S_FALSE;
 
-	TexMetadata metadata{};
-	ScratchImage scratchImg{};
+	DirectX::TexMetadata metadata{};
+	DirectX::ScratchImage scratchImg{};
 
-	string filepath = directoryPath + filename;
+	std::string filepath = directoryPath + filename;
 
 	wchar_t wfilepath[128];
 	int iBufferSize = MultiByteToWideChar(
@@ -193,13 +198,13 @@ void Model3D::LoadTexture(const string& directoryPath, const string& filename)
 		_countof(wfilepath));
 
 	result = LoadFromWICFile(
-		wfilepath, WIC_FLAGS_NONE,
+		wfilepath, DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 	if (FAILED(result)) {
 		assert(0);
 	}
 
-	const Image* img = scratchImg.GetImage(0, 0, 0);
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0);
 
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		metadata.format,
@@ -251,19 +256,19 @@ void Model3D::LoadTexture(const string& directoryPath, const string& filename)
 		basicHeapHandle);
 }
 
-void Model3D::LoadMaterial(const string& directoryPath, const string& filename)
+void Model3D::LoadMaterial(const std::string& directoryPath, const std::string& filename)
 {
-	ifstream file;
+	std::ifstream file;
 	file.open(directoryPath + filename);
 
 	if (file.fail()) {
 		assert(0);
 	}
 
-	string line;
+	std::string line;
 	while (getline(file, line)) {
-		istringstream line_stream(line);
-		string key;
+		std::istringstream line_stream(line);
+		std::string key;
 		getline(line_stream, key, ' ');
 
 		if (key[0] == '\t') {
@@ -300,14 +305,14 @@ void Model3D::LoadMaterial(const string& directoryPath, const string& filename)
 	file.close();
 }
 
-void Model3D::CreateModel(const string& modelName)
+void Model3D::CreateModel(const std::string& modelName)
 {
 	HRESULT result;
 
 	std::ifstream file;
-	const string modelname = modelName;
-	const string filename = modelname + ".obj";
-	const string directoryPath = "Resources/";
+	const std::string modelname = modelName;
+	const std::string filename = modelname + ".obj";
+	const std::string directoryPath = "Resources/";
 	file.open(directoryPath + filename);
 
 	if (file.fail()) {
@@ -315,19 +320,19 @@ void Model3D::CreateModel(const string& modelName)
 		assert(0);
 	}
 
-	vector<XMFLOAT3> positions;
-	vector<XMFLOAT3> normals;
-	vector<XMFLOAT2> texcoords;
+	std::vector<DirectX::XMFLOAT3> positions;
+	std::vector<DirectX::XMFLOAT3> normals;
+	std::vector<DirectX::XMFLOAT2> texcoords;
 
-	string line;
+	std::string line;
 	while (getline(file, line)) {
 		std::istringstream line_stream(line);
 
-		string key;
+		std::string key;
 		getline(line_stream, key, ' ');
 
 		if (key == "v") {
-			XMFLOAT3 position{};
+			DirectX::XMFLOAT3 position{};
 			line_stream >> position.x;
 			line_stream >> position.y;
 			line_stream >> position.z;
@@ -336,7 +341,7 @@ void Model3D::CreateModel(const string& modelName)
 		}
 
 		if (key == "vt") {
-			XMFLOAT2 texcoord{};
+			DirectX::XMFLOAT2 texcoord{};
 			line_stream >> texcoord.x;
 			line_stream >> texcoord.y;
 
@@ -345,7 +350,7 @@ void Model3D::CreateModel(const string& modelName)
 		}
 
 		if (key == "vn") {
-			XMFLOAT3 normal{};
+			DirectX::XMFLOAT3 normal{};
 			line_stream >> normal.x;
 			line_stream >> normal.y;
 			line_stream >> normal.z;
@@ -354,14 +359,14 @@ void Model3D::CreateModel(const string& modelName)
 		}
 
 		if (key == "f") {
-			string index_string;
+			std::string index_string;
 			while (getline(line_stream, index_string, ' ')) {
-				istringstream index_stream(index_string);
+				std::istringstream index_stream(index_string);
 				unsigned short indexPosition, indexNormal, indexTexcoord;
 				index_stream >> indexPosition;
-				index_stream.seekg(1, ios_base::cur);
+				index_stream.seekg(1, std::ios_base::cur);
 				index_stream >> indexTexcoord;
-				index_stream.seekg(1, ios_base::cur);
+				index_stream.seekg(1, std::ios_base::cur);
 				index_stream >> indexNormal;
 
 				Vertex vertex{};
@@ -376,7 +381,7 @@ void Model3D::CreateModel(const string& modelName)
 		}
 
 		if (key == "mtllib") {
-			string filename;
+			std::string filename;
 			line_stream >> filename;
 			LoadMaterial(directoryPath, filename);
 		}
@@ -497,24 +502,24 @@ void Model3D::Init()
 void Model3D::Update()
 {
 	HRESULT result;
-	XMMATRIX matScale, matTrans;
+	DirectX::XMMATRIX matScale, matTrans;
 
-	matWorld = XMMatrixIdentity();
+	matWorld = DirectX::XMMatrixIdentity();
 
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
+	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 
-	matRot = XMMatrixIdentity();
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z));
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x));
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y));
+	matRot = DirectX::XMMatrixIdentity();
+	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
+	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));
+	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
 
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	matWorld *= matScale;
 	matWorld *= matRot;
 	matWorld *= matTrans;
 
-	XMFLOAT3 Rotation = { rotation.x,rotation.y,rotation.z };
+	DirectX::XMFLOAT3 Rotation = { rotation.x,rotation.y,rotation.z };
 	constMapB0->mat = matWorld * Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 }
 
@@ -544,12 +549,12 @@ void Model3D::Draw()
 	DirectXImportant::cmdList->DrawIndexedInstanced((UINT)indices.size(), 1, 0, 0, 0);
 }
 
-XMMATRIX Model3D::GetmatRot()
+DirectX::XMMATRIX Model3D::GetmatRot()
 {
 	return matRot;
 }
 
-XMFLOAT3 Model3D::GetPosition()
+DirectX::XMFLOAT3 Model3D::GetPosition()
 {
 	return position;
 }

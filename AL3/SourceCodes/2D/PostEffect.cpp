@@ -11,7 +11,7 @@
 
 float PostEffect::clearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
 
-using namespace DirectX;
+//using namespace DirectX;
 
 PostEffect::PostEffect()
 {
@@ -232,14 +232,14 @@ void PostEffect::Draw(ID3D12GraphicsCommandList* cmdList)
 	this->matWorld *= XMMatrixRotationZ(XMConvertToRadians(rotation));
 	this->matWorld *= XMMatrixTranslation(position.x, position.y, 0.0f);*/
 
-	const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
+	const DirectX::XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 
 	HRESULT result = S_OK;
 
 	//定数バッファにデータ転送
 	ConstantBuffer_b0 data;
 	data.color = color;
-	data.mat = XMMatrixIdentity();
+	data.mat = DirectX::XMMatrixIdentity();
 	data.viewproj = matViewProjection;
 
 	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
@@ -474,7 +474,7 @@ void PostEffect::CreateGraphicsPipelineState(const SpriteInitData& spriteInitDat
 
 	//ルートパラメータ(定数バッファに送るやつの設定、最初の引数でregisterを選択)
 	//分けておくと必要な情報だけ転送したりできてエコ
-	CD3DX12_ROOT_PARAMETER rootparams[3];
+	CD3DX12_ROOT_PARAMETER rootparams[3] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);

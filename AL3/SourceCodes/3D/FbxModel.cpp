@@ -34,7 +34,7 @@ void FbxModel::CreateBuffers(ID3D12Device* device)
 	}
 
 	//頂点バッファビュー(VBV)の作成
-	vbView.BufferLocation = 
+	vbView.BufferLocation =
 		vertBuff->GetGPUVirtualAddress();
 	vbView.SizeInBytes = sizeVB;
 	vbView.StrideInBytes = sizeof(vertices[0]);
@@ -130,7 +130,7 @@ void FbxModel::Draw(ID3D12GraphicsCommandList* cmdList)
 	cmdList->IASetIndexBuffer(&ibView);
 
 	//デスクリプタヒープのセット
-	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
+	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV };
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//シェーダーリソースビューをセット
 	cmdList->SetGraphicsRootDescriptorTable(

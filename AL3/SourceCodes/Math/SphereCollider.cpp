@@ -1,13 +1,14 @@
 #include "SphereCollider.h"
 
-using namespace DirectX;
+//using namespace DirectX;
 
 void SphereCollider::Update()
 {
 	//ワールド行列から座標を抽出
-	const XMMATRIX& matWorld = object->GetMatWorld();
+	const DirectX::XMMATRIX& matWorld = object->GetMatWorld();
 
 	//球のメンバ変数を更新
-	Sphere::center = matWorld.r[3] + offset;
+	//matWorld.r[3] + offset;
+	Sphere::center = DirectX::XMVectorAdd(matWorld.r[3], offset);
 	Sphere::radius = radius;
 }

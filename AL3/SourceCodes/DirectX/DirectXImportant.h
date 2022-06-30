@@ -1,35 +1,37 @@
 #pragma once
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-#include <dinput.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-#include <DirectXTex.h>
-
-#include <cassert>
-#include <fstream>
-#include <xaudio2.h>
-#include <wrl.h>
-
-#include <vector>
-#include <string>
-
 #include "../WinAPI/WindowsAPI.h"
-#include "../Input/Input.h"
+#include <dxgi1_6.h>
+#include <wrl.h>
+//#include <d3d12.h>
 
-#pragma comment(lib,"d3dcompiler.lib")
+//#include <d3dx12.h>
+//#include <dinput.h>
+//#include <d3dcompiler.h>
+//#include <DirectXMath.h>
+//#include <DirectXTex.h>
 
-using namespace DirectX;
+//#include <cassert>
+//#include <fstream>
+//#include <xaudio2.h>
+
+//#include <vector>
+//#include <string>
+
+//#include "../Input/Input.h"
+
+//#pragma comment(lib,"d3dcompiler.lib")
+
+//using namespace DirectX;
 
 class DirectXImportant
 {
 public:
-	static ComPtr<ID3D12Device> dev;
-	static ComPtr<IDXGIFactory6> dxgiFactory;
-	static ComPtr<IDXGISwapChain4> swapchain;
-	static ComPtr<ID3D12CommandAllocator> cmdAllocator;
-	static ComPtr<ID3D12GraphicsCommandList> cmdList;
+	static Microsoft::WRL::ComPtr<ID3D12Device> dev;
+	static Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
+	static Microsoft::WRL::ComPtr<IDXGISwapChain4> swapchain;
+	static Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmdAllocator;
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
 	//Å´ÉèÉìÉ`ÉÉÉìïKóvÇ»Ç¢Ç©Ç‡
-	static ComPtr<ID3D12CommandQueue> cmdQueue;
-	static ComPtr<ID3D12DescriptorHeap> rtvHeaps;
+	static Microsoft::WRL::ComPtr<ID3D12CommandQueue> cmdQueue;
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeaps;
 };

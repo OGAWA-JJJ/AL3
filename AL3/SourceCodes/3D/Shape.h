@@ -2,6 +2,7 @@
 #include "../DirectX/DirectXImportant.h"
 #include "../DirectX/Camera.h"
 #include <forward_list>
+#include <vector>
 
 const int MAX_VERTEX_COUNT = 100;
 
@@ -12,9 +13,9 @@ private:
 	int count = 0;
 
 	struct Vertex {
-		XMFLOAT3 pos; //xyz座標
-		XMFLOAT3 normal = {};
-		XMFLOAT2 uv = {};  //uv座標
+		DirectX::XMFLOAT3 pos; //xyz座標
+		DirectX::XMFLOAT3 normal = {};
+		DirectX::XMFLOAT2 uv = {};  //uv座標
 	};
 
 	std::vector<Vertex> CubeVertices;
@@ -27,9 +28,9 @@ private:
 
 	//GS
 	struct GSVertex {
-		XMFLOAT3 pos; //xyz座標
+		DirectX::XMFLOAT3 pos; //xyz座標
 		float scale;
-		XMFLOAT4 color = {
+		DirectX::XMFLOAT4 color = {
 		1.0f,
 		1.0f,
 		1.0f,
@@ -41,20 +42,20 @@ private:
 
 	struct ConstBufferData {
 		//色（RGBA）
-		XMFLOAT4 color = { 1.0f,1.0f,1.0f,1.0f };
-		XMMATRIX mat;   //3D変換行列
+		DirectX::XMFLOAT4 color = { 1.0f,1.0f,1.0f,1.0f };
+		DirectX::XMMATRIX mat;   //3D変換行列
 	};
 
 	struct GSConstBufferData {
-		XMMATRIX mat;   //3D変換行列
-		XMMATRIX matBillBoard;
+		DirectX::XMMATRIX mat;   //3D変換行列
+		DirectX::XMMATRIX matBillBoard;
 	};
 
 	struct Particle
 	{
-		XMFLOAT3 pos = {};
-		XMFLOAT3 vel = {};
-		XMFLOAT3 accel = {};
+		DirectX::XMFLOAT3 pos = {};
+		DirectX::XMFLOAT3 vel = {};
+		DirectX::XMFLOAT3 accel = {};
 		int frame = 0;
 		int num_frame = 0;
 
@@ -74,20 +75,20 @@ private:
 
 	D3D12_VERTEX_BUFFER_VIEW vbView{};
 	D3D12_INDEX_BUFFER_VIEW ibView{};
-	ComPtr<ID3D12DescriptorHeap> basicDescHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap;
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandle;
 
-	ComPtr<ID3D12PipelineState> pipelinestate;
-	ComPtr<ID3D12RootSignature> rootsignature;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelinestate;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootsignature;
 
 public:
-	XMMATRIX matWorld;        //汎用的ワールド行列
-	XMFLOAT3 scale;
-	XMFLOAT3 rotation;        //XYZ軸を基準に何度回転するか
-	XMFLOAT3 position;
-	XMMATRIX matScale;
-	XMMATRIX matRot;          //回転行列
-	XMMATRIX matTrans;
+	DirectX::XMMATRIX matWorld;        //汎用的ワールド行列
+	DirectX::XMFLOAT3 scale;
+	DirectX::XMFLOAT3 rotation;        //XYZ軸を基準に何度回転するか
+	DirectX::XMFLOAT3 position;
+	DirectX::XMMATRIX matScale;
+	DirectX::XMMATRIX matRot;          //回転行列
+	DirectX::XMMATRIX matTrans;
 
 public:
 	Shape();
@@ -105,7 +106,7 @@ public:
 	void DrawGeometry();
 
 public:
-	void Add(int life, XMFLOAT3 position, XMFLOAT3 velocity, XMFLOAT3 accel, float start_scale, float end_scale);
+	void Add(int life, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 velocity, DirectX::XMFLOAT3 accel, float start_scale, float end_scale);
 	Shape* Create();
 	/*void SetRandomColor() {
 		GSVertex* vertex = nullptr;

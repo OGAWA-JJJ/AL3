@@ -9,9 +9,9 @@ public:
 public:
 	Model3DManager();
 	void Init();
-	void CreateModel(const string& modelName);
+	void CreateModel(const std::string& modelName);
 	void DrawModel(bool isDraw = true);
-	void SetPos(XMFLOAT3 pos);
-	void SetScale(XMFLOAT3 scale);
+	void SetPos(DirectX::XMFLOAT3 pos);
+	void SetScale(DirectX::XMFLOAT3 scale);
 };
 

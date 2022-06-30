@@ -194,7 +194,7 @@ void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
 
 	//定数バッファにデータ転送
 	ConstantBuffer_b0 data;
-	data.mat = XMMatrixIdentity();
+	data.mat = DirectX::XMMatrixIdentity();
 	//data.viewproj = matViewProjection;
 	//data.lightViewproj = lightMatViewProjection;
 
@@ -396,7 +396,7 @@ void ShadowMap::CreateGraphicsPipelineState()
 
 	//ルートパラメータ(定数バッファに送るやつの設定、最初の引数でregisterを選択)
 	//分けておくと必要な情報だけ転送したりできてエコ
-	CD3DX12_ROOT_PARAMETER rootparams[2];
+	CD3DX12_ROOT_PARAMETER rootparams[2] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
 	//rootparams[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);

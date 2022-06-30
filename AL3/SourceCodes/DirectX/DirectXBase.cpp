@@ -1,13 +1,15 @@
 #include "DirectXBase.h"
+#include <string>
+#include <d3dx12.h>
 
 HRESULT DirectXBase::result;
-ComPtr<IDXGIAdapter> DirectXBase::tmpAdapter = nullptr;
+Microsoft::WRL::ComPtr<IDXGIAdapter> DirectXBase::tmpAdapter = nullptr;
 D3D12_DESCRIPTOR_HEAP_DESC DirectXBase::heapDesc{};
-ComPtr<ID3D12Resource> DirectXBase::depthBuffer;
-ComPtr<ID3D12DescriptorHeap> DirectXBase::dsvHeap;
-ComPtr<ID3D12Fence> DirectXBase::fence = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBase::depthBuffer;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXBase::dsvHeap;
+Microsoft::WRL::ComPtr<ID3D12Fence> DirectXBase::fence = nullptr;
 UINT64 DirectXBase::fenceVal = 0;
-std::vector<ComPtr<ID3D12Resource>>DirectXBase::backBuffers;
+std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>DirectXBase::backBuffers;
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::rtvH;
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::dsvH;
 UINT DirectXBase::bbIndex = 0;
@@ -21,7 +23,7 @@ void DirectXBase::DXGIFactory()
 
 void DirectXBase::GraphicsAdapter()
 {
-	std::vector<ComPtr<IDXGIAdapter>>adapters;
+	std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter>>adapters;
 
 	for (int i = 0;
 		DirectXImportant::dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND;
@@ -123,7 +125,7 @@ void DirectXBase::SwapChain(HWND hwnd)
 	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	ComPtr<IDXGISwapChain1> swapchain1;
+	Microsoft::WRL::ComPtr<IDXGISwapChain1> swapchain1;
 
 	DirectXImportant::dxgiFactory->CreateSwapChainForHwnd(
 		DirectXImportant::cmdQueue.Get(),

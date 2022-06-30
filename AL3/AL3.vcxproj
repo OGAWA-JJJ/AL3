@@ -124,6 +124,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)DirectXTex</AdditionalIncludeDirectories>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,6 +142,7 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)DirectXTex</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -198,7 +200,6 @@
     <ClCompile Include="SourceCodes\Math\CollisionPrimitive.cpp" />
     <ClCompile Include="SourceCodes\Math\SphereCollider.cpp" />
     <ClCompile Include="SourceCodes\Users\GameScene.cpp" />
-    <ClCompile Include="SourceCodes\Users\Hantei.cpp" />
     <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp" />
     <ClCompile Include="SourceCodes\XAudio2\Music.cpp" />
   </ItemGroup>
@@ -254,7 +255,6 @@
     <ClInclude Include="SourceCodes\Math\SphereCollider.h" />
     <ClInclude Include="SourceCodes\Singleton.h" />
     <ClInclude Include="SourceCodes\Users\GameScene.h" />
-    <ClInclude Include="SourceCodes\Users\Hantei.h" />
     <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h" />
     <ClInclude Include="SourceCodes\XAudio2\Music.h" />
   </ItemGroup>

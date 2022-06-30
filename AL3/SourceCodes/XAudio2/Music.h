@@ -1,12 +1,15 @@
 #pragma once
-#include "../DirectX/DirectXImportant.h"
+//#include "../DirectX/DirectXImportant.h"
+#include <wrl.h>
+#include <xaudio2.h>
+#include <cstdint>
 
 #pragma comment(lib,"xaudio2.lib")
 
 class Music
 {
 private:
-	ComPtr<IXAudio2> xAudio2;
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;
 
 	IXAudio2SourceVoice* pSourceVoice = nullptr;

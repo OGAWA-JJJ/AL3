@@ -1,11 +1,14 @@
 #include "GraphicsPipeline.h"
+#include <d3dcompiler.h>
+
+#pragma comment(lib,"d3dcompiler.lib")
 
 void GraphicsPipeline::CreateGraphicsPipeline(const wchar_t& FileName)
 {
 	HRESULT result = S_FALSE;
-	ComPtr<ID3DBlob> vsBlob;
-	ComPtr<ID3DBlob> psBlob;
-	ComPtr<ID3DBlob> errorBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 	wchar_t filename = FileName;
 
 	//VertexShader
@@ -29,7 +32,7 @@ void GraphicsPipeline::CreateGraphicsPipeline(const wchar_t& FileName)
 		&psBlob, &errorBlob);
 }
 
-ComPtr<ID3D12PipelineState> GraphicsPipeline::GetPipelineState()
+Microsoft::WRL::ComPtr<ID3D12PipelineState> GraphicsPipeline::GetPipelineState()
 {
 	return pipelinestate;
 }

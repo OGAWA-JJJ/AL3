@@ -47,8 +47,8 @@ Model* Model::CreateFromObj(const std::string& modelname, bool smoothing)
 
 void Model::Init(const std::string& modelname, bool smoothing)
 {
-	const string filename = modelname + ".obj";
-	const string directoryPath = baseDirectory + modelname + "/";
+	const std::string filename = modelname + ".obj";
+	const std::string directoryPath = baseDirectory + modelname + "/";
 
 	// ファイルストリーム
 	std::ifstream file;
@@ -66,25 +66,25 @@ void Model::Init(const std::string& modelname, bool smoothing)
 	int indexCountTex = 0;
 	int indexCountNoTex = 0;
 
-	vector<XMFLOAT3> positions;	// 頂点座標
-	vector<XMFLOAT3> normals;	// 法線ベクトル
-	vector<XMFLOAT2> texcoords;	// テクスチャUV
+	std::vector<DirectX::XMFLOAT3> positions;	// 頂点座標
+	std::vector<DirectX::XMFLOAT3> normals;	// 法線ベクトル
+	std::vector<DirectX::XMFLOAT2> texcoords;	// テクスチャUV
 	// 1行ずつ読み込む
-	string line;
+	std::string line;
 	while (getline(file, line)) {
 
 		// 1行分の文字列をストリームに変換して解析しやすくする
 		std::istringstream line_stream(line);
 
 		// 半角スペース区切りで行の先頭文字列を取得
-		string key;
+		std::string key;
 		getline(line_stream, key, ' ');
 
 		//マテリアル
 		if (key == "mtllib")
 		{
 			// マテリアルのファイル名読み込み
-			string filename;
+			std::string filename;
 			line_stream >> filename;
 			// マテリアル読み込み
 			LoadMaterial(directoryPath, filename);
@@ -105,7 +105,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 			}
 
 			// グループ名読み込み
-			string groupName;
+			std::string groupName;
 			line_stream >> groupName;
 
 			// メッシュに名前をセット
@@ -114,7 +114,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		// 先頭文字列がvなら頂点座標
 		if (key == "v") {
 			// X,Y,Z座標読み込み
-			XMFLOAT3 position{};
+			DirectX::XMFLOAT3 position{};
 			line_stream >> position.x;
 			line_stream >> position.y;
 			line_stream >> position.z;
@@ -124,7 +124,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		if (key == "vt")
 		{
 			// U,V成分読み込み
-			XMFLOAT2 texcoord{};
+			DirectX::XMFLOAT2 texcoord{};
 			line_stream >> texcoord.x;
 			line_stream >> texcoord.y;
 			// V方向反転
@@ -135,7 +135,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		// 先頭文字列がvnなら法線ベクトル
 		if (key == "vn") {
 			// X,Y,Z成分読み込み
-			XMFLOAT3 normal{};
+			DirectX::XMFLOAT3 normal{};
 			line_stream >> normal.x;
 			line_stream >> normal.y;
 			line_stream >> normal.z;
@@ -147,7 +147,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		{
 			if (mesh->GetMaterial() == nullptr) {
 				// マテリアルの名読み込み
-				string materialName;
+				std::string materialName;
 				line_stream >> materialName;
 
 				// マテリアル名で検索し、マテリアルを割り当てる
@@ -162,7 +162,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		{
 			int faceIndexCount = 0;
 			// 半角スペース区切りで行の続きを読み込む
-			string index_string;
+			std::string index_string;
 			while (getline(line_stream, index_string, ' ')) {
 				// 頂点インデックス1個分の文字列をストリームに変換して解析しやすくする
 				std::istringstream index_stream(index_string);
@@ -171,11 +171,11 @@ void Model::Init(const std::string& modelname, bool smoothing)
 				index_stream >> indexPosition;
 
 				Material* material = mesh->GetMaterial();
-				index_stream.seekg(1, ios_base::cur); // スラッシュを飛ばす
+				index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
 				// マテリアル、テクスチャがある場合
 				if (material && material->textureFilename.size() > 0) {
 					index_stream >> indexTexcoord;
-					index_stream.seekg(1, ios_base::cur); // スラッシュを飛ばす
+					index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
 					index_stream >> indexNormal;
 					// 頂点データの追加
 					Mesh::VertexPosNormalUv vertex{};
@@ -207,9 +207,9 @@ void Model::Init(const std::string& modelname, bool smoothing)
 						}
 					}
 					else {
-						index_stream.seekg(-1, ios_base::cur); // 1文字戻る
+						index_stream.seekg(-1, std::ios_base::cur); // 1文字戻る
 						index_stream >> indexTexcoord;
-						index_stream.seekg(1, ios_base::cur); // スラッシュを飛ばす
+						index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
 						index_stream >> indexNormal;
 						// 頂点データの追加
 						Mesh::VertexPosNormalUv vertex{};
@@ -284,7 +284,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 }
 
 void Model::Draw(ID3D12GraphicsCommandList* cmdList,
-	ComPtr<ID3D12DescriptorHeap> srv,
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv,
 	UINT rootParamIndex,
 	bool isAddTexture
 )
@@ -323,14 +323,14 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 	Material* material = nullptr;
 
 	//1行ずつ読み込む
-	string line;
+	std::string line;
 	while (getline(file, line)) {
 
 		//1行分の文字列をストリームに変換して解析しやすくする
 		std::istringstream line_stream(line);
 
 		//半角スペース区切りで行の先頭文字列を取得
-		string key;
+		std::string key;
 		getline(line_stream, key, ' ');
 
 		//先頭のタブ文字は無視する
@@ -378,12 +378,12 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 			//フルパスからファイル名を取り出す
 			size_t pos1;
 			pos1 = material->textureFilename.rfind('\\');
-			if (pos1 != string::npos) {
+			if (pos1 != std::string::npos) {
 				material->textureFilename = material->textureFilename.substr(pos1 + 1, material->textureFilename.size() - pos1 - 1);
 			}
 
 			pos1 = material->textureFilename.rfind('/');
-			if (pos1 != string::npos) {
+			if (pos1 != std::string::npos) {
 				material->textureFilename = material->textureFilename.substr(pos1 + 1, material->textureFilename.size() - pos1 - 1);
 			}
 		}
@@ -429,7 +429,7 @@ void Model::CreateDescriptorHeap()
 void Model::LoadTextures()
 {
 	int textureIndex = 0;
-	string directoryPath = baseDirectory + name + "/";
+	std::string directoryPath = baseDirectory + name + "/";
 
 	for (auto& m : materials) {
 		Material* material = m.second;

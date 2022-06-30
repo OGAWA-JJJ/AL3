@@ -1,4 +1,6 @@
 #include "Music.h"
+#include <fstream>
+#include <cassert>
 
 XAudio2VoiceCallback voiceCallback;
 

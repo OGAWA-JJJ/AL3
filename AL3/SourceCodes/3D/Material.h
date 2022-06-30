@@ -5,20 +5,20 @@
 #include <wrl.h>
 #include <string>
 
-using namespace DirectX;
-using namespace Microsoft::WRL;
-using namespace std;
+//using namespace DirectX;
+//using namespace Microsoft::WRL;
+//using namespace std;
 
 class Material
 {
 public:
 	struct ConstBufferDataB1
 	{
-		XMFLOAT3 ambient; // アンビエント係数
+		DirectX::XMFLOAT3 ambient; // アンビエント係数
 		float pad1; // パディング
-		XMFLOAT3 diffuse; // ディフューズ係数
+		DirectX::XMFLOAT3 diffuse; // ディフューズ係数
 		float pad2; // パディング
-		XMFLOAT3 specular; // スペキュラー係数
+		DirectX::XMFLOAT3 specular; // スペキュラー係数
 		float alpha;	// アルファ
 	};
 
@@ -26,11 +26,11 @@ public:
 	//マテリアル名
 	std::string name;
 	//アンビエント影響度
-	XMFLOAT3 ambient;
+	DirectX::XMFLOAT3 ambient;
 	//ディフューズ影響度
-	XMFLOAT3 diffuse;
+	DirectX::XMFLOAT3 diffuse;
 	//スペキュラー影響度
-	XMFLOAT3 specular;
+	DirectX::XMFLOAT3 specular;
 	//アルファ
 	float alpha;
 	//テクスチャファイル名
@@ -40,9 +40,9 @@ private:
 	//デバイス
 	static ID3D12Device* device;
 	//テクスチャバッファ
-	ComPtr<ID3D12Resource> texbuff;
+	Microsoft::WRL::ComPtr<ID3D12Resource> texbuff;
 	//定数バッファ
-	ComPtr<ID3D12Resource> constBuff;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff;
 	//シェーダリソースビューのハンドル(CPU)
 	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV;
 	//シェーダリソースビューのハンドル(CPU)

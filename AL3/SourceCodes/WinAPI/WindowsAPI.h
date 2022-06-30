@@ -12,7 +12,7 @@ const int WINDOW_HEIGHT = 720;  //縦幅
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
-using namespace Microsoft::WRL;
+//using namespace Microsoft::WRL;
 
 //ウィンドウプロシージャ関数
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

@@ -1,6 +1,6 @@
 #pragma once
-#include "DirectXImportant.h"
 #include <wrl.h>
+#include "DirectXImportant.h"
 
 class ConstantBuffer
 {

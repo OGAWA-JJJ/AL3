@@ -2,7 +2,7 @@
 #include "../DirectX/DirectXImportant.h"
 #include <cassert>
 
-using namespace DirectX;
+//using namespace DirectX;
 
 const std::string FbxLoader::baseDirectory = "Resources/";
 const std::string FbxLoader::defaultTextureFileName = "white1x1.png";
@@ -114,18 +114,18 @@ void FbxLoader::ParseNodeRecursive(FbxModel* model, FbxNode* fbxNode, Node* pare
 	node.translation = { (float)translation[0],(float)translation[1],(float)translation[2],1.0f };
 
 	//回転角をDegree(度)からラジアンに変換
-	node.rotation.m128_f32[0] = XMConvertToRadians(node.rotation.m128_f32[0]);
-	node.rotation.m128_f32[1] = XMConvertToRadians(node.rotation.m128_f32[1]);
-	node.rotation.m128_f32[2] = XMConvertToRadians(node.rotation.m128_f32[2]);
+	node.rotation.m128_f32[0] = DirectX::XMConvertToRadians(node.rotation.m128_f32[0]);
+	node.rotation.m128_f32[1] = DirectX::XMConvertToRadians(node.rotation.m128_f32[1]);
+	node.rotation.m128_f32[2] = DirectX::XMConvertToRadians(node.rotation.m128_f32[2]);
 
 	//スケール、回転、平行移動行列の計算
-	XMMATRIX matScaling, matRotation, matTranslaton;
-	matScaling = XMMatrixScalingFromVector(node.scaling);
-	matRotation = XMMatrixRotationRollPitchYawFromVector(node.rotation);
-	matTranslaton = XMMatrixTranslationFromVector(node.translation);
+	DirectX::XMMATRIX matScaling, matRotation, matTranslaton;
+	matScaling = DirectX::XMMatrixScalingFromVector(node.scaling);
+	matRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(node.rotation);
+	matTranslaton = DirectX::XMMatrixTranslationFromVector(node.translation);
 
 	//ローカル変形行列の計算
-	node.transform = XMMatrixIdentity();
+	node.transform = DirectX::XMMatrixIdentity();
 	node.transform *= matScaling;
 	node.transform *= matRotation;
 	node.transform *= matTranslaton;
@@ -328,14 +328,14 @@ void FbxLoader::LoadTexture(FbxModel* model, const std::string& fullpath)
 	HRESULT result = S_FALSE;
 
 	//WICテクスチャのロード
-	TexMetadata& metadata = model->metadata;
-	ScratchImage& scratchImg = model->scratchImg;
+	DirectX::TexMetadata& metadata = model->metadata;
+	DirectX::ScratchImage& scratchImg = model->scratchImg;
 
 	//ユニコード文字列に変換
 	wchar_t wfilepath[128];
 	MultiByteToWideChar(CP_ACP, 0, fullpath.c_str(), -1, wfilepath, _countof(wfilepath));
 	result = LoadFromWICFile(
-		wfilepath, WIC_FLAGS_NONE,
+		wfilepath, DirectX::WIC_FLAGS_NONE,
 		&metadata, scratchImg
 	);
 	if (FAILED(result)) { assert(0); }
@@ -402,11 +402,11 @@ void FbxLoader::ParseSkin(FbxModel* model, FbxMesh* fbxMesh)
 		fbxCluster->GetTransformLinkMatrix(fbxMat);
 
 		//XMMATRIX型に変換する
-		XMMATRIX initialPose;
+		DirectX::XMMATRIX initialPose;
 		ConvertMatrixFromFbx(&initialPose, fbxMat);
 
 		//初期姿勢行列の逆行列を得る
-		bone.invInitialPose = XMMatrixInverse(nullptr, initialPose);
+		bone.invInitialPose = DirectX::XMMatrixInverse(nullptr, initialPose);
 	}
 
 	//ボーン番号とスキンウェイトのペア
