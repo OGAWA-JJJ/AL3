@@ -5,10 +5,39 @@
 #include "../Math/OgaJHelper.h"
 #include "../Input/FunaInput.h"
 #include "../Input/Input.h"
+#include "../DirectX/Camera.h"
 
 GameScene::GameScene()
 {
 	animationType = STAND;
+	cameraAngle = { 0,0,0 };
+
+#pragma region Light
+
+	light = Light::Create();
+	light->SetLightColor(
+		{
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
+		{
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
+
+#pragma endregion
+
+#pragma region Settings
+
+	Object::SetLight(light);
+	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+
+#pragma endregion
+
+#pragma region Pipeline
 
 	ObjectInitData normalInit;
 	normalInit.m_psEntryPoint = "PSmain";
@@ -25,56 +54,6 @@ GameScene::GameScene()
 	receiveInit.m_vsEntryPoint = "VSShadowMain";
 	receiveShadow = Object::CreateGraphicsPipeline(receiveInit);
 
-	XMFLOAT3 camera = Camera::GetEye();
-	OgaJHelper::ConvertToRadian(camera.y);
-	cameraAngle = { 0,camera.y,0 };
-
-	modelA = Model::CreateFromObj("triangle");
-	modelB = Model::CreateFromObj("yuka");
-	//modelB = Model::CreateFromObj("sponza");
-	modelC = Model::CreateFromObj("monkey");
-	modelD = Model::CreateFromObj("triangle");
-	sword = Model::CreateFromObj("Sword");
-
-	objA = Object::Create(modelA);
-	objB = Object::Create(modelB);
-	objC = Object::Create(modelC);
-	objD = Object::Create(modelD);
-	objSword = Object::Create(sword);
-	objShadowSword = Object::Create(sword);
-
-	const float objA_Scale = 40.0f;
-	const float objB_Scale = 100.0f;
-	const float objC_Scale = 20.0f;
-	const float objD_Scale = 5.0f;
-	const float objSword_Scale = 1.0f;
-	const float fbx_Scale = 0.02f;
-
-	objA->SetScale(XMFLOAT3(objA_Scale, objA_Scale, objA_Scale));
-	objB->SetScale(XMFLOAT3(objB_Scale, objB_Scale, objB_Scale));
-	objC->SetScale(XMFLOAT3(objC_Scale, objC_Scale, objC_Scale));
-	objD->SetScale(XMFLOAT3(objD_Scale, objD_Scale, objD_Scale));
-	objSword->SetScale(XMFLOAT3(objSword_Scale, objSword_Scale, objSword_Scale));
-	objShadowSword->SetScale(XMFLOAT3(objSword_Scale, objSword_Scale, objSword_Scale));
-
-	light = Light::Create();
-	light->SetLightColor(
-		{
-			ImguiControl::Imgui_lightColor_r,
-			ImguiControl::Imgui_lightColor_g,
-			ImguiControl::Imgui_lightColor_b
-		});
-	light->SetLightDir(
-		{
-			ImguiControl::Imgui_lightDir_x,
-			ImguiControl::Imgui_lightDir_y,
-			ImguiControl::Imgui_lightDir_z,
-		});
-
-	Object::SetLight(light);
-
-	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
-
 	FbxInitData fbxNormalInit;
 	fbxNormalInit.m_vsEntryPoint = "PSmain";
 	fbxNormalInit.m_vsEntryPoint = "VSmain";
@@ -85,163 +64,191 @@ GameScene::GameScene()
 	fbxShadowInit.m_vsEntryPoint = "VSShadowMain";
 	fbx_shadow = FbxObject3D::CreateGraphicsPipeline(fbxShadowInit);
 
-	fbxModel1 = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
-	fbxModel2 = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
-	fbxModel3 = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
+#pragma endregion
 
-	fbxObj1 = new FbxObject3D();
-	fbxObj1->Init();
-	fbxObj1->SetModel(fbxModel1);
-	fbxObj1->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj1->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxObj1->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxObj1->PlayAnimation();
+#pragma region ModelLoad
 
-	fbxObj2 = new FbxObject3D();
-	fbxObj2->Init();
-	fbxObj2->SetModel(fbxModel2);
-	fbxObj2->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj2->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxObj2->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxObj2->PlayAnimation();
+	model_Lich = Model::CreateFromObj("Lich");
+	model_stage = Model::CreateFromObj("yuka");
+	//modelB = Model::CreateFromObj("sponza");
+	model_eyeball = Model::CreateFromObj("eyeball");
+	model_sword = Model::CreateFromObj("Sword");
 
-	fbxObj3 = new FbxObject3D();
-	fbxObj3->Init();
-	fbxObj3->SetModel(fbxModel3);
-	fbxObj3->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxObj3->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxObj3->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxObj3->PlayAnimation();
+	fbxmodel_standMiku = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
+	fbxmodel_slowRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
+	fbxmodel_fastRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
 
+#pragma endregion
 
-	fbxShadow1 = new FbxObject3D();
-	fbxShadow1->Init();
-	fbxShadow1->SetModel(fbxModel1);
-	fbxShadow1->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxShadow1->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxShadow1->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxShadow1->PlayAnimation();
+#pragma region ModelCreate
 
-	fbxShadow2 = new FbxObject3D();
-	fbxShadow2->Init();
-	fbxShadow2->SetModel(fbxModel2);
-	fbxShadow2->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxShadow2->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxShadow2->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxShadow2->PlayAnimation();
+	//Obj
+	obj_Lich = Object::Create(model_Lich);
+	obj_Stage = Object::Create(model_stage);
+	obj_EyeBall = Object::Create(model_eyeball);
+	obj_Sword = Object::Create(model_sword);
+	obj_ShadowSword = Object::Create(model_sword);
 
-	fbxShadow3 = new FbxObject3D();
-	fbxShadow3->Init();
-	fbxShadow3->SetModel(fbxModel3);
-	fbxShadow3->SetPosition(XMFLOAT3(0, 0, 0));
-	fbxShadow3->SetScale(XMFLOAT3(fbx_Scale, fbx_Scale, fbx_Scale));
-	fbxShadow3->SetRotation(XMFLOAT3(0, 0, 0));
-	fbxShadow3->PlayAnimation();
+	//Fbx
+	fbxobj_StandMiku = new FbxObject3D();
+	fbxobj_StandMiku->Init();
+	fbxobj_StandMiku->SetModel(fbxmodel_standMiku);
+	fbxobj_StandMiku->PlayAnimation();
 
-	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, XMFLOAT2(0, WINDOW_HEIGHT / 2));
-	GH1->SetSize(XMFLOAT2(32, 32));
+	fbxobj_SlowRunMiku = new FbxObject3D();
+	fbxobj_SlowRunMiku->Init();
+	fbxobj_SlowRunMiku->SetModel(fbxmodel_slowRunMiku);
+	fbxobj_SlowRunMiku->PlayAnimation();
+
+	fbxobj_FastRunMiku = new FbxObject3D();
+	fbxobj_FastRunMiku->Init();
+	fbxobj_FastRunMiku->SetModel(fbxmodel_fastRunMiku);
+	fbxobj_FastRunMiku->PlayAnimation();
+
+	//Fbx(Shadow)
+	fbxobj_StandShadowMiku = new FbxObject3D();
+	fbxobj_StandShadowMiku->Init();
+	fbxobj_StandShadowMiku->SetModel(fbxmodel_standMiku);
+	fbxobj_StandShadowMiku->PlayAnimation();
+
+	fbxobj_SlowRunShadowMiku = new FbxObject3D();
+	fbxobj_SlowRunShadowMiku->Init();
+	fbxobj_SlowRunShadowMiku->SetModel(fbxmodel_slowRunMiku);
+	fbxobj_SlowRunShadowMiku->PlayAnimation();
+
+	fbxobj_FastRunShadowMiku = new FbxObject3D();
+	fbxobj_FastRunShadowMiku->Init();
+	fbxobj_FastRunShadowMiku->SetModel(fbxmodel_fastRunMiku);
+	fbxobj_FastRunShadowMiku->PlayAnimation();
+
+#pragma endregion
+
+#pragma region ModelInit
+
+	const float Lich_Scale = 20.0f;
+	const float Stage_Scale = 100.0f;
+	const float EyeBall_Scale = 2.0f;
+	const float Sword_Scale = 1.0f;
+
+	const float Miku_Scale = 0.02f;
+
+	//Obj
+	obj_Lich->SetScale(XMFLOAT3(Lich_Scale, Lich_Scale, Lich_Scale));
+	obj_Stage->SetScale(XMFLOAT3(Stage_Scale, Stage_Scale, Stage_Scale));
+	obj_EyeBall->SetScale(XMFLOAT3(EyeBall_Scale, EyeBall_Scale, EyeBall_Scale));
+	obj_Sword->SetScale(XMFLOAT3(Sword_Scale, Sword_Scale, Sword_Scale));
+	obj_ShadowSword->SetScale(XMFLOAT3(Sword_Scale, Sword_Scale, Sword_Scale));
+
+	//Fbx
+	fbxobj_StandMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_StandMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_StandMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	fbxobj_SlowRunMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_SlowRunMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	fbxobj_FastRunMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_FastRunMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	//Fbx(Shadow)
+	fbxobj_StandShadowMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_StandShadowMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	fbxobj_SlowRunShadowMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_SlowRunShadowMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	fbxobj_FastRunShadowMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_FastRunShadowMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+#pragma endregion
+
 }
 
 GameScene::~GameScene()
 {
 	//書き忘れるからヤメロ！
-	delete modelA;
-	delete objA;
-	delete modelB;
-	delete objB;
-	delete modelC;
-	delete objC;
-	delete modelD;
-	delete objD;
-	delete fbxModel1;
-	delete fbxObj1;
-	delete fbxModel2;
-	delete fbxObj2;
-	delete fbxModel3;
-	delete fbxObj3;
-	delete GH1;
+	delete model_Lich;
+	delete obj_Lich;
+	delete model_stage;
+	delete obj_Stage;
+	delete model_eyeball;
+	delete obj_EyeBall;
 
-	delete fbxShadow1;
-	delete fbxShadow2;
-	delete fbxShadow3;
+	delete fbxmodel_standMiku;
+	delete fbxobj_StandMiku;
+	delete fbxmodel_slowRunMiku;
+	delete fbxobj_SlowRunMiku;
+	delete fbxmodel_fastRunMiku;
+	delete fbxobj_FastRunMiku;
+
+	delete fbxobj_StandShadowMiku;
+	delete fbxobj_SlowRunShadowMiku;
+	delete fbxobj_FastRunShadowMiku;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
 {
 	//Lich
-	objA->SetPosition(XMFLOAT3(0.0f, 65.0f, -400.0f));
-	objA->SetRotation(XMFLOAT3(0, -100, 0));
+	obj_Lich->SetPosition(XMFLOAT3(0.0f, 35.0f, -400.0f));
+	obj_Lich->SetRotation(XMFLOAT3(0, -100, 0));
 
 	//skydome or sponza
-	objB->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-	objB->SetRotation(XMFLOAT3(0, 90, 0));
+	obj_Stage->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	obj_Stage->SetRotation(XMFLOAT3(0, 90, 0));
 
-	//monkey
-	objC->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
-	objC->SetRotation(XMFLOAT3(0, 180, 0));
+	//EyeBall
+	obj_EyeBall->SetBillboard(true);
 
 	//Sword
-	objSword->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
-	objSword->SetRotation(XMFLOAT3(90, 0, 180));
+	obj_Sword->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
+	obj_Sword->SetRotation(XMFLOAT3(90, 0, 180));
 
 	//Miku
-	fbxObj1->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-	fbxObj2->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-	fbxObj3->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	fbxobj_StandMiku->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	fbxobj_SlowRunMiku->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	fbxobj_FastRunMiku->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 
-	//eye
-	objD->SetBillboard(true);
-
+	//Camera
 	Camera::SetTarget(XMFLOAT3(
-		fbxObj1->GetPosition().x,
-		fbxObj1->GetPosition().y,
-		fbxObj1->GetPosition().z));
+		fbxobj_StandMiku->GetPosition().x,
+		fbxobj_StandMiku->GetPosition().y,
+		fbxobj_StandMiku->GetPosition().z));
 
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), fbxObj1->GetPosition());
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(obj_Lich->GetPosition(), fbxobj_StandMiku->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
 	Camera::SetEye(XMFLOAT3(
-		fbxObj1->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
+		fbxobj_StandMiku->GetPosition().x + enemyToPlayer.x * MAX_DISTANCE,
 		50.0f,
-		fbxObj1->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
+		fbxobj_StandMiku->GetPosition().z + enemyToPlayer.z * MAX_DISTANCE));
 
 	cameraY = Camera::GetEye().y;
 
-	objB->AddTexture(texbuff, modelB->GetDescHeap());
+	obj_Stage->AddTexture(texbuff, model_stage->GetDescHeap());
 }
 
 void GameScene::Update()
 {
-
-#pragma region Calc
-
 	//FunaInput
 	FunaInput::Update();
 
-	light->SetLightColor(
-		{
-			ImguiControl::Imgui_lightColor_r,
-			ImguiControl::Imgui_lightColor_g,
-			ImguiControl::Imgui_lightColor_b
-		});
-	light->SetLightDir(
-		{
-			ImguiControl::Imgui_lightDir_x,
-			ImguiControl::Imgui_lightDir_y,
-			ImguiControl::Imgui_lightDir_z,
-		});
+	//Light情報を更新
+	Object::SetLight(light);
+	FbxObject3D::SetLight(light);
 
-	//各種変数
-	XMFLOAT3 objCpos = fbxObj1->GetPosition();
-	//XMFLOAT3 objCpos = fbxObj1->GetPosition();
+#pragma region Game
+	//変数
+	XMFLOAT3 playerPos = fbxobj_StandMiku->GetPosition();
 	XMFLOAT3 cameraPos = Camera::GetEye();
 	XMFLOAT3 targetPos = Camera::GetTarget();
-	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), fbxObj1->GetPosition());
-	//XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(objA->GetPosition(), objC->GetPosition());
+	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(obj_Lich->GetPosition(), fbxobj_StandMiku->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxObj1->GetPosition());
-	//XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), objC->GetPosition());
+	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_StandMiku->GetPosition());
 	cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
 
 	if (!isTarget)
@@ -264,13 +271,13 @@ void GameScene::Update()
 				vec.x = FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 				vec.z = FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-				objCpos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+				playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 				rad += DirectX::XM_PI / 2;
-				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+				playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 
 				cameraPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
 				cameraPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
@@ -289,13 +296,13 @@ void GameScene::Update()
 
 				Camera::SetEye(cameraPos);
 				Camera::SetTarget(targetPos);
-				fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 
-				fbxShadow1->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-				fbxShadow2->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-				fbxShadow3->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+				fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 			}
 
 			else { animationType = STAND; }
@@ -304,11 +311,11 @@ void GameScene::Update()
 				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
 			{
 				//ここをどうにかしたい,targetは最悪補完かける
-				XMFLOAT3 objc = fbxObj1->GetPosition();
+				XMFLOAT3 objc = fbxobj_StandMiku->GetPosition();
 				//XMFLOAT3 objc = objC->GetPosition();
 				XMFLOAT3 eye = Camera::GetEye();
 
-				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxObj1->GetPosition(), Camera::GetEye());
+				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxobj_StandMiku->GetPosition(), Camera::GetEye());
 				//XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(objC->GetPosition(), Camera::GetEye());
 				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
 
@@ -333,9 +340,9 @@ void GameScene::Update()
 				float c = cosf(xz);
 				//sin.cos
 				Camera::SetEye(XMFLOAT3(
-					objCpos.x + s * (MAX_DISTANCE + diff),
+					playerPos.x + s * (MAX_DISTANCE + diff),
 					cameraPos.y,
-					objCpos.z + c * (MAX_DISTANCE + diff)
+					playerPos.z + c * (MAX_DISTANCE + diff)
 				));
 			}
 
@@ -344,13 +351,13 @@ void GameScene::Update()
 				XMFLOAT3 target;
 				if (cameraMoveEase < 1.0f)
 				{
-					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), objC->GetPosition(), cameraMoveEase);
+					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), cameraMoveEase);
 					cameraMoveEase += EASE_CAMERA_TIMER * 2;
 				}
 				else
 				{
 					cameraMoveEase = 1.0f;
-					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), objC->GetPosition(), cameraMoveEase);
+					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), cameraMoveEase);
 				}
 				Camera::SetTarget(target);
 			}
@@ -430,8 +437,8 @@ void GameScene::Update()
 
 				if (Input::isKey(DIK_W))
 				{
-					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
 
 					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
 					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
@@ -445,8 +452,8 @@ void GameScene::Update()
 
 				if (Input::isKey(DIK_S))
 				{
-					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
 
 					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
 					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
@@ -462,8 +469,8 @@ void GameScene::Update()
 				{
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					cameraRad += DirectX::XM_PI / 2;
-					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 
 					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
@@ -479,8 +486,8 @@ void GameScene::Update()
 				if (Input::isKey(DIK_A)) {
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					cameraRad -= DirectX::XM_PI / 2;
-					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 
 					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
@@ -500,16 +507,16 @@ void GameScene::Update()
 
 				Camera::SetEye(cameraPos);
 				Camera::SetTarget(targetPos);
-				fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 				//objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 				//fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxObj2->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxObj3->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 				//obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
 
-				fbxShadow1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxShadow2->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxShadow3->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 			}
 
 			else { animationType = STAND; }
@@ -538,13 +545,13 @@ void GameScene::Update()
 				vec.z += FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
 				//XMFLOAT3 normalize = OgaJHelper::CalcNormalizeVec3(XMFLOAT3(vec.x, vec.y, 0));
 
-				objCpos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-				objCpos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+				playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+				playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 				rad += DirectX::XM_PI / 2;
-				objCpos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-				objCpos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+				playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+				playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 			}
 
 			else { animationType = STAND; }
@@ -566,29 +573,29 @@ void GameScene::Update()
 
 				if (Input::isKey(DIK_W))
 				{
-					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
 				}
 
 				if (Input::isKey(DIK_S))
 				{
-					objCpos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					objCpos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
 				}
 
 				if (Input::isKey(DIK_D))
 				{
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					cameraRad += DirectX::XM_PI / 2;
-					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
 
 				if (Input::isKey(DIK_A)) {
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					cameraRad -= DirectX::XM_PI / 2;
-					objCpos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					objCpos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
 			}
 
@@ -597,14 +604,14 @@ void GameScene::Update()
 
 		//ゴール地点
 		const XMFLOAT3 GoalCameraTarget = {
-			objA->GetPosition().x,
-			objA->GetPosition().y - 30.0f,
-			objA->GetPosition().z
+			obj_Lich->GetPosition().x,
+			obj_Lich->GetPosition().y - 30.0f,
+			obj_Lich->GetPosition().z
 		};
 		const XMFLOAT3 GoalCameraEye = {
-			objCpos.x + enemyToPlayer.x * MAX_DISTANCE,
+			playerPos.x + enemyToPlayer.x * MAX_DISTANCE,
 			50.0f,
-			objCpos.z + enemyToPlayer.z * MAX_DISTANCE,
+			playerPos.z + enemyToPlayer.z * MAX_DISTANCE,
 		};
 
 		XMFLOAT3 target;
@@ -644,7 +651,7 @@ void GameScene::Update()
 		Camera::SetEye(eye);
 
 		//向き
-		float pRadian = atan2(cosf(fbxObj1->GetRotation().z), sinf(fbxObj1->GetRotation().x));
+		float pRadian = atan2(cosf(fbxobj_StandMiku->GetRotation().z), sinf(fbxobj_StandMiku->GetRotation().x));
 		//float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
 		OgaJHelper::ConvertToDegree(pRadian);
 		float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
@@ -652,26 +659,26 @@ void GameScene::Update()
 		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
 		//float sub = objC->GetRotation().y - rot;
 		float diff = 0;
-		if (fbxObj1->GetRotation().y - rot > 0) { diff = 2.0f; }
+		if (fbxobj_StandMiku->GetRotation().y - rot > 0) { diff = 2.0f; }
 		//if (objC->GetRotation().y - rot > 0) { diff = 2.0f; }
-		else if (fbxObj1->GetRotation().y - rot < 0) { diff = -2.0f; }
+		else if (fbxobj_StandMiku->GetRotation().y - rot < 0) { diff = -2.0f; }
 		//else if (objC->GetRotation().y - rot < 0) { diff = -2.0f; }
-		fbxObj1->SetRotation(XMFLOAT3(
-			fbxObj1->GetRotation().x,
+		fbxobj_StandMiku->SetRotation(XMFLOAT3(
+			fbxobj_StandMiku->GetRotation().x,
 			rot + diff,
-			fbxObj1->GetRotation().z
+			fbxobj_StandMiku->GetRotation().z
 		));
 
-		fbxObj2->SetRotation(XMFLOAT3(
-			fbxObj1->GetRotation().x,
+		fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(
+			fbxobj_StandMiku->GetRotation().x,
 			rot + diff,
-			fbxObj1->GetRotation().z
+			fbxobj_StandMiku->GetRotation().z
 		));
 
-		fbxObj3->SetRotation(XMFLOAT3(
-			fbxObj1->GetRotation().x,
+		fbxobj_FastRunMiku->SetRotation(XMFLOAT3(
+			fbxobj_StandMiku->GetRotation().x,
 			rot + diff,
-			fbxObj1->GetRotation().z
+			fbxobj_StandMiku->GetRotation().z
 		));
 
 		/*objC->SetRotation(XMFLOAT3(
@@ -683,137 +690,178 @@ void GameScene::Update()
 
 #pragma endregion
 
-	/*----------Update,Setter----------*/
-	objB->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
-	fbxObj1->SetPosition(objCpos);
-	fbxObj2->SetPosition(objCpos);
-	fbxObj3->SetPosition(objCpos);
-
-	fbxShadow1->SetPosition(objCpos);
-	fbxShadow2->SetPosition(objCpos);
-	fbxShadow3->SetPosition(objCpos);
-
-	objD->SetPosition(Camera::GetTarget());
-
-	Object::SetLight(light);
-	FbxObject3D::SetLight(light);
-
-	objA->Update();
-	objB->Update();
-	objC->Update();
-	objD->Update();
-
-	objSword->SetPosition(XMFLOAT3(
-		ImguiControl::Imgui_Sword_x,
-		ImguiControl::Imgui_Sword_y,
-		ImguiControl::Imgui_Sword_z));
-
-	objSword->SetRotation(XMFLOAT3(
-		ImguiControl::Imgui_Sword_rotx,
-		ImguiControl::Imgui_Sword_roty,
-		ImguiControl::Imgui_Sword_rotz));
-
+	//アニメーション管理
 	if (Input::isKeyTrigger(DIK_1))
 	{
-		fbxObj1->StopAnimation();
-		fbxObj2->StopAnimation();
-		fbxObj3->StopAnimation();
-		fbxShadow1->StopAnimation();
-		fbxShadow2->StopAnimation();
-		fbxShadow3->StopAnimation();
+		fbxobj_StandMiku->StopAnimation();
+		fbxobj_SlowRunMiku->StopAnimation();
+		fbxobj_FastRunMiku->StopAnimation();
+		fbxobj_StandShadowMiku->StopAnimation();
+		fbxobj_SlowRunShadowMiku->StopAnimation();
+		fbxobj_FastRunShadowMiku->StopAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_2))
 	{
-		fbxObj1->ResetAnimation();
-		fbxObj2->ResetAnimation();
-		fbxObj3->ResetAnimation();
-		fbxShadow1->ResetAnimation();
-		fbxShadow2->ResetAnimation();
-		fbxShadow3->ResetAnimation();
+		fbxobj_StandMiku->ResetAnimation();
+		fbxobj_SlowRunMiku->ResetAnimation();
+		fbxobj_FastRunMiku->ResetAnimation();
+		fbxobj_StandShadowMiku->ResetAnimation();
+		fbxobj_SlowRunShadowMiku->ResetAnimation();
+		fbxobj_FastRunShadowMiku->ResetAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_3))
 	{
-		fbxObj1->ReplayAnimation();
-		fbxObj2->ReplayAnimation();
-		fbxObj3->ReplayAnimation();
-		fbxShadow1->ReplayAnimation();
-		fbxShadow2->ReplayAnimation();
-		fbxShadow3->ReplayAnimation();
+		fbxobj_StandMiku->ReplayAnimation();
+		fbxobj_SlowRunMiku->ReplayAnimation();
+		fbxobj_FastRunMiku->ReplayAnimation();
+		fbxobj_StandShadowMiku->ReplayAnimation();
+		fbxobj_SlowRunShadowMiku->ReplayAnimation();
+		fbxobj_FastRunShadowMiku->ReplayAnimation();
 	}
 
-	fbxShadow1->Update(true);
-	fbxShadow2->Update(true);
-	fbxShadow3->Update(true);
+	/*----------Update,Setter----------*/
+#pragma region Setter
 
-	if (animationType == STAND)
-	{
-		fbxObj1->Update();
-		objSword->MultiMatrix(fbxObj1->GetMatrix());
-		objShadowSword->MultiMatrix(fbxObj1->GetMatrix());
-	}
-	else if (animationType == SLOWRUN)
-	{
-		fbxObj2->Update();
-		objSword->MultiMatrix(fbxObj2->GetMatrix());
-		objShadowSword->MultiMatrix(fbxObj2->GetMatrix());
-	}
-	else if (animationType == RUN)
-	{
-		fbxObj3->Update();
-		objSword->MultiMatrix(fbxObj3->GetMatrix());
-		objShadowSword->MultiMatrix(fbxObj3->GetMatrix());
-	}
+	obj_Stage->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
+	obj_Sword->SetPosition(XMFLOAT3(
+		ImguiControl::Imgui_swordPos_x,
+		ImguiControl::Imgui_swordPos_y,
+		ImguiControl::Imgui_swordPos_z));
 
-	objSword->Update();
-	objShadowSword->SetRotation(objSword->GetRotation());
-	objShadowSword->Update(true);
+	obj_Sword->SetRotation(XMFLOAT3(
+		ImguiControl::Imgui_swordRot_x,
+		ImguiControl::Imgui_swordRot_y,
+		ImguiControl::Imgui_swordRot_z));
+	obj_EyeBall->SetPosition(Camera::GetTarget());
+
+	fbxobj_StandMiku->SetPosition(playerPos);
+	fbxobj_SlowRunMiku->SetPosition(playerPos);
+	fbxobj_FastRunMiku->SetPosition(playerPos);
+
+	fbxobj_StandShadowMiku->SetPosition(playerPos);
+	fbxobj_SlowRunShadowMiku->SetPosition(playerPos);
+	fbxobj_FastRunShadowMiku->SetPosition(playerPos);
+
+	//光
+	light->SetLightColor(
+		{
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
+		{
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
 
 	XMFLOAT3 shadowCameraPos = light->GetShadowLigitEye();
 	light->SetShadowLigitEye(XMFLOAT3(
-		fbxObj1->GetPosition().x,
+		fbxobj_StandMiku->GetPosition().x,
 		shadowCameraPos.y,
-		fbxObj1->GetPosition().z));
-	light->SetShadowLigitTarget(fbxObj1->GetPosition());
+		fbxobj_StandMiku->GetPosition().z));
+	light->SetShadowLigitTarget(fbxobj_StandMiku->GetPosition());
+
+#pragma endregion
+
+#pragma region Update
+
+	obj_Lich->Update();
+	obj_Stage->Update();
+	obj_EyeBall->Update();
+
 	light->Update();
 
-	//if (Input::isKeyTrigger(DIK_R)) t = 0.0f;
-	//x = (WINDOW_WIDTH - 32 - 0) * OgaJEase::easeInCubic(t) + 0;
-	//if (t < 0.99f) t += 0.01f;
-	//GH1->SetPosition(XMFLOAT2(x, WINDOW_HEIGHT / 2));
+	fbxobj_StandShadowMiku->Update(true);
+	fbxobj_SlowRunShadowMiku->Update(true);
+	fbxobj_FastRunShadowMiku->Update(true);
 
+#pragma endregion
 	/*----------Update,Setter----------*/
+
+	/*---例外---*/
+	if (animationType == STAND)
+	{
+		fbxobj_StandMiku->Update();
+		obj_Sword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
+		obj_ShadowSword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
+	}
+	else if (animationType == SLOWRUN)
+	{
+		fbxobj_SlowRunMiku->Update();
+		obj_Sword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
+		obj_ShadowSword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
+	}
+	else if (animationType == RUN)
+	{
+		fbxobj_FastRunMiku->Update();
+		obj_Sword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
+		obj_ShadowSword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
+	}
+
+	obj_Sword->Update();
+	obj_ShadowSword->SetRotation(obj_Sword->GetRotation());
+	obj_ShadowSword->Update(true);
+	/*---例外---*/
 }
 
-void GameScene::Draw(ID3D12Resource* texbuff)
+void GameScene::Draw()
 {
-	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
-	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
-	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	if (animationType == STAND)
+	{
+		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
+	else if (animationType == SLOWRUN)
+	{
+		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
+	else if (animationType == RUN)
+	{
+		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objB->Draw(receiveShadow);
-	objSword->Draw(normal);
-	Object::PostDraw();
+	obj_Lich->Draw(normal);
+	obj_Sword->Draw(normal);
+	if (ImguiControl::Imgui_targetDraw) { obj_EyeBall->Draw(normal); }
 
-	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
-	//GH1->Draw();
-	//Sprite::PostDraw();
+	obj_Stage->Draw(receiveShadow);
+	Object::PostDraw();
 }
 
 void GameScene::LuminanceDraw()
 {
-	if (animationType == STAND) { fbxObj1->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
-	else if (animationType == SLOWRUN) { fbxObj2->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
-	else if (animationType == RUN) { fbxObj3->Draw(DirectXImportant::cmdList.Get(), fbx_normal); }
+	if (animationType == STAND)
+	{
+		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
+	else if (animationType == SLOWRUN)
+	{
+		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
+	else if (animationType == RUN)
+	{
+		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
 }
 
 void GameScene::ShadowDraw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-	objShadowSword->Draw(shadow);
-	Object::PostDraw();
+	if (animationType == STAND)
+	{
+		fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+	}
+	else if (animationType == SLOWRUN)
+	{
+		fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+	}
+	else if (animationType == RUN)
+	{
+		fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+	}
 
-	if (animationType == STAND) { fbxShadow1->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
-	else if (animationType == SLOWRUN) { fbxShadow2->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
-	else if (animationType == RUN) { fbxShadow3->Draw(DirectXImportant::cmdList.Get(), fbx_shadow); }
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	obj_ShadowSword->Draw(shadow);
+	Object::PostDraw();
 }

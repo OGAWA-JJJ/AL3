@@ -501,7 +501,7 @@ void Model3D::Init()
 
 void Model3D::Update()
 {
-	HRESULT result;
+	//HRESULT result;
 	DirectX::XMMATRIX matScale, matTrans;
 
 	matWorld = DirectX::XMMatrixIdentity();

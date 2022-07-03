@@ -25,7 +25,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //”½ŽËŒõƒxƒNƒgƒ‹
     float3 reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
     //ŠÂ‹«”½ŽËŒõ
-    float3 ambient = (1, 1, 1); /*m_ambient*/
+    float3 ambient = { 1, 1, 1 }; /*m_ambient*/
     //ŠgŽU”½ŽËŒõ
     float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //‹¾–Ê”½ŽËŒõ

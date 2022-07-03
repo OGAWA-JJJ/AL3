@@ -1,26 +1,25 @@
 #include "ImguiControl.h"
 #include "imgui.h"
 
-float ImguiControl::Imgui_eye_x = 0.0f;
-float ImguiControl::Imgui_eye_y = 50.0f;
-float ImguiControl::Imgui_eye_z = -100.0f;
 float ImguiControl::Imgui_fov = 60.0f;
-float ImguiControl::Imgui_far_z = 4000.0f;
+float ImguiControl::Imgui_far_z = 2000.0f;
 float ImguiControl::Imgui_lightColor_r = 0.6f;
 float ImguiControl::Imgui_lightColor_g = 0.6f;
 float ImguiControl::Imgui_lightColor_b = 0.6f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
-float ImguiControl::Imgui_lightDir_y = -1.0f;
+float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 float ImguiControl::Imgui_ground_y = 0.0f;
 
-float ImguiControl::Imgui_Sword_x = 0.0f;
-float ImguiControl::Imgui_Sword_y = 0.0f;
-float ImguiControl::Imgui_Sword_z = 0.0f;
+float ImguiControl::Imgui_swordPos_x = 0.0f;
+float ImguiControl::Imgui_swordPos_y = 0.0f;
+float ImguiControl::Imgui_swordPos_z = 0.0f;
 
-float ImguiControl::Imgui_Sword_rotx = 310.0f;
-float ImguiControl::Imgui_Sword_roty = 300.0f;
-float ImguiControl::Imgui_Sword_rotz = 310.0f;
+float ImguiControl::Imgui_swordRot_x = 310.0f;
+float ImguiControl::Imgui_swordRot_y = 300.0f;
+float ImguiControl::Imgui_swordRot_z = 310.0f;
+
+bool ImguiControl::Imgui_targetDraw = false;
 
 void ImguiControl::Update()
 {
@@ -37,11 +36,13 @@ void ImguiControl::Update()
 
 	ImGui::SliderFloat("GROUND_Y", &Imgui_ground_y, -100.0f, 100.0f);
 
-	ImGui::SliderFloat("Sword_X", &Imgui_Sword_x, -100.0f, 100.0f);
-	ImGui::SliderFloat("Sword_Y", &Imgui_Sword_y, -100.0f, 100.0f);
-	ImGui::SliderFloat("Sword_Z", &Imgui_Sword_z, -100.0f, 100.0f);
+	ImGui::SliderFloat("SWORD_POS_X", &Imgui_swordPos_x, -100.0f, 100.0f);
+	ImGui::SliderFloat("WORD_POS_Y", &Imgui_swordPos_y, -100.0f, 100.0f);
+	ImGui::SliderFloat("SWORD_POS_Z", &Imgui_swordPos_z, -100.0f, 100.0f);
 
-	ImGui::SliderFloat("Sword_rotX", &Imgui_Sword_rotx, 0.0f, 360.0f);
-	ImGui::SliderFloat("Sword_rotY", &Imgui_Sword_roty, 0.0f, 360.0f);
-	ImGui::SliderFloat("Sword_rotZ", &Imgui_Sword_rotz, 0.0f, 360.0f);
+	ImGui::SliderFloat("SWORD_ROT_X", &Imgui_swordRot_x, 0.0f, 360.0f);
+	ImGui::SliderFloat("SWORD_ROT_Y", &Imgui_swordRot_y, 0.0f, 360.0f);
+	ImGui::SliderFloat("SWORD_ROT_Z", &Imgui_swordRot_z, 0.0f, 360.0f);
+
+	ImGui::Checkbox("TARGET_DRAW", &Imgui_targetDraw);
 }

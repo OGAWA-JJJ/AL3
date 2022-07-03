@@ -20,7 +20,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //”½ŽËŒõƒxƒNƒgƒ‹
     float3 reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
     //ŠÂ‹«”½ŽËŒõ
-    float3 ambient = (1, 1, 1); /*m_ambient*/
+    float3 ambient = { 1, 1, 1 }; /*m_ambient*/
     //ŠgŽU”½ŽËŒõ
     float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //‹¾–Ê”½ŽËŒõ
@@ -52,7 +52,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     
     //float zInLVP = input.posInLVP.z / input.posInLVP.w;
     
-    float3 shadowMap = 1.0f;
+    float4 shadowMap = 1.0f;
     
     //”ÍˆÍ“à
     if (shadowMapUV.x > 0.0f && shadowMapUV.x < 1.0f
@@ -62,7 +62,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
         //shadowMap = float3(1, 1, 0);
     }
 
-    texcolor.xyz *= shadowMap;
+    texcolor.xyz *= shadowMap.xyz;
     
     return texcolor;
 }

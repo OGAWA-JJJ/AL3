@@ -7,6 +7,16 @@ VSOutput VSmain(float4 pos : POSITION, float2 uv : TEXCOORD)
     VSOutput output;
     output.svpos = pos;
     output.uv = uv;
+    
+    output.tex0 = float4(0, 0, 0, 0);
+    output.tex1 = float4(0, 0, 0, 0);
+    output.tex2 = float4(0, 0, 0, 0);
+    output.tex3 = float4(0, 0, 0, 0);
+    output.tex4 = float4(0, 0, 0, 0);
+    output.tex5 = float4(0, 0, 0, 0);
+    output.tex6 = float4(0, 0, 0, 0);
+    output.tex7 = float4(0, 0, 0, 0);
+    
     return output;
 }
 

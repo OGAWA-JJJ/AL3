@@ -3,9 +3,6 @@
 class ImguiControl
 {
 public:
-	static float Imgui_eye_x;
-	static float Imgui_eye_y;
-	static float Imgui_eye_z;
 	static float Imgui_fov;
 	static float Imgui_far_z;
 	static float Imgui_lightColor_r;
@@ -15,12 +12,13 @@ public:
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
 	static float Imgui_ground_y;
-	static float Imgui_Sword_x;
-	static float Imgui_Sword_y;
-	static float Imgui_Sword_z;
-	static float Imgui_Sword_rotx;
-	static float Imgui_Sword_roty;
-	static float Imgui_Sword_rotz;
+	static float Imgui_swordPos_x;
+	static float Imgui_swordPos_y;
+	static float Imgui_swordPos_z;
+	static float Imgui_swordRot_x;
+	static float Imgui_swordRot_y;
+	static float Imgui_swordRot_z;
+	static bool Imgui_targetDraw;
 
 public:
 	//InguiControl();

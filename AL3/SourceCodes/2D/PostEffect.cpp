@@ -130,7 +130,7 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	const UINT depthPitch = rowPitch * spriteInitData.m_height;
 	//画像イメージ
 	UINT* img = new UINT[pixelCount];
-	for (int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
+	for (unsigned int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
 
 	//テクスチャバッファにデータ転送
 	result = texbuff->WriteToSubresource(0, nullptr,
@@ -304,7 +304,7 @@ void PostEffect::PreDrawScene(ID3D12GraphicsCommandList* cmdList, const SpriteIn
 	//ビューポートの設定
 	cmdList->RSSetViewports(
 		1,
-		&CD3DX12_VIEWPORT(0.0f, 0.0f, spriteInitData.m_width, spriteInitData.m_height)
+		&CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(spriteInitData.m_width), static_cast<float>(spriteInitData.m_height))
 		//&CD3DX12_VIEWPORT(0.0f, 0.0f, WINDOW_WIDTH, WINDOW_HEIGHT)
 	);
 	//シザリング矩形の設定

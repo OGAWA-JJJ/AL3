@@ -49,7 +49,7 @@ static const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, float s)
 
 namespace OgaJEase {
 
-float PI = 3.14159265359;
+float PI = 3.14159265359f;
 using XMFLOAT3 = DirectX::XMFLOAT3;
 
 /*-----Sine-----*/

@@ -183,4 +183,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	FbxLoader::GetInstance()->Finalize();
 	//ウィンドウクラスを登録解除
 	UnregisterClass(Window::windowClass.lpszClassName, Window::windowClass.hInstance);
+
+	return 0;
 }

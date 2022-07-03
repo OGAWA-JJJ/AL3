@@ -276,7 +276,7 @@ void DirectX2D::RootSignature()
 		spriteDescHeap->GetCPUDescriptorHandleForHeapStart();
 
 	/*ルートパラメータの生成*/
-	CD3DX12_ROOT_PARAMETER rootparams[2];
+	CD3DX12_ROOT_PARAMETER rootparams[2] = {};
 
 	/*定数用*/
 	rootparams[0].InitAsConstantBufferView(

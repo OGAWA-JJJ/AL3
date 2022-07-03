@@ -28,7 +28,7 @@ void CollisionManager::CheakAllCollisions()
 				colB->GetShapeType() == COLLISIONSHAPE_SHPERE) {
 				Sphere* SphereA = dynamic_cast<Sphere*>(colA);
 				Sphere* SphereB = dynamic_cast<Sphere*>(colB);
-				DirectX::XMVECTOR inter;
+				//DirectX::XMVECTOR inter;
 			}
 		}
 	}
@@ -76,4 +76,5 @@ bool CollisionManager::Raycast(const Ray& ray, RaycastHit* hitInfo, float maxDis
 			return result;
 		}
 	}
+	return false;
 }

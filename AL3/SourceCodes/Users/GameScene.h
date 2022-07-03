@@ -15,19 +15,19 @@ private:
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 	using XMMATRIX = DirectX::XMMATRIX;
 
-private:
+private:	//自機のパターン
 	enum AnimationType
 	{
 		STAND, SLOWRUN, RUN
 	};
 
-private:
-	const float MAX_DISTANCE = 125.0f;
-	const float MAX_MOVE_SPEED = 2.0f;
-	const float MAX_CAMERA_MOVE_SPEED = 2.0f;
-	const float EASE_CAMERA_TIMER = 0.006f;
+private:	//定数
+	const float MAX_DISTANCE = 125.0f;			//カメラと自機の距離(いつか可変に)
+	const float MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
+	const float MAX_CAMERA_MOVE_SPEED = 2.0f;	//カメラの最大速度
+	const float EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
 
-private:
+private:	//パイプライン
 	ObjPipelineSet normal;
 	ObjPipelineSet shadow;
 	ObjPipelineSet receiveShadow;
@@ -35,61 +35,47 @@ private:
 	FbxPipelineSet fbx_normal;
 	FbxPipelineSet fbx_shadow;
 
+private:	//変数
 	XMFLOAT3 cameraAngle;
+	int animationType;
 	float cameraMoveEase = 0.0f;
 	float cameraY = 0.0f;
 	bool isTarget = false;
 	bool isEase = false;
 
-	int animationType;
-
-	//float x = 0.0f;
-	//float t = 0.0f;
-
-private:
+private:	//光
 	Light* light = nullptr;
 
-	Model* modelA = nullptr;
-	Object* objA = nullptr;
+private:	//モデル(Load用)
+	Model* model_Lich = nullptr;
+	Model* model_stage = nullptr;
+	Model* model_eyeball = nullptr;
+	Model* model_sword = nullptr;
 
-	Model* modelB = nullptr;
-	Object* objB = nullptr;
+	FbxModel* fbxmodel_standMiku = nullptr;
+	FbxModel* fbxmodel_slowRunMiku = nullptr;
+	FbxModel* fbxmodel_fastRunMiku = nullptr;
 
-	Model* modelC = nullptr;
-	Object* objC = nullptr;
+private:	//オブジェクト(Draw用)
+	Object* obj_EyeBall = nullptr;
+	Object* obj_Stage = nullptr;
+	Object* obj_Lich = nullptr;
+	Object* obj_Sword = nullptr;
+	Object* obj_ShadowSword = nullptr;
 
-	Model* modelD = nullptr;
-	Object* objD = nullptr;
-
-	FbxModel* fbxModel1 = nullptr;
-	FbxObject3D* fbxObj1 = nullptr;
-
-	FbxModel* fbxModel2 = nullptr;
-	FbxObject3D* fbxObj2 = nullptr;
-
-	FbxModel* fbxModel3 = nullptr;
-	FbxObject3D* fbxObj3 = nullptr;
-
-	Sprite* GH1 = nullptr;
-
-	Model* sword = nullptr;
-	Object* objSword = nullptr;
-
-	FbxObject3D* fbxShadow1 = nullptr;
-	FbxObject3D* fbxShadow2 = nullptr;
-	FbxObject3D* fbxShadow3 = nullptr;
-
-	Object* objShadowSword = nullptr;
-
-private:
-	//Object* obj1 = nullptr;
+	FbxObject3D* fbxobj_StandMiku = nullptr;
+	FbxObject3D* fbxobj_SlowRunMiku = nullptr;
+	FbxObject3D* fbxobj_FastRunMiku = nullptr;
+	FbxObject3D* fbxobj_StandShadowMiku = nullptr;
+	FbxObject3D* fbxobj_SlowRunShadowMiku = nullptr;
+	FbxObject3D* fbxobj_FastRunShadowMiku = nullptr;
 
 public:
 	GameScene();
 	~GameScene();
 	void Init(ID3D12Resource* texbuff = nullptr);
 	void Update();
-	void Draw(ID3D12Resource* texbuff = nullptr);
-	void LuminanceDraw();
-	void ShadowDraw();
+	void Draw();
+	void LuminanceDraw();	//輝度抽出用
+	void ShadowDraw();		//影描画用
 };

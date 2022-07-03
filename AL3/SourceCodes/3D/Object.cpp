@@ -376,7 +376,7 @@ void Object::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
 {
 	isAddTexture = true;
 	//1–‡‚Ì‚Ý‘Î‰ž
-	HRESULT result;
+	//HRESULT result;
 	modelDescHeap = srv;
 	if (srv == nullptr) { assert(0); }
 

@@ -150,7 +150,7 @@ FbxPipelineSet FbxObject3D::CreateGraphicsPipeline(const FbxInitData& fbxInitdat
 
 	//ルートパラメータ
 	//CD3DX12_ROOT_PARAMETER rootparams[2];
-	CD3DX12_ROOT_PARAMETER rootparams[5];
+	CD3DX12_ROOT_PARAMETER rootparams[5] = {};
 
 	//CBV（座標変換行列用）
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
@@ -414,7 +414,7 @@ void FbxObject3D::PlayAnimation()
 void FbxObject3D::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
 {
 	//1枚のみ対応
-	HRESULT result;
+	//HRESULT result;
 	fbxDescHeap = srv;
 	if (srv == nullptr) { assert(0); }
 
