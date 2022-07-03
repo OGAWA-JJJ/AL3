@@ -70,6 +70,7 @@ FbxModel* FbxLoader::LoadModelFromFile(const string& modelName)
 
 	//モデル生成
 	FbxModel* model = new FbxModel();
+	//std::shared_ptr<FbxModel> model = std::make_shared<FbxModel>();
 	model->name = modelName;
 
 	//FBXノードの数を取得

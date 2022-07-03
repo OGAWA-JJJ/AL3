@@ -19,6 +19,7 @@ Light* Light::Create()
 {
 	//3Dオブジェクトのインスタンスを生成
 	Light* instance = new Light();
+	//std::shared_ptr<Light> instance = std::make_shared<Light>();
 	//初期化
 	instance->Init();
 	//生成したインスタンスを返す

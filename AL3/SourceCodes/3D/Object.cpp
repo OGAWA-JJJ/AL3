@@ -214,15 +214,16 @@ void Object::PostDraw()
 
 Object* Object::Create(Model* model)
 {
-	// 3Dオブジェクトのインスタンスを生成
+	//3Dオブジェクトのインスタンスを生成
 	Object* object = new Object();
+	//std::shared_ptr<Object> object = std::make_shared<Object>();
 	if (object == nullptr) {
 		return nullptr;
 	}
 
 	// 初期化
 	if (!object->Init()) {
-		delete object;
+		//delete object;
 		assert(0);
 	}
 

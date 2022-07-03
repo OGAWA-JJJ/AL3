@@ -39,7 +39,8 @@ void Model::StaticInit(ID3D12Device* device)
 Model* Model::CreateFromObj(const std::string& modelname, bool smoothing)
 {
 	//ÉÅÉÇÉäämï€
-	Model* instance = new Model;
+	Model* instance = new Model();
+	//std::shared_ptr<Model> instance = std::make_shared<Model>();
 	instance->Init(modelname, smoothing);
 
 	return instance;

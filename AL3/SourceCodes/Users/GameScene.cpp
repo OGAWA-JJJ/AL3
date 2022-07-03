@@ -3,7 +3,6 @@
 #include "../3D/FbxObject3D.h"
 #include "../../imgui/ImguiControl.h"
 #include "../Math/OgaJHelper.h"
-#include "../Input/FunaInput.h"
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
 
@@ -70,7 +69,7 @@ GameScene::GameScene()
 
 	model_Lich = Model::CreateFromObj("Lich");
 	model_stage = Model::CreateFromObj("yuka");
-	//modelB = Model::CreateFromObj("sponza");
+	model_sponza = Model::CreateFromObj("triangle");
 	model_eyeball = Model::CreateFromObj("eyeball");
 	model_sword = Model::CreateFromObj("Sword");
 
@@ -88,6 +87,7 @@ GameScene::GameScene()
 	obj_EyeBall = Object::Create(model_eyeball);
 	obj_Sword = Object::Create(model_sword);
 	obj_ShadowSword = Object::Create(model_sword);
+	obj_Sponza = Object::Create(model_sponza);
 
 	//Fbx
 	fbxobj_StandMiku = new FbxObject3D();
@@ -127,6 +127,7 @@ GameScene::GameScene()
 
 	const float Lich_Scale = 20.0f;
 	const float Stage_Scale = 100.0f;
+	const float Sponza_scale = 1.0f;
 	const float EyeBall_Scale = 2.0f;
 	const float Sword_Scale = 1.0f;
 
@@ -134,10 +135,11 @@ GameScene::GameScene()
 
 	//Obj
 	obj_Lich->SetScale(XMFLOAT3(Lich_Scale, Lich_Scale, Lich_Scale));
-	obj_Stage->SetScale(XMFLOAT3(Stage_Scale, Stage_Scale, Stage_Scale));
+	obj_Stage->SetScale(XMFLOAT3(Stage_Scale + 100.0f, Stage_Scale, Stage_Scale));
 	obj_EyeBall->SetScale(XMFLOAT3(EyeBall_Scale, EyeBall_Scale, EyeBall_Scale));
 	obj_Sword->SetScale(XMFLOAT3(Sword_Scale, Sword_Scale, Sword_Scale));
 	obj_ShadowSword->SetScale(XMFLOAT3(Sword_Scale, Sword_Scale, Sword_Scale));
+	obj_Sponza->SetScale(XMFLOAT3(Sponza_scale, Sponza_scale, Sponza_scale));
 
 	//Fbx
 	fbxobj_StandMiku->SetPosition(XMFLOAT3(0, 0, 0));
@@ -171,7 +173,7 @@ GameScene::GameScene()
 
 GameScene::~GameScene()
 {
-	//書き忘れるからヤメロ！
+	//書き忘れるからヤメロ！←スマートポインタにする
 	delete model_Lich;
 	delete obj_Lich;
 	delete model_stage;
@@ -200,13 +202,20 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	//skydome or sponza
 	obj_Stage->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	obj_Stage->SetRotation(XMFLOAT3(0, 90, 0));
+	obj_Sponza->SetRotation(XMFLOAT3(0, 90, 0));
 
 	//EyeBall
 	obj_EyeBall->SetBillboard(true);
 
 	//Sword
-	obj_Sword->SetPosition(XMFLOAT3(0.0f, 20.0f, 0.0f));
-	obj_Sword->SetRotation(XMFLOAT3(90, 0, 180));
+	obj_Sword->SetPosition(XMFLOAT3(
+		0,
+		0,
+		0));
+	obj_Sword->SetRotation(XMFLOAT3(
+		310.0f,
+		300.0f,
+		310.0f));
 
 	//Miku
 	fbxobj_StandMiku->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -234,8 +243,7 @@ void GameScene::Init(ID3D12Resource* texbuff)
 
 void GameScene::Update()
 {
-	//FunaInput
-	FunaInput::Update();
+	//Input::Update();
 
 	//Light情報を更新
 	Object::SetLight(light);
@@ -254,22 +262,22 @@ void GameScene::Update()
 	if (!isTarget)
 	{
 		//pad
-		if (FunaInput::isConnect)
+		if (Input::isPadConnect())
 		{
-			if (FunaInput::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
+			if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
 			{
 				cameraMoveEase = 0.0f;
 				isTarget = true;
 			}
 
-			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
 				animationType = RUN;
 
 				XMFLOAT3 vec = { 0,0,0 };
-				vec.x = FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-				vec.z = FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
+				vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+				vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
 				playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
 				playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
@@ -307,31 +315,39 @@ void GameScene::Update()
 
 			else { animationType = STAND; }
 
-			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
-				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
+			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
+				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
 			{
 				//ここをどうにかしたい,targetは最悪補完かける
 				XMFLOAT3 objc = fbxobj_StandMiku->GetPosition();
-				//XMFLOAT3 objc = objC->GetPosition();
 				XMFLOAT3 eye = Camera::GetEye();
 
 				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxobj_StandMiku->GetPosition(), Camera::GetEye());
-				//XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(objC->GetPosition(), Camera::GetEye());
 				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
 
 				float xz = atan2(playerToCamera.x, playerToCamera.z);
 				OgaJHelper::ConvertToDegree(xz);
 				//計算
-				xz += FunaInput::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * MAX_CAMERA_MOVE_SPEED;
-				cameraPos.y += FunaInput::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
+				xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * MAX_CAMERA_MOVE_SPEED;
+				cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
+				cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
 
 				//距離と差分
 				float diff = 0;
-				if (cameraPos.y < 0)
+				const float MAX_DIST = -50.0f;
+				const float MAX_HEIGHT = 100.0f;
+				if (cameraY < 0.1f)
 				{
+					if (cameraY < MAX_DIST) { cameraY = MAX_DIST; }
+					diff = cameraY;
+
 					//地面との仮判定
-					diff = cameraPos.y;
-					cameraPos.y = 0;
+					cameraPos.y = 0.1f;
+				}
+				else if (cameraY > MAX_HEIGHT)
+				{
+					cameraPos.y = MAX_HEIGHT;
+					cameraY = MAX_HEIGHT;
 				}
 
 				//radに戻す
@@ -366,14 +382,14 @@ void GameScene::Update()
 		//キー(一旦放置)
 		else
 		{
-			if (Input::isKeyTrigger(DIK_T))
+			/*if (Input::isKeyTrigger(DIK_T))
 			{
 				cameraMoveEase = 0.0f;
 				isTarget = true;
-			}
+			}*/
 
 			//カメラ系
-			if (Input::isKey(DIK_RIGHT) || Input::isKey(DIK_LEFT) || Input::isKey(DIK_UP) || Input::isKey(DIK_DOWN))
+			/*if (Input::isKey(DIK_RIGHT) || Input::isKey(DIK_LEFT) || Input::isKey(DIK_UP) || Input::isKey(DIK_DOWN))
 			{
 				if (Input::isKey(DIK_RIGHT))
 				{
@@ -398,11 +414,20 @@ void GameScene::Update()
 
 				//距離と差分
 				float diff = 0;
+				const float MAX_DIST = -50.0f;
+				const float MAX_HEIGHT = 100.0f;
+				if (cameraY < 0.1f)
+				{
+					if (cameraY < MAX_DIST) { cameraY = MAX_DIST; }
+					diff = cameraY;
 
-				//地面との仮判定
-				if (cameraPos.y < 0) {
-					//diff = cameraPos.y;
-					//cameraPos.y = 0;
+					//地面との仮判定
+					cameraPos.y = 0.1f;
+				}
+				else if (cameraY > MAX_HEIGHT)
+				{
+					cameraPos.y = MAX_HEIGHT;
+					cameraY = MAX_HEIGHT;
 				}
 
 				//セット
@@ -411,27 +436,27 @@ void GameScene::Update()
 				XMFLOAT3 cameraToTarget = OgaJHelper::CalcDirectionVec3(cameraPos, targetPos);
 				cameraToTarget = OgaJHelper::CalcNormalizeVec3(cameraToTarget);
 
-				/*Camera::SetEye(XMFLOAT3(
-					objC->GetPosition().x + targetToCamera.x * (MAX_DISTANCE + diff),
-					objC->GetPosition().y + targetToCamera.y * (MAX_DISTANCE + diff),
-					objC->GetPosition().z + targetToCamera.z * (MAX_DISTANCE + diff)
-				));*/
-				Camera::SetEye(cameraPos);
-				/*Camera::SetTarget(XMFLOAT3(
-					objC->GetPosition().x + cameraToTarget.x * (MAX_DISTANCE + diff),
-					objC->GetPosition().y + cameraToTarget.y * (MAX_DISTANCE + diff),
-					objC->GetPosition().z + cameraToTarget.z * (MAX_DISTANCE + diff)
-				));*/
-				Camera::SetTarget(targetPos);
+				Camera::SetEye(XMFLOAT3(
+					fbxobj_StandMiku->GetPosition().x + targetToCamera.x * (MAX_DISTANCE + diff),
+					fbxobj_StandMiku->GetPosition().y + targetToCamera.y * (MAX_DISTANCE + diff),
+					fbxobj_StandMiku->GetPosition().z + targetToCamera.z * (MAX_DISTANCE + diff)
+				));
+				//Camera::SetEye(cameraPos);
+				Camera::SetTarget(XMFLOAT3(
+					fbxobj_StandMiku->GetPosition().x + cameraToTarget.x * (MAX_DISTANCE + diff),
+					fbxobj_StandMiku->GetPosition().y + cameraToTarget.y * (MAX_DISTANCE + diff),
+					fbxobj_StandMiku->GetPosition().z + cameraToTarget.z * (MAX_DISTANCE + diff)
+				));
+				//Camera::SetTarget(targetPos);
 
 				XMFLOAT3 eye = Camera::GetEye();
 				XMFLOAT3 target = Camera::GetTarget();
-			}
+			}*/
 
 			//移動と回転
-			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+			/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
 			{
-				animationType = RUN;
+				//animationType = RUN;
 
 				XMFLOAT2 vec = { 0,0 };
 
@@ -505,45 +530,41 @@ void GameScene::Update()
 				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 				OgaJHelper::ConvertToDegree(cameraRad);
 
-				Camera::SetEye(cameraPos);
-				Camera::SetTarget(targetPos);
-				fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//objC->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//fbxObj1->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//obj1->SetRotation(XMFLOAT3(0, deg + cameraRad + 90.0f, 0));
+				//Camera::SetEye(cameraPos);
+				//Camera::SetTarget(targetPos);
+				//fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 
-				fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-			}
+				//fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				//fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+			}*/
 
-			else { animationType = STAND; }
+			//else { animationType = STAND; }
 		}
 	}
 
 	else
 	{
 		//pad
-		if (FunaInput::isConnect)
+		if (Input::isPadConnect())
 		{
-			if (FunaInput::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
+			if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
 			{
 				cameraMoveEase = 0.0f;
 				isTarget = false;
 				isEase = true;
 			}
 
-			if (0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-				0.3 < fabs(FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
 				animationType = RUN;
 
 				XMFLOAT3 vec = { 0,0,0 };
-				vec.x += FunaInput::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-				vec.z += FunaInput::isPadThumb(XINPUT_THUMB_LEFTVERT);
-				//XMFLOAT3 normalize = OgaJHelper::CalcNormalizeVec3(XMFLOAT3(vec.x, vec.y, 0));
+				vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+				vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
 				playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
 				playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
@@ -560,14 +581,14 @@ void GameScene::Update()
 		else
 		{
 			//切り替え
-			if (Input::isKeyTrigger(DIK_T))
+			/*if (Input::isKeyTrigger(DIK_T))
 			{
 				cameraMoveEase = 0.0f;
-				isTarget = false;
-			}
+				//isTarget = false;
+			}*/
 
 			//移動
-			if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+			/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
 			{
 				animationType = RUN;
 
@@ -597,9 +618,9 @@ void GameScene::Update()
 					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
 					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
 				}
-			}
+			}*/
 
-			else { animationType = STAND; }
+			//else { animationType = STAND; }
 		}
 
 		//ゴール地点
@@ -652,40 +673,25 @@ void GameScene::Update()
 
 		//向き
 		float pRadian = atan2(cosf(fbxobj_StandMiku->GetRotation().z), sinf(fbxobj_StandMiku->GetRotation().x));
-		//float pRadian = atan2(cosf(objC->GetRotation().z), sinf(objC->GetRotation().x));
 		OgaJHelper::ConvertToDegree(pRadian);
 		float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
 		OgaJHelper::ConvertToDegree(cRadian);
 		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
-		//float sub = objC->GetRotation().y - rot;
 		float diff = 0;
 		if (fbxobj_StandMiku->GetRotation().y - rot > 0) { diff = 2.0f; }
-		//if (objC->GetRotation().y - rot > 0) { diff = 2.0f; }
 		else if (fbxobj_StandMiku->GetRotation().y - rot < 0) { diff = -2.0f; }
-		//else if (objC->GetRotation().y - rot < 0) { diff = -2.0f; }
 		fbxobj_StandMiku->SetRotation(XMFLOAT3(
 			fbxobj_StandMiku->GetRotation().x,
 			rot + diff,
 			fbxobj_StandMiku->GetRotation().z
 		));
 
-		fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(
-			fbxobj_StandMiku->GetRotation().x,
-			rot + diff,
-			fbxobj_StandMiku->GetRotation().z
-		));
+		fbxobj_SlowRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+		fbxobj_FastRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
 
-		fbxobj_FastRunMiku->SetRotation(XMFLOAT3(
-			fbxobj_StandMiku->GetRotation().x,
-			rot + diff,
-			fbxobj_StandMiku->GetRotation().z
-		));
-
-		/*objC->SetRotation(XMFLOAT3(
-			objC->GetRotation().x,
-			rot + diff,
-			objC->GetRotation().z
-		));*/
+		fbxobj_StandShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+		fbxobj_SlowRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+		fbxobj_FastRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
 	}
 
 #pragma endregion
@@ -719,19 +725,43 @@ void GameScene::Update()
 		fbxobj_FastRunShadowMiku->ReplayAnimation();
 	}
 
+	//Target描画用
+	if (Input::isPadTrigger(XINPUT_GAMEPAD_Y))
+	{
+		if (ImguiControl::Imgui_targetDraw) { ImguiControl::Imgui_targetDraw = false; }
+		else { ImguiControl::Imgui_targetDraw = true; }
+	}
+
+	//Target移動用
+	if (Input::isPadTrigger(XINPUT_GAMEPAD_X))
+	{
+		if (ImguiControl::Imgui_isTargetMove) { ImguiControl::Imgui_isTargetMove = false; }
+		else { ImguiControl::Imgui_isTargetMove = true; }
+	}
+
+	if (ImguiControl::Imgui_isTargetMove)
+	{
+		count += 0.02f;
+		obj_Lich->SetPosition(XMFLOAT3(
+			sinf(count) * 175.0f,
+			obj_Lich->GetPosition().y,
+			obj_Lich->GetPosition().z
+		));
+	}
+
 	/*----------Update,Setter----------*/
 #pragma region Setter
 
-	obj_Stage->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
-	obj_Sword->SetPosition(XMFLOAT3(
-		ImguiControl::Imgui_swordPos_x,
-		ImguiControl::Imgui_swordPos_y,
-		ImguiControl::Imgui_swordPos_z));
+	//obj_Stage->SetPosition(XMFLOAT3(0.0f, ImguiControl::Imgui_ground_y, 0.0f));
+	//obj_Sword->SetPosition(XMFLOAT3(
+	//	ImguiControl::Imgui_swordPos_x,
+	//	ImguiControl::Imgui_swordPos_y,
+	//	ImguiControl::Imgui_swordPos_z));
 
-	obj_Sword->SetRotation(XMFLOAT3(
-		ImguiControl::Imgui_swordRot_x,
-		ImguiControl::Imgui_swordRot_y,
-		ImguiControl::Imgui_swordRot_z));
+	//obj_Sword->SetRotation(XMFLOAT3(
+	//	ImguiControl::Imgui_swordRot_x,
+	//	ImguiControl::Imgui_swordRot_y,
+	//	ImguiControl::Imgui_swordRot_z));
 	obj_EyeBall->SetPosition(Camera::GetTarget());
 
 	fbxobj_StandMiku->SetPosition(playerPos);
@@ -769,13 +799,10 @@ void GameScene::Update()
 
 	obj_Lich->Update();
 	obj_Stage->Update();
+	obj_Sponza->Update();
 	obj_EyeBall->Update();
 
 	light->Update();
-
-	fbxobj_StandShadowMiku->Update(true);
-	fbxobj_SlowRunShadowMiku->Update(true);
-	fbxobj_FastRunShadowMiku->Update(true);
 
 #pragma endregion
 	/*----------Update,Setter----------*/
@@ -784,18 +811,21 @@ void GameScene::Update()
 	if (animationType == STAND)
 	{
 		fbxobj_StandMiku->Update();
+		fbxobj_StandShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
 	}
 	else if (animationType == SLOWRUN)
 	{
 		fbxobj_SlowRunMiku->Update();
+		fbxobj_SlowRunShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
 	}
 	else if (animationType == RUN)
 	{
 		fbxobj_FastRunMiku->Update();
+		fbxobj_FastRunShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
 	}
@@ -824,6 +854,7 @@ void GameScene::Draw()
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_Lich->Draw(normal);
 	obj_Sword->Draw(normal);
+	obj_Sponza->Draw(normal);
 	if (ImguiControl::Imgui_targetDraw) { obj_EyeBall->Draw(normal); }
 
 	obj_Stage->Draw(receiveShadow);

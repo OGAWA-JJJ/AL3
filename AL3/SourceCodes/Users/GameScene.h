@@ -40,21 +40,31 @@ private:	//変数
 	int animationType;
 	float cameraMoveEase = 0.0f;
 	float cameraY = 0.0f;
+	float count = 0.0f;
 	bool isTarget = false;
 	bool isEase = false;
 
 private:	//光
 	Light* light = nullptr;
+	//std::weak_ptr<Light> light;
 
 private:	//モデル(Load用)
 	Model* model_Lich = nullptr;
 	Model* model_stage = nullptr;
+	Model* model_sponza = nullptr;
 	Model* model_eyeball = nullptr;
 	Model* model_sword = nullptr;
+	//std::weak_ptr<Model> model_Lich;
+	//std::weak_ptr<Model> model_stage;
+	//std::weak_ptr<Model> model_eyeball;
+	//std::weak_ptr<Model> model_sword;
 
 	FbxModel* fbxmodel_standMiku = nullptr;
 	FbxModel* fbxmodel_slowRunMiku = nullptr;
 	FbxModel* fbxmodel_fastRunMiku = nullptr;
+	//std::weak_ptr<FbxModel> fbxmodel_standMiku;
+	//std::weak_ptr<FbxModel> fbxmodel_slowRunMiku;
+	//std::weak_ptr<FbxModel> fbxmodel_fastRunMiku;
 
 private:	//オブジェクト(Draw用)
 	Object* obj_EyeBall = nullptr;
@@ -62,6 +72,12 @@ private:	//オブジェクト(Draw用)
 	Object* obj_Lich = nullptr;
 	Object* obj_Sword = nullptr;
 	Object* obj_ShadowSword = nullptr;
+	Object* obj_Sponza = nullptr;
+	//std::weak_ptr<Object> obj_EyeBall;
+	//std::weak_ptr<Object> obj_Stage;
+	//std::weak_ptr<Object> obj_Lich;
+	//std::weak_ptr<Object> obj_Sword;
+	//std::weak_ptr<Object> obj_ShadowSword;
 
 	FbxObject3D* fbxobj_StandMiku = nullptr;
 	FbxObject3D* fbxobj_SlowRunMiku = nullptr;
@@ -69,6 +85,12 @@ private:	//オブジェクト(Draw用)
 	FbxObject3D* fbxobj_StandShadowMiku = nullptr;
 	FbxObject3D* fbxobj_SlowRunShadowMiku = nullptr;
 	FbxObject3D* fbxobj_FastRunShadowMiku = nullptr;
+	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
+	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
+	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;
+	//std::weak_ptr<FbxObject> fbxobj_StandShadowMiku;
+	//std::weak_ptr<FbxObject> fbxobj_SlowRunShadowMiku;
+	//std::weak_ptr<FbxObject> fbxobj_FastRunShadowMiku;
 
 public:
 	GameScene();

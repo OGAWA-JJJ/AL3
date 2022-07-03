@@ -11,14 +11,15 @@ public:
 	static float Imgui_lightDir_x;
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
-	static float Imgui_ground_y;
-	static float Imgui_swordPos_x;
-	static float Imgui_swordPos_y;
-	static float Imgui_swordPos_z;
-	static float Imgui_swordRot_x;
-	static float Imgui_swordRot_y;
-	static float Imgui_swordRot_z;
+	//static float Imgui_ground_y;
+	//static float Imgui_swordPos_x;
+	//static float Imgui_swordPos_y;
+	//static float Imgui_swordPos_z;
+	//static float Imgui_swordRot_x;
+	//static float Imgui_swordRot_y;
+	//static float Imgui_swordRot_z;
 	static bool Imgui_targetDraw;
+	static bool Imgui_isTargetMove;
 
 public:
 	//InguiControl();
