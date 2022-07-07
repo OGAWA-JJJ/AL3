@@ -32,10 +32,9 @@ public:
 	//定数バッファ用データ構造体B0
 	struct ConstBufferDataB0
 	{
-		//XMMATRIX mat;	// ３Ｄ変換行列
-		DirectX::XMMATRIX viewproj; //ビュープロジェクション行列
-		DirectX::XMMATRIX world; //ワールド行列
-		DirectX::XMFLOAT3 cameraPos; //カメラ座標（ワールド座標）
+		DirectX::XMMATRIX viewproj;		//ビュープロジェクション行列
+		DirectX::XMMATRIX world;		//ワールド行列
+		DirectX::XMFLOAT3 cameraPos;	//カメラ座標（ワールド座標）
 	};
 
 private:
@@ -84,6 +83,9 @@ private:
 	//texbuffを追加するか
 	bool isAddTexture = false;
 
+	//回転行列
+	DirectX::XMMATRIX matRot;
+
 public:
 	//静的初期化
 	static void StaticInit(ID3D12Device* device);
@@ -121,6 +123,8 @@ public:
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
 	//回転角の取得
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
+	//スケールの取得
+	const DirectX::XMFLOAT3& GetScale() { return scale; }
 	//座標の設定
 	void SetPosition(DirectX::XMFLOAT3 position) { this->position = position; }
 	//回転角の設定
@@ -150,5 +154,20 @@ public:
 		isAffine = true;
 		this->matrix = matrix;
 	}
+	const DirectX::XMMATRIX GetMatRot() { return matRot; }
+	//回転行列を取得する
+	//const DirectX::XMMATRIX GetMatRot(DirectX::XMMATRIX scale = DirectX::XMMatrixIdentity())
+	//{
+	//	matRot.r[0].m128_f32[0] /= scale.r[0].m128_f32[0];
+	//	matRot.r[1].m128_f32[1] /= scale.r[1].m128_f32[1];
+	//	matRot.r[2].m128_f32[2] /= scale.r[2].m128_f32[2];
+
+	//	matRot.r[3].m128_f32[0] = 0;
+	//	matRot.r[3].m128_f32[1] = 0;
+	//	matRot.r[3].m128_f32[2] = 0;
+	//	matRot.r[3].m128_f32[3] = 0;
+
+	//	return matRot;
+	//}
 };
 

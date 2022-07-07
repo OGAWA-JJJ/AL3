@@ -30,7 +30,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
     shadecolor.a = m_alpha;
     
-    //return float4(1, 0, 0, 1);
+    //return float4(0, 0, 0, 1);
     //シェーディングによる色で描画
     //return texcolor;
     return shadecolor * texcolor;

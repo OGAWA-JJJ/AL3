@@ -44,6 +44,9 @@ private:	//変数
 	bool isTarget = false;
 	bool isEase = false;
 
+	int rot = 0;
+	bool isHit = false;
+
 private:	//光
 	Light* light = nullptr;
 	//std::weak_ptr<Light> light;
@@ -54,6 +57,9 @@ private:	//モデル(Load用)
 	Model* model_sponza = nullptr;
 	Model* model_eyeball = nullptr;
 	Model* model_sword = nullptr;
+
+	Model* model_box = nullptr;
+	Model* model_box2 = nullptr;
 	//std::weak_ptr<Model> model_Lich;
 	//std::weak_ptr<Model> model_stage;
 	//std::weak_ptr<Model> model_eyeball;
@@ -73,6 +79,9 @@ private:	//オブジェクト(Draw用)
 	Object* obj_Sword = nullptr;
 	Object* obj_ShadowSword = nullptr;
 	Object* obj_Sponza = nullptr;
+
+	Object* obj_Box[28] = { nullptr };
+	Object* obj_HitBox = nullptr;
 	//std::weak_ptr<Object> obj_EyeBall;
 	//std::weak_ptr<Object> obj_Stage;
 	//std::weak_ptr<Object> obj_Lich;
@@ -91,6 +100,8 @@ private:	//オブジェクト(Draw用)
 	//std::weak_ptr<FbxObject> fbxobj_StandShadowMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunShadowMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunShadowMiku;
+
+	Sprite* GH1 = nullptr;
 
 public:
 	GameScene();

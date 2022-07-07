@@ -123,12 +123,14 @@ protected:
 	bool isPlay = false;
 
 	//SRV用デスクリプタヒープ
-	ID3D12DescriptorHeap* fbxDescHeap;
+	ID3D12DescriptorHeap* fbxDescHeap = {};
 
 	//ボーンの名前と行列(Update後に更新)
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affineTrans;
-	//Test
+	//手のワールド行列
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
+	//ボーン全部の回転行列
+	std::vector<DirectX::XMMATRIX> matRots;
 
 public:
 	//初期化
@@ -165,7 +167,8 @@ public:
 	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
 	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }
 
-	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>& GetAffineTrans() { return affineTrans; }
-	XMMATRIX GetMatrix() { return matrix; }
+	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>& GetAffineTrans() { return affineTrans; }	//ボーンの名前とワールド行列
+	XMMATRIX GetMatrix() { return matrix; }	//手固定
+	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }	//ボーンの回転行列
 };
 

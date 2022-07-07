@@ -9,6 +9,18 @@ float ImguiControl::Imgui_lightColor_b = 0.6f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
+
+float ImguiControl::boxPos1_x = 50.0f;
+float ImguiControl::boxPos1_y = 25.0f;
+float ImguiControl::boxPos1_z = 0.0f;
+
+float ImguiControl::boxRot1_x = -50.0f;
+float ImguiControl::boxRot1_y = 25.0f;
+float ImguiControl::boxRot1_z = 0.0f;
+
+float ImguiControl::boxSca1_x = 10.0f;
+float ImguiControl::boxSca1_y = 20.0f;
+float ImguiControl::boxSca1_z = 10.0f;
 //float ImguiControl::Imgui_ground_y = 0.0f;
 
 //float ImguiControl::Imgui_swordPos_x = 0.0f;
@@ -47,4 +59,16 @@ void ImguiControl::Update()
 
 	ImGui::Checkbox("CAMERA_TARGET_DRAW(Click or Y Button)", &Imgui_targetDraw);
 	ImGui::Checkbox("ENEMY_MOVE(Click or X Button)", &Imgui_isTargetMove);
+
+	ImGui::SliderFloat("boxPos_x", &boxPos1_x, -100.0f, 100.0f);
+	ImGui::SliderFloat("boxPos_y", &boxPos1_y, -100.0f, 100.0f);
+	ImGui::SliderFloat("boxPos_z", &boxPos1_z, -100.0f, 100.0f);
+
+	ImGui::SliderFloat("boxRot_x", &boxRot1_x, 0.0f, 360.0f);
+	ImGui::SliderFloat("boxRot_y", &boxRot1_y, 0.0f, 360.0f);
+	ImGui::SliderFloat("boxRot_z", &boxRot1_z, 0.0f, 360.0f);
+
+	ImGui::SliderFloat("boxSca_x", &boxSca1_x, 1.0f, 30.0f);
+	ImGui::SliderFloat("boxSca_y", &boxSca1_y, 1.0f, 30.0f);
+	ImGui::SliderFloat("boxSca_z", &boxSca1_z, 1.0f, 30.0f);
 }

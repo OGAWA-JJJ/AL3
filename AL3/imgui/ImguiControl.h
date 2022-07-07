@@ -11,6 +11,18 @@ public:
 	static float Imgui_lightDir_x;
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
+
+	static float boxPos1_x;
+	static float boxPos1_y;
+	static float boxPos1_z;
+
+	static float boxRot1_x;
+	static float boxRot1_y;
+	static float boxRot1_z;
+
+	static float boxSca1_x;
+	static float boxSca1_y;
+	static float boxSca1_z;
 	//static float Imgui_ground_y;
 	//static float Imgui_swordPos_x;
 	//static float Imgui_swordPos_y;

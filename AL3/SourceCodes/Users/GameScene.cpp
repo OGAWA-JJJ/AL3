@@ -5,6 +5,7 @@
 #include "../Math/OgaJHelper.h"
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
+#include "../Math/OBBCollision.h"
 
 GameScene::GameScene()
 {
@@ -73,6 +74,9 @@ GameScene::GameScene()
 	model_eyeball = Model::CreateFromObj("eyeball");
 	model_sword = Model::CreateFromObj("Sword");
 
+	model_box = Model::CreateFromObj("TestBox");
+	model_box2 = Model::CreateFromObj("TestBox");
+
 	fbxmodel_standMiku = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
 	fbxmodel_slowRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
 	fbxmodel_fastRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
@@ -88,6 +92,12 @@ GameScene::GameScene()
 	obj_Sword = Object::Create(model_sword);
 	obj_ShadowSword = Object::Create(model_sword);
 	obj_Sponza = Object::Create(model_sponza);
+
+	for (int i = 0; i < 28; i++)
+	{
+		obj_Box[i] = Object::Create(model_box);
+	}
+	obj_HitBox = Object::Create(model_box2);
 
 	//Fbx
 	fbxobj_StandMiku = new FbxObject3D();
@@ -169,6 +179,9 @@ GameScene::GameScene()
 
 #pragma endregion
 
+	Sprite::LoadTexture(0, L"Resources/ss.png");
+	GH1 = Sprite::Create(0, DirectX::XMFLOAT2(0, 0));
+	GH1->SetSize(DirectX::XMFLOAT2(128 * 2.0, 72 * 2.0));
 }
 
 GameScene::~GameScene()
@@ -808,12 +821,25 @@ void GameScene::Update()
 	/*----------Update,Setter----------*/
 
 	/*---—áŠO---*/
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
+	std::vector<DirectX::XMMATRIX> matRot;
+
 	if (animationType == STAND)
 	{
 		fbxobj_StandMiku->Update();
 		fbxobj_StandShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_StandMiku->GetMatrix());
+
+		std::vector<std::pair<std::string, DirectX::XMMATRIX>> affine = fbxobj_StandMiku->GetAffineTrans();
+		for (int i = 0; i < 28; i++)
+		{
+			obj_Box[i]->MultiMatrix(affine[i].second);
+			obj_Box[i]->Update();
+		}
+
+		bones = fbxobj_StandMiku->GetAffineTrans();
+		matRot = fbxobj_StandMiku->GetMatRots();
 	}
 	else if (animationType == SLOWRUN)
 	{
@@ -821,6 +847,13 @@ void GameScene::Update()
 		fbxobj_SlowRunShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_SlowRunMiku->GetMatrix());
+
+		std::vector<std::pair<std::string, DirectX::XMMATRIX>> affine = fbxobj_SlowRunMiku->GetAffineTrans();
+		for (int i = 0; i < 28; i++)
+		{
+			obj_Box[i]->MultiMatrix(affine[i].second);
+			obj_Box[i]->Update();
+		}
 	}
 	else if (animationType == RUN)
 	{
@@ -828,52 +861,115 @@ void GameScene::Update()
 		fbxobj_FastRunShadowMiku->Update(true);
 		obj_Sword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_FastRunMiku->GetMatrix());
+
+		std::vector<std::pair<std::string, DirectX::XMMATRIX>> affine = fbxobj_FastRunMiku->GetAffineTrans();
+		for (int i = 0; i < 28; i++)
+		{
+			obj_Box[i]->MultiMatrix(affine[i].second);
+			obj_Box[i]->Update();
+		}
+
+		bones = fbxobj_FastRunMiku->GetAffineTrans();
+		matRot = fbxobj_FastRunMiku->GetMatRots();
 	}
 
 	obj_Sword->Update();
 	obj_ShadowSword->SetRotation(obj_Sword->GetRotation());
 	obj_ShadowSword->Update(true);
 	/*---—áŠO---*/
+
+	//Test
+	obj_HitBox->SetScale(DirectX::XMFLOAT3(
+		ImguiControl::boxSca1_x,
+		ImguiControl::boxSca1_y,
+		ImguiControl::boxSca1_z
+	));
+	obj_HitBox->SetPosition(DirectX::XMFLOAT3(
+		ImguiControl::boxPos1_x,
+		ImguiControl::boxPos1_y,
+		ImguiControl::boxPos1_z
+	));
+	obj_HitBox->SetRotation(DirectX::XMFLOAT3(
+		ImguiControl::boxRot1_x,
+		ImguiControl::boxRot1_y,
+		ImguiControl::boxRot1_z
+	));
+
+	obj_HitBox->Update();
+
+	OBB hitObb;
+	hitObb.pos = obj_HitBox->GetPosition();
+	hitObb.matRot = obj_HitBox->GetMatRot();
+	hitObb.length = obj_HitBox->GetScale();
+
+	OBB obb[28];
+	isHit = false;
+	for (int i = 0; i < 28; i++)
+	{
+		DirectX::XMFLOAT3 pos = {
+			bones[i].second.r[3].m128_f32[0],
+			bones[i].second.r[3].m128_f32[1],
+			bones[i].second.r[3].m128_f32[2] };
+
+		obb[i].pos = pos;
+		obb[i].matRot = matRot[i];
+		obb[i].length = obj_Box[i]->GetScale();
+		if (OBBCollision::CollisionOBBs(hitObb, obb[i]))
+		{
+			isHit = true;
+		}
+	}
 }
 
 void GameScene::Draw()
 {
 	if (animationType == STAND)
 	{
-		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 	else if (animationType == SLOWRUN)
 	{
-		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 	else if (animationType == RUN)
 	{
-		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_Lich->Draw(normal);
 	obj_Sword->Draw(normal);
 	obj_Sponza->Draw(normal);
+	obj_HitBox->Draw(normal);
+
+	for (int i = 0; i < 28; i++)
+	{
+		obj_Box[i]->Draw(normal);
+	}
+
 	if (ImguiControl::Imgui_targetDraw) { obj_EyeBall->Draw(normal); }
 
 	obj_Stage->Draw(receiveShadow);
 	Object::PostDraw();
+
+	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	if (isHit) { GH1->Draw(); }
+	Sprite::PostDraw();
 }
 
 void GameScene::LuminanceDraw()
 {
 	if (animationType == STAND)
 	{
-		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 	else if (animationType == SLOWRUN)
 	{
-		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 	else if (animationType == RUN)
 	{
-		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		//fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
 }
 

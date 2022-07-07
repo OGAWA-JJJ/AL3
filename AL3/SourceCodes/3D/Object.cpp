@@ -276,15 +276,20 @@ void Object::Update(bool isShadowCamera)
 	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
 	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
+	this->matRot = matRot;
+
 	//ワールド行列の合成
 	matWorld = DirectX::XMMatrixIdentity();	//変形をリセット
 	matWorld *= matScale;			//ワールド行列にスケーリングを反映
 	matWorld *= matRot;				//ワールド行列に回転を反映
 	matWorld *= matTrans;			//ワールド行列に平行移動を反映
+
 	if (isAffine)
 	{
 		matWorld *= matrix;
 	}
+
+	//this->matRot = matRot;
 
 	if (isBillboard) {
 		const DirectX::XMMATRIX& matBillboard = Camera::BillboardMatrix();

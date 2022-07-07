@@ -2,6 +2,7 @@
 #include "../3D/FbxLoader.h"
 #include "../DirectX/Camera.h"
 #include "../../imgui/ImguiControl.h"
+//#include "../Math/OgaJHelper.h"
 #include <d3dcompiler.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
@@ -246,7 +247,7 @@ void FbxObject3D::Update(bool isShadowCamera)
 		if (currentTime > endTime) { currentTime = startTime; }
 	}
 
-	// スケール、回転、平行移動行列の計算
+	//スケール、回転、平行移動行列の計算
 	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 	matRot = DirectX::XMMatrixIdentity();
 	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
@@ -254,11 +255,11 @@ void FbxObject3D::Update(bool isShadowCamera)
 	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
 	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
-	// ワールド行列の合成
-	matWorld = DirectX::XMMatrixIdentity(); // 変形をリセット
-	matWorld *= matScale; // ワールド行列にスケーリングを反映
-	matWorld *= matRot; // ワールド行列に回転を反映
-	matWorld *= matTrans; // ワールド行列に平行移動を反映
+	//ワールド行列の合成
+	matWorld = DirectX::XMMatrixIdentity(); //変形をリセット
+	matWorld *= matScale;					//ワールド行列にスケーリングを反映
+	matWorld *= matRot;						//ワールド行列に回転を反映
+	matWorld *= matTrans;					//ワールド行列に平行移動を反映
 
 	const XMMATRIX& matViewProjection =
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
@@ -313,6 +314,9 @@ void FbxObject3D::Update(bool isShadowCamera)
 	std::vector<FbxModel::Bone>& bones = model->GetBones();
 	std::vector<std::pair<std::string, XMMATRIX>> fbxData;
 
+	//回転行列配列
+	std::vector<DirectX::XMMATRIX> localMatRots;
+
 	//定数バッファへデータ転送(pmx->fbxにしたデータだとここがぶっ飛んだ値になる)←治った
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
@@ -325,19 +329,27 @@ void FbxObject3D::Update(bool isShadowCamera)
 		FbxAMatrix fbxCurrentPose =
 			bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
 
-
 		//XMMATRIXに変換
 		FbxLoader::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
-
-		//FbxData取得用
-		fbxData.push_back(std::make_pair(bones[i].name, matCurrentPose));
 
 		//合成してスキニング行列に
 		XMMATRIX inverse = XMMatrixInverse(nullptr, model->GetModelTransform());
 		XMMATRIX trans = model->GetModelTransform();
 		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
 
-		//Test
+		//FbxData取得用
+		fbxData.push_back(std::make_pair(bones[i].name, trans * matCurrentPose * matWorld));
+		FbxVector4 fbxMatRot =
+			bones[i].fbxCluster->GetLink()->EvaluateLocalRotation(currentTime);
+
+		//回転行列取得用
+		DirectX::XMMATRIX matRot = DirectX::XMMatrixIdentity();
+		matRot.r[0].m128_f32[0] = fbxMatRot.mData[0] / 180.0f * 3.14f;
+		matRot.r[1].m128_f32[1] = fbxMatRot.mData[1] / 180.0f * 3.14f;
+		matRot.r[2].m128_f32[2] = fbxMatRot.mData[2] / 180.0f * 3.14f;
+		localMatRots.push_back(matRot);
+
+		//手のワールド行列取得
 		if (bones[i].name.find("RightHand", 0) != std::string::npos)
 		{
 			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
@@ -349,6 +361,8 @@ void FbxObject3D::Update(bool isShadowCamera)
 
 	affineTrans.clear();
 	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
+	matRots.clear();
+	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));
 }
 
 void FbxObject3D::Draw(ID3D12GraphicsCommandList* cmdList, const FbxPipelineSet& pipelineSet)
