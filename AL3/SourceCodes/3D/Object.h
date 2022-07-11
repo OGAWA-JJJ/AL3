@@ -154,20 +154,6 @@ public:
 		isAffine = true;
 		this->matrix = matrix;
 	}
-	const DirectX::XMMATRIX GetMatRot() { return matRot; }
-	//回転行列を取得する
-	//const DirectX::XMMATRIX GetMatRot(DirectX::XMMATRIX scale = DirectX::XMMatrixIdentity())
-	//{
-	//	matRot.r[0].m128_f32[0] /= scale.r[0].m128_f32[0];
-	//	matRot.r[1].m128_f32[1] /= scale.r[1].m128_f32[1];
-	//	matRot.r[2].m128_f32[2] /= scale.r[2].m128_f32[2];
-
-	//	matRot.r[3].m128_f32[0] = 0;
-	//	matRot.r[3].m128_f32[1] = 0;
-	//	matRot.r[3].m128_f32[2] = 0;
-	//	matRot.r[3].m128_f32[3] = 0;
-
-	//	return matRot;
-	//}
+	const DirectX::XMMATRIX GetMatRot() { return matRot; }	//親子関係は無視した回転行列です
 };
 

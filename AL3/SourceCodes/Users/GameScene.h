@@ -18,7 +18,7 @@ private:
 private:	//自機のパターン
 	enum AnimationType
 	{
-		STAND, SLOWRUN, RUN
+		STAND, SLOWRUN, RUN, ATTACK
 	};
 
 private:	//定数
@@ -68,6 +68,7 @@ private:	//モデル(Load用)
 	FbxModel* fbxmodel_standMiku = nullptr;
 	FbxModel* fbxmodel_slowRunMiku = nullptr;
 	FbxModel* fbxmodel_fastRunMiku = nullptr;
+	FbxModel* fbxmodel_oneSwrordAttack = nullptr;
 	//std::weak_ptr<FbxModel> fbxmodel_standMiku;
 	//std::weak_ptr<FbxModel> fbxmodel_slowRunMiku;
 	//std::weak_ptr<FbxModel> fbxmodel_fastRunMiku;
@@ -81,6 +82,7 @@ private:	//オブジェクト(Draw用)
 	Object* obj_Sponza = nullptr;
 
 	Object* obj_Box[28] = { nullptr };
+	Object* obj_SwordBox = nullptr;
 	Object* obj_HitBox = nullptr;
 	//std::weak_ptr<Object> obj_EyeBall;
 	//std::weak_ptr<Object> obj_Stage;
@@ -94,6 +96,8 @@ private:	//オブジェクト(Draw用)
 	FbxObject3D* fbxobj_StandShadowMiku = nullptr;
 	FbxObject3D* fbxobj_SlowRunShadowMiku = nullptr;
 	FbxObject3D* fbxobj_FastRunShadowMiku = nullptr;
+
+	FbxObject3D* fbxobj_OneSwordAttack = nullptr;
 	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;

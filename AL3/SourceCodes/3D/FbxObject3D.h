@@ -156,13 +156,13 @@ public:
 	const XMFLOAT3& GetRotation() { return rotation; }
 	const XMFLOAT3& GetPosition() { return position; }
 
-	void StopAnimation() { isPlay = false; }
-	void ResetAnimation() { currentTime = startTime; }
-	void ReplayAnimation() { isPlay = true; }
+	void StopAnimation() { isPlay = false; }			//アニメーションの停止
+	void ResetAnimation() { currentTime = startTime; }	//アニメーションのリセット
+	void ReplayAnimation() { isPlay = true; }			//アニメーションの再開
 
-	const FbxTime& GetStartTime() { return startTime; }
-	const FbxTime& GetEndTime() { return endTime; }
-	const FbxTime& GetNowTime() { return currentTime; }
+	const FbxTime& GetStartTime() { return startTime; }	//アニメーションの開始時間の取得
+	const FbxTime& GetEndTime() { return endTime; }		//アニメーションの終了時間の取得
+	const FbxTime& GetNowTime() { return currentTime; }	//現在のアニメーションの時間の取得
 	void SetStartTime(FbxTime& startTime) { this->startTime = startTime; }
 	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
 	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }

@@ -344,9 +344,12 @@ void FbxObject3D::Update(bool isShadowCamera)
 
 		//回転行列取得用
 		DirectX::XMMATRIX matRot = DirectX::XMMatrixIdentity();
-		matRot.r[0].m128_f32[0] = fbxMatRot.mData[0] / 180.0f * 3.14f;
-		matRot.r[1].m128_f32[1] = fbxMatRot.mData[1] / 180.0f * 3.14f;
-		matRot.r[2].m128_f32[2] = fbxMatRot.mData[2] / 180.0f * 3.14f;
+		//matRot.r[0].m128_f32[0] = fbxMatRot.mData[0] / 180.0f * 3.14f;
+		//matRot.r[1].m128_f32[1] = fbxMatRot.mData[1] / 180.0f * 3.14f;
+		//matRot.r[2].m128_f32[2] = fbxMatRot.mData[2] / 180.0f * 3.14f;
+		matRot *= DirectX::XMMatrixRotationZ(fbxMatRot.mData[0] / 180.0f * 3.14f);
+		matRot *= DirectX::XMMatrixRotationX(fbxMatRot.mData[1] / 180.0f * 3.14f);
+		matRot *= DirectX::XMMatrixRotationY(fbxMatRot.mData[2] / 180.0f * 3.14f);
 		localMatRots.push_back(matRot);
 
 		//手のワールド行列取得

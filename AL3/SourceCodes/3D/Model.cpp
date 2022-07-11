@@ -120,6 +120,11 @@ void Model::Init(const std::string& modelname, bool smoothing)
 			line_stream >> position.y;
 			line_stream >> position.z;
 			positions.emplace_back(position);
+
+			//サイズの比較
+			if (position.x > size.x) { size.x = position.x; }
+			if (position.y > size.y) { size.y = position.y; }
+			if (position.z > size.z) { size.z = position.z; }
 		}
 		// 先頭文字列がvtならテクスチャ
 		if (key == "vt")

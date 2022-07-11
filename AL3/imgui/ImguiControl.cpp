@@ -21,6 +21,10 @@ float ImguiControl::boxRot1_z = 0.0f;
 float ImguiControl::boxSca1_x = 10.0f;
 float ImguiControl::boxSca1_y = 20.0f;
 float ImguiControl::boxSca1_z = 10.0f;
+
+float ImguiControl::swordPos_x = 0.0f;
+float ImguiControl::swordPos_y = 6.0f;
+float ImguiControl::swordPos_z = 0.0f;
 //float ImguiControl::Imgui_ground_y = 0.0f;
 
 //float ImguiControl::Imgui_swordPos_x = 0.0f;
@@ -71,4 +75,8 @@ void ImguiControl::Update()
 	ImGui::SliderFloat("boxSca_x", &boxSca1_x, 1.0f, 30.0f);
 	ImGui::SliderFloat("boxSca_y", &boxSca1_y, 1.0f, 30.0f);
 	ImGui::SliderFloat("boxSca_z", &boxSca1_z, 1.0f, 30.0f);
+
+	ImGui::DragFloat("swordPos_x", &swordPos_x, 0.01f);
+	ImGui::DragFloat("swordPos_y", &swordPos_y, 0.01f);
+	ImGui::DragFloat("swordPos_z", &swordPos_z, 0.01f);
 }

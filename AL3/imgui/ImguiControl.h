@@ -23,6 +23,10 @@ public:
 	static float boxSca1_x;
 	static float boxSca1_y;
 	static float boxSca1_z;
+
+	static float swordPos_x;
+	static float swordPos_y;
+	static float swordPos_z;
 	//static float Imgui_ground_y;
 	//static float Imgui_swordPos_x;
 	//static float Imgui_swordPos_y;

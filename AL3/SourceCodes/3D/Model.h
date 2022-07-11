@@ -26,6 +26,8 @@ private:
 	Material* defaultMaterial = nullptr;
 	//デスクリプタヒープ
 	ID3D12DescriptorHeap* descHeap;
+	//最大サイズの取得用(Scaleは未考慮)
+	DirectX::XMFLOAT3 size = { 0,0,0 };
 
 public:
 	//静的初期化
@@ -49,6 +51,8 @@ public:
 	inline const std::vector<Mesh*>& GetMeshes() { return meshes; }
 	//デスクリプタヒープを取得
 	ID3D12DescriptorHeap* GetDescHeap() { return descHeap; }
+	//最大サイズの取得用(Scaleは未考慮)
+	DirectX::XMFLOAT3 GetModelSize() { return size; }
 
 private:
 	//マテリアル読込
