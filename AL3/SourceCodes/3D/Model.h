@@ -25,7 +25,7 @@ private:
 	//デフォルトマテリアル
 	Material* defaultMaterial = nullptr;
 	//デスクリプタヒープ
-	ID3D12DescriptorHeap* descHeap;
+	ID3D12DescriptorHeap* descHeap = nullptr;
 	//最大サイズの取得用(Scaleは未考慮)
 	DirectX::XMFLOAT3 size = { 0,0,0 };
 

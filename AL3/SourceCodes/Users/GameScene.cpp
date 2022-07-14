@@ -141,6 +141,12 @@ GameScene::GameScene()
 	fbxobj_OneSwordAttack->PlayAnimation();
 	fbxobj_OneSwordAttack->StopAnimation();
 
+	fbxobj_OneSwordAttackShadow = new FbxObject3D();
+	fbxobj_OneSwordAttackShadow->Init();
+	fbxobj_OneSwordAttackShadow->SetModel(fbxmodel_oneSwrordAttack);
+	fbxobj_OneSwordAttackShadow->PlayAnimation();
+	fbxobj_OneSwordAttackShadow->StopAnimation();
+
 #pragma endregion
 
 #pragma region ModelInit
@@ -192,11 +198,19 @@ GameScene::GameScene()
 	fbxobj_OneSwordAttack->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
 	fbxobj_OneSwordAttack->SetRotation(XMFLOAT3(0, 0, 0));
 
+	fbxobj_OneSwordAttackShadow->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_OneSwordAttackShadow->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_OneSwordAttackShadow->SetRotation(XMFLOAT3(0, 0, 0));
+
 #pragma endregion
 
-	Sprite::LoadTexture(0, L"Resources/ss.png");
+	//Sprite::LoadTexture(0, L"Resources/ss.png");
+	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
 	GH1 = Sprite::Create(0, DirectX::XMFLOAT2(0, 0));
-	GH1->SetSize(DirectX::XMFLOAT2(128 * 2.0, 72 * 2.0));
+	//GH1->SetSize(DirectX::XMFLOAT2(128 * 2.0, 72 * 2.0));
+	GH1->SetSize(DirectX::XMFLOAT2(64, 64));
+
+	posY = 64.0f;
 }
 
 GameScene::~GameScene()
@@ -267,6 +281,13 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	cameraY = Camera::GetEye().y;
 
 	obj_Stage->AddTexture(texbuff, model_stage->GetDescHeap());
+
+	//Test
+	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
+		0.0f,
+		6.0f,
+		0.0f
+	));
 }
 
 void GameScene::Update()
@@ -340,14 +361,16 @@ void GameScene::Update()
 					fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+					fbxobj_OneSwordAttack->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 
 					fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+					fbxobj_OneSwordAttackShadow->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 				}
 			}
 
-			else if (animationType != ATTACK) { animationType = STAND; }
+			else { if (animationType != ATTACK) { animationType = STAND; } }
 
 			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
 				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
@@ -594,22 +617,28 @@ void GameScene::Update()
 			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
 				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 			{
-				animationType = RUN;
+				bool isAttack = false;
+				if (animationType == ATTACK) { isAttack = true; }
 
-				XMFLOAT3 vec = { 0,0,0 };
-				vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-				vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+				if (!isAttack)
+				{
+					animationType = RUN;
 
-				playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-				playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+					XMFLOAT3 vec = { 0,0,0 };
+					vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+					vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-				float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				rad += DirectX::XM_PI / 2;
-				playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-				playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+					playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+					playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+
+					float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+					rad += DirectX::XM_PI / 2;
+					playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+					playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+				}
 			}
 
-			else { animationType = STAND; }
+			else { if (animationType != ATTACK) { animationType = STAND; } }
 		}
 
 		else
@@ -722,16 +751,13 @@ void GameScene::Update()
 
 		fbxobj_SlowRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
 		fbxobj_FastRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+		fbxobj_OneSwordAttack->SetRotation(fbxobj_StandMiku->GetRotation());
 
 		fbxobj_StandShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
 		fbxobj_SlowRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
 		fbxobj_FastRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+		fbxobj_OneSwordAttackShadow->SetRotation(fbxobj_StandMiku->GetRotation());
 	}
-
-	//UŒ‚—p
-	fbxobj_OneSwordAttack->SetPosition(fbxobj_StandMiku->GetPosition());
-	fbxobj_OneSwordAttack->SetRotation(fbxobj_StandMiku->GetRotation());
-	fbxobj_OneSwordAttack->Update();
 
 #pragma endregion
 
@@ -745,6 +771,7 @@ void GameScene::Update()
 		fbxobj_SlowRunShadowMiku->StopAnimation();
 		fbxobj_FastRunShadowMiku->StopAnimation();
 		fbxobj_OneSwordAttack->StopAnimation();
+		fbxobj_OneSwordAttackShadow->StopAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_2))
 	{
@@ -755,6 +782,7 @@ void GameScene::Update()
 		fbxobj_SlowRunShadowMiku->ResetAnimation();
 		fbxobj_FastRunShadowMiku->ResetAnimation();
 		fbxobj_OneSwordAttack->ResetAnimation();
+		fbxobj_OneSwordAttackShadow->ResetAnimation();
 	}
 	if (Input::isKeyTrigger(DIK_3))
 	{
@@ -765,6 +793,7 @@ void GameScene::Update()
 		fbxobj_SlowRunShadowMiku->ReplayAnimation();
 		fbxobj_FastRunShadowMiku->ReplayAnimation();
 		fbxobj_OneSwordAttack->ReplayAnimation();
+		fbxobj_OneSwordAttackShadow->ReplayAnimation();
 	}
 
 	//Target•`‰æ—p
@@ -809,10 +838,12 @@ void GameScene::Update()
 	fbxobj_StandMiku->SetPosition(playerPos);
 	fbxobj_SlowRunMiku->SetPosition(playerPos);
 	fbxobj_FastRunMiku->SetPosition(playerPos);
+	fbxobj_OneSwordAttack->SetPosition(playerPos);
 
 	fbxobj_StandShadowMiku->SetPosition(playerPos);
 	fbxobj_SlowRunShadowMiku->SetPosition(playerPos);
 	fbxobj_FastRunShadowMiku->SetPosition(playerPos);
+	fbxobj_OneSwordAttackShadow->SetPosition(playerPos);
 
 	//Œõ
 	light->SetLightColor(
@@ -856,6 +887,7 @@ void GameScene::Update()
 		{
 			animationType = ATTACK;
 			fbxobj_OneSwordAttack->ReplayAnimation();
+			fbxobj_OneSwordAttackShadow->ReplayAnimation();
 		}
 	}
 
@@ -913,6 +945,10 @@ void GameScene::Update()
 	}
 	else if (animationType == ATTACK)
 	{
+		//UŒ‚—p
+		fbxobj_OneSwordAttack->Update();
+		fbxobj_OneSwordAttackShadow->Update(true);
+
 		std::vector<std::pair<std::string, DirectX::XMMATRIX>> affine = fbxobj_OneSwordAttack->GetAffineTrans();
 		for (int i = 0; i < 28; i++)
 		{
@@ -930,6 +966,9 @@ void GameScene::Update()
 			animationType = STAND;
 			fbxobj_OneSwordAttack->ResetAnimation();
 			fbxobj_OneSwordAttack->StopAnimation();
+
+			fbxobj_OneSwordAttackShadow->ResetAnimation();
+			fbxobj_OneSwordAttackShadow->StopAnimation();
 		}
 	}
 
@@ -940,11 +979,11 @@ void GameScene::Update()
 
 	//Test
 	obj_SwordBox->MultiMatrix(obj_Sword->GetMatWorld());
-	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
-		ImguiControl::swordPos_x,
-		ImguiControl::swordPos_y,
-		ImguiControl::swordPos_z
-	));
+	//obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
+	//	ImguiControl::swordPos_x,
+	//	ImguiControl::swordPos_y,
+	//	ImguiControl::swordPos_z
+	//));
 	obj_SwordBox->SetScale(DirectX::XMFLOAT3(
 		model_sword->GetModelSize().x / 2.0f,
 		model_sword->GetModelSize().y / 2.0f,
@@ -1010,7 +1049,11 @@ void GameScene::Update()
 		swordOBB.length = obj_SwordBox->GetScale();
 		if (OBBCollision::CollisionOBBs(hitObb, swordOBB))
 		{
-			fbxobj_OneSwordAttack->StopAnimation();
+			if (ImguiControl::Imgui_isHitStopAnimation)
+			{
+				fbxobj_OneSwordAttack->StopAnimation();
+				fbxobj_OneSwordAttackShadow->StopAnimation();
+			}
 			isHit = true;
 		}
 	}
@@ -1020,25 +1063,40 @@ void GameScene::Update()
 		fbxobj_OneSwordAttack->ResetAnimation();
 		animationType = STAND;
 	}
+
+	//MT4
+	dist = 360.0f - posY;
+	const float m = 0.1f;
+	accY = 0.2f;
+	accY += dist * 0.01f / m;
+	velY += accY;
+	velY -= velY * 0.1f;
+	posY += velY;
+	GH1->SetPosition(XMFLOAT2(0, posY));
+
+	if (Input::isKeyTrigger(DIK_R)) { posY = 0.0f; }
 }
 
 void GameScene::Draw()
 {
-	if (animationType == STAND)
+	if (ImguiControl::Imgui_playerDraw)
 	{
-		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
-	}
-	else if (animationType == SLOWRUN)
-	{
-		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
-	}
-	else if (animationType == RUN)
-	{
-		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
-	}
-	else if (animationType == ATTACK)
-	{
-		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		if (animationType == STAND)
+		{
+			fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		}
+		else if (animationType == SLOWRUN)
+		{
+			fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		}
+		else if (animationType == RUN)
+		{
+			fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		}
+		else if (animationType == ATTACK)
+		{
+			fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		}
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
@@ -1047,11 +1105,14 @@ void GameScene::Draw()
 	obj_Sponza->Draw(normal);
 	obj_HitBox->Draw(normal);
 
-	for (int i = 0; i < 28; i++)
+	if (ImguiControl::Imgui_isOBBDraw)
 	{
-		obj_Box[i]->Draw(normal);
+		for (int i = 0; i < 28; i++)
+		{
+			obj_Box[i]->Draw(normal);
+		}
+		obj_SwordBox->Draw(normal);
 	}
-	obj_SwordBox->Draw(normal);
 
 	if (ImguiControl::Imgui_targetDraw) { obj_EyeBall->Draw(normal); }
 
@@ -1059,7 +1120,8 @@ void GameScene::Draw()
 	Object::PostDraw();
 
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
-	if (isHit) { GH1->Draw(); }
+	//if (isHit) { GH1->Draw(); }
+	GH1->Draw();
 	Sprite::PostDraw();
 }
 
@@ -1077,24 +1139,35 @@ void GameScene::LuminanceDraw()
 	{
 		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
 	}
+	else if (animationType == ATTACK)
+	{
+		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+	}
 }
 
 void GameScene::ShadowDraw()
 {
-	if (animationType == STAND)
+	if (ImguiControl::Imgui_playerDraw)
 	{
-		fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
-	}
-	else if (animationType == SLOWRUN)
-	{
-		fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
-	}
-	else if (animationType == RUN)
-	{
-		fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+		if (animationType == STAND)
+		{
+			fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+		}
+		else if (animationType == SLOWRUN)
+		{
+			fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+		}
+		else if (animationType == RUN)
+		{
+			fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+		}
+		else if (animationType == ATTACK)
+		{
+			fbxobj_OneSwordAttackShadow->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+		}
 	}
 
-	//UŒ‚‚ª“ü‚Á‚Ä‚È‚¢‚æI
+	//UŒ‚‚ª“ü‚Á‚Ä‚È‚¢‚æI©“ü‚ê‚½
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_ShadowSword->Draw(shadow);

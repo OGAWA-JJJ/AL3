@@ -80,7 +80,7 @@ void Dx12Wrapper::Draw(bool isDraw)
 	ImGui::SetWindowSize(
 		ImVec2(
 			400,
-			400),
+			600),
 		ImGuiCond_::ImGuiCond_FirstUseEver);
 
 	ImguiControl::Update();

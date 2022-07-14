@@ -22,9 +22,10 @@ float ImguiControl::boxSca1_x = 10.0f;
 float ImguiControl::boxSca1_y = 20.0f;
 float ImguiControl::boxSca1_z = 10.0f;
 
-float ImguiControl::swordPos_x = 0.0f;
-float ImguiControl::swordPos_y = 6.0f;
-float ImguiControl::swordPos_z = 0.0f;
+//float ImguiControl::swordPos_x = 0.0f;
+//float ImguiControl::swordPos_y = 6.0f;
+//float ImguiControl::swordPos_z = 0.0f;
+// 
 //float ImguiControl::Imgui_ground_y = 0.0f;
 
 //float ImguiControl::Imgui_swordPos_x = 0.0f;
@@ -37,6 +38,9 @@ float ImguiControl::swordPos_z = 0.0f;
 
 bool ImguiControl::Imgui_targetDraw = false;
 bool ImguiControl::Imgui_isTargetMove = true;
+bool ImguiControl::Imgui_isOBBDraw = true;
+bool ImguiControl::Imgui_isHitStopAnimation = false;
+bool ImguiControl::Imgui_playerDraw = true;
 
 void ImguiControl::Update()
 {
@@ -63,6 +67,9 @@ void ImguiControl::Update()
 
 	ImGui::Checkbox("CAMERA_TARGET_DRAW(Click or Y Button)", &Imgui_targetDraw);
 	ImGui::Checkbox("ENEMY_MOVE(Click or X Button)", &Imgui_isTargetMove);
+	ImGui::Checkbox("HITSTOP_MODE(LSTICK PUSH->REPLAY)", &Imgui_isHitStopAnimation);
+	ImGui::Checkbox("OBB_BOX_DRAW", &Imgui_isOBBDraw);
+	ImGui::Checkbox("PLAYER_DRAW", &Imgui_playerDraw);
 
 	ImGui::SliderFloat("boxPos_x", &boxPos1_x, -100.0f, 100.0f);
 	ImGui::SliderFloat("boxPos_y", &boxPos1_y, -100.0f, 100.0f);
@@ -76,7 +83,7 @@ void ImguiControl::Update()
 	ImGui::SliderFloat("boxSca_y", &boxSca1_y, 1.0f, 30.0f);
 	ImGui::SliderFloat("boxSca_z", &boxSca1_z, 1.0f, 30.0f);
 
-	ImGui::DragFloat("swordPos_x", &swordPos_x, 0.01f);
-	ImGui::DragFloat("swordPos_y", &swordPos_y, 0.01f);
-	ImGui::DragFloat("swordPos_z", &swordPos_z, 0.01f);
+	///ImGui::DragFloat("swordPos_x", &swordPos_x, 0.01f);
+	///ImGui::DragFloat("swordPos_y", &swordPos_y, 0.01f);
+	///ImGui::DragFloat("swordPos_z", &swordPos_z, 0.01f);
 }
