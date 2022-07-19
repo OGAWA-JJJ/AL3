@@ -89,12 +89,13 @@ FbxModel* FbxLoader::LoadModelFromFile(const string& modelName)
 	// IndexBuff,VertexBuff,InputLayout生成
 	// メッシュの数だけ描画を回す
 
+	model->fbxScene = fbxScene;
+
 	//ルートノードから順に解析してモデルに流し込む
 	ParseNodeRecursive(model, fbxScene->GetRootNode());
 
 	//FBXシーン解放
 	//fbxScene->Destroy();
-	model->fbxScene = fbxScene;
 
 	//バッファ生成
 	model->CreateBuffers(DirectXImportant::dev.Get());
@@ -171,18 +172,26 @@ void FbxLoader::ParseMesh(FbxModel* model, FbxNode* fbxNode)
 {
 	//ノードのメッシュを取得
 	FbxMesh* fbxMesh = fbxNode->GetMesh();
+	FbxModel::MeshData meshdata;
 
-	//頂点情報読み取り
-	ParseMeshVertices(model, fbxMesh);
-	//面を構成するデータの読み取り
-	ParseMeshFaces(model, fbxMesh);
-	//マテリアルの読み取り
+	//for分で回す必要あり
+	//頂点情報読み取り←LoadVertices
+	int texture_num = model->fbxScene->GetSrcObjectCount<FbxFileTexture>();
+	for (int i = 0; i < texture_num; i++)
+	{
+		ParseMeshVertices(model, fbxMesh, meshdata);
+		//面を構成するデータの読み取り←LoadIndices...
+		ParseMeshFaces(model, fbxMesh, meshdata);
+		model->m_MeshList.push_back(meshdata);
+	}
+
+	//マテリアルの読み取り←LoadMaterial(中でマテリアルの分だけ回してます)
 	ParseMaterial(model, fbxNode);
 	//スキニング情報の読み取り
 	ParseSkin(model, fbxMesh);
 }
 
-void FbxLoader::ParseMeshVertices(FbxModel* model, FbxMesh* fbxMesh)
+void FbxLoader::ParseMeshVertices(FbxModel* model, FbxMesh* fbxMesh, FbxModel::MeshData& meshdata)
 {
 	auto& vertices = model->vertices;
 
@@ -205,15 +214,31 @@ void FbxLoader::ParseMeshVertices(FbxModel* model, FbxMesh* fbxMesh)
 		vertex.pos.y = (float)pCoord[i][1];
 		vertex.pos.z = (float)pCoord[i][2];
 	}
+
+	//Test
+	FbxVector4* l_vertices = fbxMesh->GetControlPoints();
+	int* l_indices = fbxMesh->GetPolygonVertices();
+	int l_polygon_vertex_count = fbxMesh->GetPolygonVertexCount();
+	for (int i = 0; i < l_polygon_vertex_count; i++)
+	{
+		int index = l_indices[i];
+
+		DirectX::XMFLOAT3 pos;
+		pos.x = (float)pCoord[index][0];
+		pos.y = (float)pCoord[index][1];
+		pos.z = (float)pCoord[index][2];
+
+		meshdata.m_Pos.push_back(pos);
+	}
 }
 
-void FbxLoader::ParseMeshFaces(FbxModel* model, FbxMesh* fbxMesh)
+void FbxLoader::ParseMeshFaces(FbxModel* model, FbxMesh* fbxMesh, FbxModel::MeshData& meshdata)
 {
 	auto& vertices = model->vertices;
 	auto& indices = model->indices;
 
 	//1ファイルに複数メッシュのモデルは非対応
-	assert(indices.size() == 0);
+	//assert(indices.size() == 0);
 
 	//面の数
 	const int polygonCount = fbxMesh->GetPolygonCount();
@@ -278,11 +303,85 @@ void FbxLoader::ParseMeshFaces(FbxModel* model, FbxMesh* fbxMesh)
 		}
 	}
 
-	//FbxGeometryConverter converter(fbxManager);
-	//bool isConvert = converter.SplitMeshPerMaterial(fbxMesh, true);
 
-	//ParseNodeRecursive(model, model->fbxScene->GetRootNode())
+	//Test
+	int m_polygon_count = fbxMesh->GetPolygonCount();
+	for (int i = 0; i < m_polygon_count; i++)
+	{
+		meshdata.m_Indices.push_back(i * 3 + 2);
+		meshdata.m_Indices.push_back(i * 3 + 1);
+		meshdata.m_Indices.push_back(i * 3);
+	}
 
+	FbxArray<FbxVector4> l_normals;
+	fbxMesh->GetPolygonVertexNormals(l_normals);
+	for (int i = 0; i < l_normals.Size(); i++)
+	{
+		DirectX::XMFLOAT3 normal;
+		normal.x = (float)-l_normals[i][0];
+		normal.y = (float)l_normals[i][1];
+		normal.z = (float)l_normals[i][2];
+		meshdata.m_Normal.push_back(normal);
+	}
+
+	FbxStringList l_uvset_names;
+	fbxMesh->GetUVSetNames(l_uvset_names);
+	FbxArray<FbxVector2> l_uv_buffer;
+	fbxMesh->GetPolygonVertexUVs(l_uvset_names.GetStringAt(0), l_uv_buffer);
+	for (int i = 0; i < l_uv_buffer.Size(); i++)
+	{
+		FbxVector2& uv = l_uv_buffer[i];
+		DirectX::XMFLOAT2 l_uv;
+		l_uv.x = (float)uv[0];
+		l_uv.y = (float)(1.0 - uv[1]);
+		meshdata.m_Uv.push_back(l_uv);
+	}
+
+	int l_color_count = fbxMesh->GetElementVertexColorCount();
+	if (l_color_count == 0) { return; }
+	FbxGeometryElementVertexColor* l_vertex_colors = fbxMesh->GetElementVertexColor(0);
+	if (l_vertex_colors == nullptr) { return; }
+	FbxLayerElement::EMappingMode l_mapping_mode = l_vertex_colors->GetMappingMode();
+	FbxLayerElement::EReferenceMode l_reference_mode = l_vertex_colors->GetReferenceMode();
+	if (l_mapping_mode == FbxLayerElement::eByPolygonVertex)
+	{
+		if (l_reference_mode == FbxLayerElement::eIndexToDirect)
+		{
+			FbxLayerElementArrayTemplate<FbxColor>& l_colors =
+				l_vertex_colors->GetDirectArray();
+			FbxLayerElementArrayTemplate<int>& l_indeces =
+				l_vertex_colors->GetIndexArray();
+			for (int i = 0; i < l_indeces.GetCount(); i++)
+			{
+				int id = l_indeces.GetAt(i);
+				FbxColor color = l_colors.GetAt(id);
+				DirectX::XMFLOAT4 l_color;
+				l_color.x = (float)color.mAlpha;
+				l_color.x = (float)color.mRed;
+				l_color.x = (float)color.mGreen;
+				l_color.x = (float)color.mBlue;
+				meshdata.m_Color.push_back(l_color);
+			}
+		}
+	}
+
+	if (fbxMesh->GetElementMaterialCount() == 0)
+	{
+		meshdata.m_MaterialName = "";
+		return;
+	}
+	FbxLayerElementMaterial* l_material = fbxMesh->GetElementMaterial(0);
+	int l_index = l_material->GetIndexArray().GetAt(0);
+	FbxSurfaceMaterial* l_surface_material =
+		fbxMesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(l_index);
+	if (l_surface_material != nullptr)
+	{
+		meshdata.m_MaterialName = l_surface_material->GetName();
+	}
+	else
+	{
+		meshdata.m_MaterialName = "";
+	}
 }
 
 void FbxLoader::ParseMaterial(FbxModel* model, FbxNode* fbxNode)
@@ -341,9 +440,82 @@ void FbxLoader::ParseMaterial(FbxModel* model, FbxNode* fbxNode)
 			}
 		}
 	}
+
+	//Test
+	FbxModel::Material entry_material;
+	enum class MaterialOrder
+	{
+		Ambient,
+		Diffuse,
+		Specular,
+		MaxOrder,
+	};
+	FbxDouble3 colors[(int)MaterialOrder::MaxOrder];
+	FbxDouble factors[(int)MaterialOrder::MaxOrder];
+	int material_num = model->fbxScene->GetSrcObjectCount<FbxSurfaceMaterial>();
+	for (int i = 0; i < material_num; i++)
+	{
+		FbxSurfaceMaterial* material =
+			model->fbxScene->GetSrcObject<FbxSurfaceMaterial>(i);
+		FbxProperty prop = material->FindProperty(FbxSurfaceMaterial::sAmbient);
+		if (material->GetClassId().Is(FbxSurfaceLambert::ClassId))
+		{
+			const char* element_check_list[] =
+			{
+				FbxSurfaceMaterial::sAmbient,
+				FbxSurfaceMaterial::sDiffuse,
+			};
+
+			const char* factor_check_list[] =
+			{
+				FbxSurfaceMaterial::sAmbientFactor,
+				FbxSurfaceMaterial::sDiffuseFactor,
+			};
+
+			for (int i = 0; i < 2; i++)
+			{
+				prop = material->FindProperty(element_check_list[i]);
+				if (prop.IsValid()) { colors[i] = prop.Get<FbxDouble3>(); }
+				else { colors[i] = FbxDouble3(1.0, 1.0, 1.0); }
+				prop = material->FindProperty(factor_check_list[i]);
+				if (prop.IsValid()) { factors[i] = prop.Get<FbxDouble>(); }
+				else { factors[i] = 1.0; }
+			}
+		}
+
+		FbxDouble3 color = colors[(int)MaterialOrder::Ambient];
+		FbxDouble factor = factors[(int)MaterialOrder::Ambient];
+		entry_material.m_Ambient.x = (float)color[0];
+		entry_material.m_Ambient.y = (float)color[1];
+		entry_material.m_Ambient.z = (float)color[2];
+
+		color = colors[(int)MaterialOrder::Diffuse];
+		factor = factors[(int)MaterialOrder::Diffuse];
+		entry_material.m_Ambient.x = (float)color[0];
+		entry_material.m_Ambient.y = (float)color[1];
+		entry_material.m_Ambient.z = (float)color[2];
+
+		model->m_Materials[material->GetName()] = entry_material;
+
+		prop = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
+		FbxFileTexture* texture = nullptr;
+		std::string keyword;
+		int texture_num = prop.GetSrcObjectCount<FbxFileTexture>();
+		if (texture_num > 0) { texture = prop.GetSrcObject<FbxFileTexture>(0); }
+		else
+		{
+			int layer_num = prop.GetSrcObjectCount<FbxLayeredTexture>();
+			if (layer_num > 0) { texture = prop.GetSrcObject<FbxFileTexture>(0); }
+		}
+		if (texture != nullptr &&
+			LoadTexture(model, keyword) == true)
+		{
+			model->m_MaterialLinks[material->GetName()] = model->m_Textures[keyword];
+		}
+	}
 }
 
-void FbxLoader::LoadTexture(FbxModel* model, const std::string& fullpath)
+bool FbxLoader::LoadTexture(FbxModel* model, const std::string& fullpath)
 {
 	HRESULT result = S_FALSE;
 
@@ -359,6 +531,10 @@ void FbxLoader::LoadTexture(FbxModel* model, const std::string& fullpath)
 		&metadata, scratchImg
 	);
 	if (FAILED(result)) { assert(0); }
+
+	//map型に保管したい
+
+	return true;
 }
 
 std::string FbxLoader::ExtractFileName(const std::string& path)

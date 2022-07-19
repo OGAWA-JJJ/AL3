@@ -1,17 +1,10 @@
-#include "Model.h"
+#include "FbxModels.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <cassert>
 
-const std::string Model::baseDirectory = "Resources/";
-ID3D12Device* Model::device = nullptr;
-UINT Model::descriptorHandleIncrementSize = 0;
-
-Model::Model()
-{
-}
-
-Model::~Model()
+FbxModels::~FbxModels()
 {
 	for (auto m : meshes) {
 		delete m;
@@ -24,29 +17,113 @@ Model::~Model()
 	materials.clear();
 }
 
-void Model::StaticInit(ID3D12Device* device)
+void FbxModels::StaticInit(ID3D12Device* dev)
 {
-	// 再初期化チェック
-	assert(!Model::device);
+	assert(!FbxModels::device);
 
-	Model::device = device;
-
-	// メッシュの静的初期化
-	Mesh::StaticInit(device);
+	FbxModels::device = dev;
+	FbxMeshes::StaticInit(dev);
 }
 
-Model* Model::CreateFromObj(const std::string& modelname, bool smoothing)
+FbxModels* FbxModels::CreateFromFbx(const std::string& modelname, bool smoothing)
 {
-	//メモリ確保
-	Model* instance = new Model();
+	FbxModels* instance = new FbxModels();
 	//std::shared_ptr<Model> instance = std::make_shared<Model>();
 	instance->Init(modelname, smoothing);
 
 	return instance;
 }
 
-void Model::Init(const std::string& modelname, bool smoothing)
+//Load
+void FbxModels::Init(const std::string& modelname, bool smoothing)
 {
+	//Test-----
+	const std::string filename = modelname + ".fbx";
+	const std::string directoryPath = baseDirectory + modelname + "/";
+	const std::string path = directoryPath + filename;
+
+	FbxManager* fbx_manager = fbxsdk::FbxManager::Create();
+	assert(fbx_manager == nullptr);
+
+	FbxImporter* fbx_importer = FbxImporter::Create(fbx_manager, "");
+	if (fbx_importer == nullptr)
+	{
+		fbx_manager->Destroy();
+		assert(0);
+	}
+
+	FbxScene* fbx_scene = FbxScene::Create(fbx_manager, "");
+	if (fbx_scene == nullptr)
+	{
+		fbx_importer->Destroy();
+		fbx_manager->Destroy();
+		assert(0);
+	}
+
+	fbx_importer->Initialize(path.c_str());
+
+	fbx_importer->Import(fbx_scene);
+
+	FbxGeometryConverter converter(fbx_manager);
+	converter.SplitMeshesPerMaterial(fbx_scene, true);
+	converter.Triangulate(fbx_scene, true);
+
+	int material_num = fbx_scene->GetSrcObjectCount<FbxSurfaceMaterial>();
+	for (int i = 0; i < material_num; i++)
+	{
+		LoadMaterial(directoryPath, filename, fbx_scene->GetSrcObject<FbxSurfaceMaterial>(i));
+	}
+
+	int mesh_num = fbx_scene->GetSrcObjectCount<FbxMesh>();
+	for (int i = 0; i < mesh_num; i++)
+	{
+		CreateMesh(fbx_scene->GetSrcObject<FbxMesh>(i));
+	}
+
+	int texture_num = fbx_scene->GetSrcObjectCount<FbxFileTexture>();
+	for (int i = 0; i < texture_num; i++)
+	{
+		FbxFileTexture* texture = fbx_scene->GetSrcObject<FbxFileTexture>(i);
+		if (texture)
+		{
+			const char* file_name01 = texture->GetFileName();
+			const char* file_name02 = texture->GetRelativeFileName();
+			int tex = texture->GetSrcObjectCount< FbxSurfaceMaterial>();
+		}
+	}
+
+	fbx_importer->Destroy();
+	fbx_scene->Destroy();
+	fbx_manager->Destroy();
+
+	for (auto& m : meshes)
+	{
+		if (m->GetMaterial() == nullptr)
+		{
+			if (defaultMaterial == nullptr)
+			{
+				defaultMaterial = FbxMaterial::Create();
+				defaultMaterial->SetName("no material");
+				materials.emplace(defaultMaterial->GetName(), defaultMaterial);
+			}
+			m->SetMaterial(defaultMaterial);
+		}
+	}
+
+	for (auto& m : meshes)
+	{
+		m->CreateBuffers();
+	}
+
+	for (auto& m : materials) {
+		m.second->Update();
+	}
+
+	CreateDescriptorHeap();
+
+	LoadTextures();
+
+	//Test-----
 	const std::string filename = modelname + ".obj";
 	const std::string directoryPath = baseDirectory + modelname + "/";
 
@@ -288,13 +365,8 @@ void Model::Init(const std::string& modelname, bool smoothing)
 	LoadTextures();
 }
 
-void Model::Draw(ID3D12GraphicsCommandList* cmdList,
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv,
-	UINT rootParamIndex,
-	bool isAddTexture
-)
+void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv, UINT rootParamIndex, bool isAddTexture)
 {
-	//デスクリプタヒープの配列
 	if (descHeap) {
 		ID3D12DescriptorHeap* ppHeaps[] = { descHeap };
 		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
@@ -308,14 +380,73 @@ void Model::Draw(ID3D12GraphicsCommandList* cmdList,
 				descriptorHandleIncrementSize));
 	}
 
-	//全メッシュを描画
 	for (auto& mesh : meshes) {
 		mesh->Draw(cmdList);
 	}
 }
 
-void Model::LoadMaterial(const std::string& directoryPath, const std::string& filename)
+//Load
+void FbxModels::LoadMaterial(const std::string& directoryPath, const std::string& filename, FbxSurfaceMaterial* fbx_material)
 {
+	//Test-----
+	FbxMaterial* l_material = FbxMaterial::Create();
+	FbxMaterial::ConstBufferDataB1 entry_material;
+	enum class MaterialOrder
+	{
+		Ambient,
+		Diffuse,
+		Specular,
+		MaxOrder,
+	};
+
+	FbxDouble3 colors[(int)MaterialOrder::MaxOrder];
+	FbxDouble factors[(int)MaterialOrder::MaxOrder];
+	FbxProperty prop = fbx_material->FindProperty(FbxSurfaceMaterial::sAmbient);
+
+	if (fbx_material->GetClassId().Is(FbxSurfaceLambert::ClassId))
+	{
+		const char* element_check_list[] =
+		{
+			FbxSurfaceMaterial::sAmbient,
+			FbxSurfaceMaterial::sDiffuse,
+		};
+
+		const char* factor_check_list[] =
+		{
+			FbxSurfaceMaterial::sAmbientFactor,
+			FbxSurfaceMaterial::sDiffuseFactor,
+		};
+
+		for (int i = 0; i < 2; i++)
+		{
+			prop = fbx_material->FindProperty(element_check_list[i]);
+			if (prop.IsValid()) { colors[i] = prop.Get<FbxDouble3>(); }
+			else { colors[i] = FbxDouble3(1.0, 1.0, 1.0); }
+
+			prop = fbx_material->FindProperty(factor_check_list[i]);
+			if (prop.IsValid()) { factors[i] = prop.Get<FbxDouble>(); }
+			else { factors[i] = 1.0; }
+		}
+	}
+
+	FbxDouble3 color = colors[(int)MaterialOrder::Ambient];
+	FbxDouble factor = factors[(int)MaterialOrder::Ambient];
+	entry_material.ambient = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
+
+	color = colors[(int)MaterialOrder::Diffuse];
+	factor = factors[(int)MaterialOrder::Diffuse];
+	entry_material.diffuse = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
+
+	color = colors[(int)MaterialOrder::Specular];
+	factor = factors[(int)MaterialOrder::Specular];
+	entry_material.specular = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
+
+	l_material->SetMaterial(entry_material);
+
+	if (l_material) { AddMaterial(l_material); }
+
+	//Test-----
+
 	//ファイルストリーム
 	std::ifstream file;
 	//マテリアルファイルを開く
@@ -325,7 +456,7 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 		assert(0);
 	}
 
-	Material* material = nullptr;
+	FbxMaterial* material = nullptr;
 
 	//1行ずつ読み込む
 	std::string line;
@@ -353,9 +484,9 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 			}
 
 			//新しいマテリアルを生成
-			material = Material::Create();
+			material = FbxMaterial::Create();
 			//マテリアル名読み込み
-			line_stream >> material->name;
+			line_stream >> material->GetName();
 		}
 		//先頭文字列がKaならアンビエント色
 		if (key == "Ka") {
@@ -402,45 +533,43 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 	}
 }
 
-void Model::AddMaterial(Material* material)
+void FbxModels::AddMaterial(FbxMaterial* material)
 {
-	//コンテナに登録
-	materials.emplace(material->name, material);
+	materials.emplace(material->GetName(), material);
 }
 
-void Model::CreateDescriptorHeap()
+void FbxModels::CreateDescriptorHeap()
 {
 	HRESULT result = S_FALSE;
 
 	//マテリアルの数
 	size_t count = materials.size();
 
-	//デスクリプタヒープを生成(1つにまとめた方が楽！0~100が定数バッファ,101~200がSRV...)←cmdListを呼ぶ回数が減る
+	//デスクリプタヒープ生成(1つにまとめた方が楽！0~100が定数バッファ,101~200がSRV...)←cmdListを呼ぶ回数が減る
 	if (count > 0) {
 		D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
 		descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;	//シェーダから見えるように
-		descHeapDesc.NumDescriptors = (UINT)count;					//シェーダーリソースビューの数
-		result = device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeap));//生成
+		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		descHeapDesc.NumDescriptors = (UINT)count;
+		result = device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeap));
 		if (FAILED(result)) {
 			assert(0);
 		}
 	}
 
-	//デスクリプタサイズを取得
 	descriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
-void Model::LoadTextures()
+void FbxModels::LoadTextures()
 {
 	int textureIndex = 0;
 	std::string directoryPath = baseDirectory + name + "/";
 
 	for (auto& m : materials) {
-		Material* material = m.second;
+		FbxMaterial* material = m.second;
 
 		//テクスチャあり
-		if (material->textureFilename.size() > 0) {
+		if (material->GetTextureFilename().size() > 0) {
 			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
 			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
 			//マテリアルにテクスチャ読み込み
@@ -455,5 +584,130 @@ void Model::LoadTextures()
 			material->LoadTexture(baseDirectory, cpuDescHandleSRV, gpuDescHandleSRV);
 			textureIndex++;
 		}
+	}
+}
+
+void FbxModels::CreateMesh(FbxMesh* fbx_mesh)
+{
+	FbxMeshes* mesh = new FbxMeshes;
+
+	LoadIndices(mesh, fbx_mesh);
+	LoadVertices(mesh, fbx_mesh);
+	LoadNormals(mesh, fbx_mesh);
+	LoadUV(mesh, fbx_mesh);
+	LoadColors(mesh, fbx_mesh);
+	SetMaterialName(mesh, fbx_mesh);
+
+	meshes.push_back(mesh);
+}
+
+void FbxModels::LoadIndices(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	int polygon_count = mesh->GetPolygonCount();
+
+	for (int i = 0; i < polygon_count; i++)
+	{
+		mesh_data->AddIndex(i * 3 + 2);
+		mesh_data->AddIndex(i * 3 + 1);
+		mesh_data->AddIndex(i * 3);
+	}
+}
+
+void FbxModels::LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	FbxVector4* vertices = mesh->GetControlPoints();
+	int* indices = mesh->GetPolygonVertices();
+	int polygon_vertex_count = mesh->GetPolygonVertexCount();
+
+	for (int i = 0; i < polygon_vertex_count; i++)
+	{
+		FbxMeshes::VertexPosNormalUv vertex;
+		int index = indices[i];
+
+		vertex.pos.x = (float)-vertices[index][0];
+		vertex.pos.y = (float)vertices[index][1];
+		vertex.pos.z = (float)vertices[index][2];
+
+		mesh_data->AddVertex(vertex);
+	}
+}
+
+void FbxModels::LoadNormals(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	FbxArray<FbxVector4> normals;
+	mesh->GetPolygonVertexNormals(normals);
+
+	for (int i = 0; i < normals.Size(); i++)
+	{
+		mesh_data->GetVertices()[i].normal.x = (float)-normals[i][0];
+		mesh_data->GetVertices()[i].normal.y = (float)normals[i][1];
+		mesh_data->GetVertices()[i].normal.z = (float)normals[i][2];
+	}
+}
+
+void FbxModels::LoadUV(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	FbxStringList uvset_names;
+	mesh->GetUVSetNames(uvset_names);
+
+	FbxArray<FbxVector2> uv_buffer;
+	mesh->GetPolygonVertexUVs(uvset_names.GetStringAt(0), uv_buffer);
+
+	for (int i = 0; i < uv_buffer.Size(); i++)
+	{
+		FbxVector2& uv = uv_buffer[i];
+
+		mesh_data->GetVertices()[i].uv.x = (float)uv[0];
+		mesh_data->GetVertices()[i].uv.y = (float)(1.0 - uv[1]);
+	}
+}
+
+void FbxModels::LoadColors(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	int color_count = mesh->GetElementVertexColorCount();
+	if (color_count == 0) { return; }
+
+	FbxGeometryElementVertexColor* vertex_colors = mesh->GetElementVertexColor(0);
+	if (vertex_colors == nullptr) { return; }
+
+	FbxLayerElement::EMappingMode mapping_mode = vertex_colors->GetMappingMode();
+	FbxLayerElement::EReferenceMode reference_mode = vertex_colors->GetReferenceMode();
+	if (mapping_mode == FbxLayerElement::eByPolygonVertex)
+	{
+		if (reference_mode == FbxLayerElement::eIndexToDirect)
+		{
+			FbxLayerElementArrayTemplate<FbxColor>& colors = vertex_colors->GetDirectArray();
+			FbxLayerElementArrayTemplate<int>& indeces = vertex_colors->GetIndexArray();
+			for (int i = 0; i < indeces.GetCount(); i++)
+			{
+				int id = indeces.GetAt(i);
+				FbxColor color = colors.GetAt(id);
+				mesh_data->GetVertices()[i].color.x = (float)color.mRed;
+				mesh_data->GetVertices()[i].color.y = (float)color.mGreen;
+				mesh_data->GetVertices()[i].color.z = (float)color.mBlue;
+				mesh_data->GetVertices()[i].color.w = (float)color.mAlpha;
+			}
+		}
+	}
+}
+
+void FbxModels::SetMaterialName(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	if (mesh->GetElementMaterialCount() == 0)
+	{
+		mesh_data->SetName("");
+		return;
+	}
+
+	FbxLayerElementMaterial* material = mesh->GetElementMaterial(0);
+	int index = material->GetIndexArray().GetAt(0);
+	FbxSurfaceMaterial* surface_material = mesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(index);
+	if (surface_material != nullptr)
+	{
+		mesh_data->SetName(surface_material->GetName());
+	}
+	else
+	{
+		mesh_data->SetName("");
 	}
 }

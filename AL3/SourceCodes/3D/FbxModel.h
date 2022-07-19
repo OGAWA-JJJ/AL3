@@ -2,6 +2,7 @@
 #include <string>
 #include <DirectXMath.h>
 #include <vector>
+#include <map>
 #include <DirectXTex.h>
 #include <Windows.h>
 #include <wrl.h>
@@ -80,6 +81,28 @@ public:
 		//コンストラクタ
 		Bone(const std::string& name) { this->name = name; }
 	};
+
+	//Test(Sampleを参考に)
+	struct MeshData
+	{
+		ComPtr<ID3D12Resource> m_VertBuff;
+		ComPtr<ID3D12Resource> m_IndexBuff;
+		std::vector<DirectX::XMFLOAT3> m_Pos;
+		std::vector<DirectX::XMFLOAT3> m_Normal;
+		std::vector<DirectX::XMFLOAT2> m_Uv;
+		std::vector<DirectX::XMFLOAT4> m_Color;
+		std::vector<UINT> m_Indices;
+		std::string m_MaterialName;
+	};
+	struct Material
+	{
+		DirectX::XMFLOAT3 m_Ambient = { 1,1,1 };
+		DirectX::XMFLOAT3 m_Diffuse = { 1,1,1 };
+	};
+	//Test
+	std::vector<MeshData> m_MeshList;
+	std::map<std::string, Material> m_Materials;
+	std::map<std::string, std::pair<DirectX::TexMetadata, DirectX::ScratchImage>> m_DxTextures;
 
 private:
 	//モデル名

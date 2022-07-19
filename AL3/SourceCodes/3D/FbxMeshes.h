@@ -1,14 +1,10 @@
 #pragma once
 #include <Windows.h>
-#include <wrl.h>
-#include <d3d12.h>
-#include <DirectXMath.h>
-#include <d3dx12.h>
 #include <vector>
 #include <unordered_map>
-#include "Material.h"
+#include "FbxMaterial.h"
 
-class Mesh
+class FbxMeshes
 {
 public:
 	struct VertexPosNormalUv
@@ -16,71 +12,46 @@ public:
 		DirectX::XMFLOAT3 pos;		//xyz座標
 		DirectX::XMFLOAT3 normal;	//法線ベクトル
 		DirectX::XMFLOAT2 uv;		//uv座標
+		DirectX::XMFLOAT4 color;
 	};
 
 private:
-	//デバイス
 	static ID3D12Device* device;
 
 private:
-	//名前
 	std::string name;
-	//頂点バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertBuff;
-	//インデックスバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuff;
-	//頂点バッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vbView = {};
-	//インデックスバッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView = {};
-	//頂点データ配列
 	std::vector<VertexPosNormalUv> vertices;
-	//頂点インデックス配列
 	std::vector<unsigned short> indices;
-	//マテリアル
-	Material* material = nullptr;
-	//頂点法線スムーシング用データ
+	FbxMaterial* material = nullptr;
 	std::unordered_map<unsigned short, std::vector<unsigned short>> smoothData;
 
 public:
-	//静的初期化
-	static void StaticInit(ID3D12Device* device);
+	static void StaticInit(ID3D12Device* dev);
 
 public:
-	Mesh();
-	~Mesh();
+	FbxMeshes() {}
+	~FbxMeshes() {}
 
-	//名前をセット
 	void SetName(const std::string& name);
-	//頂点データの追加
 	void AddVertex(const VertexPosNormalUv& vertex);
-	//頂点インデックスの追加
 	void AddIndex(unsigned short index);
-	//マテリアルの割り当て
-	void SetMaterial(Material* material);
-	//バッファの生成
+	void SetMaterial(FbxMaterial* material);
 	void CreateBuffers();
-	//描画
 	void Draw(ID3D12GraphicsCommandList* cmdList);
-	//エッジ平滑化データの追加
 	void AddSmoothData(unsigned short indexPosition, unsigned short indexVertex);
-	//平滑化された頂点法線の計算
 	void CalculateSmoothedVertexNormals();
 
 public:
-	//名前を取得
 	const std::string& GetName() { return name; }
-	//頂点データの数を取得
 	inline size_t GetVertexCount() { return vertices.size(); }
-	//マテリアルの取得
-	Material* GetMaterial() { return material; }
-	//頂点バッファ取得
+	FbxMaterial* GetMaterial() { return material; }
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBView() { return vbView; }
-	//インデックスバッファ取得
 	const D3D12_INDEX_BUFFER_VIEW& GetIBView() { return ibView; }
-	//頂点配列の取得
-	inline const std::vector<VertexPosNormalUv>& GetVertices() { return vertices; }
-	//インデックス配列の取得
+	inline std::vector<VertexPosNormalUv>& GetVertices() { return vertices; }
 	inline const std::vector<unsigned short>& GetIndices() { return indices; }
 };
 

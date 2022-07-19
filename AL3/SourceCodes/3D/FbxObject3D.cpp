@@ -2,13 +2,9 @@
 #include "../3D/FbxLoader.h"
 #include "../DirectX/Camera.h"
 #include "../../imgui/ImguiControl.h"
-//#include "../Math/OgaJHelper.h"
 #include <d3dcompiler.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
-
-//using namespace Microsoft::WRL;
-//using namespace DirectX;
 
 ID3D12Device* FbxObject3D::device = nullptr;
 //ComPtr<ID3D12RootSignature> FbxObject3D::rootsignature;

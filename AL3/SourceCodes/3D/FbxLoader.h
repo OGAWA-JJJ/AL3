@@ -52,13 +52,13 @@ public:
 	//メッシュ読み取り
 	void ParseMesh(FbxModel* model, FbxNode* fbxNode);
 	//頂点情報読み取り
-	void ParseMeshVertices(FbxModel* model, FbxMesh* fbxMesh);
+	void ParseMeshVertices(FbxModel* model, FbxMesh* fbxMesh, FbxModel::MeshData& meshdata);
 	//面情報読み取り
-	void ParseMeshFaces(FbxModel* model, FbxMesh* fbxMesh);
+	void ParseMeshFaces(FbxModel* model, FbxMesh* fbxMesh, FbxModel::MeshData& meshdata);
 	//マテリアル読み取り
 	void ParseMaterial(FbxModel* model, FbxNode* fbxNode);
 	//テクスチャ読み込み
-	void LoadTexture(FbxModel* model, const std::string& fullpath);
+	bool LoadTexture(FbxModel* model, const std::string& fullpath);
 	//ディレクトリを含んだファイルパスからファイル名を抽出する
 	std::string ExtractFileName(const std::string& path);
 	//スキニング情報の読み取り
