@@ -15,6 +15,8 @@ FbxModels::~FbxModels()
 		delete m.second;
 	}
 	materials.clear();
+
+	fbxScene->Destroy();
 }
 
 void FbxModels::StaticInit(ID3D12Device* dev)
@@ -52,8 +54,8 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 		assert(0);
 	}
 
-	FbxScene* fbx_scene = FbxScene::Create(fbx_manager, "");
-	if (fbx_scene == nullptr)
+	fbxScene = FbxScene::Create(fbx_manager, "");
+	if (fbxScene == nullptr)
 	{
 		fbx_importer->Destroy();
 		fbx_manager->Destroy();
@@ -62,28 +64,28 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	fbx_importer->Initialize(path.c_str());
 
-	fbx_importer->Import(fbx_scene);
+	fbx_importer->Import(fbxScene);
 
 	FbxGeometryConverter converter(fbx_manager);
-	converter.SplitMeshesPerMaterial(fbx_scene, true);
-	converter.Triangulate(fbx_scene, true);
+	converter.SplitMeshesPerMaterial(fbxScene, true);
+	converter.Triangulate(fbxScene, true);
 
-	int material_num = fbx_scene->GetSrcObjectCount<FbxSurfaceMaterial>();
+	int material_num = fbxScene->GetSrcObjectCount<FbxSurfaceMaterial>();
 	for (int i = 0; i < material_num; i++)
 	{
-		LoadMaterial(directoryPath, filename, fbx_scene->GetSrcObject<FbxSurfaceMaterial>(i));
+		LoadMaterial(directoryPath, filename, fbxScene->GetSrcObject<FbxSurfaceMaterial>(i));
 	}
 
-	int mesh_num = fbx_scene->GetSrcObjectCount<FbxMesh>();
+	int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
 	for (int i = 0; i < mesh_num; i++)
 	{
-		CreateMesh(fbx_scene->GetSrcObject<FbxMesh>(i));
+		CreateMesh(fbxScene->GetSrcObject<FbxMesh>(i));
 	}
 
-	int texture_num = fbx_scene->GetSrcObjectCount<FbxFileTexture>();
+	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
 	for (int i = 0; i < texture_num; i++)
 	{
-		FbxFileTexture* texture = fbx_scene->GetSrcObject<FbxFileTexture>(i);
+		FbxFileTexture* texture = fbxScene->GetSrcObject<FbxFileTexture>(i);
 		if (texture)
 		{
 			const char* file_name01 = texture->GetFileName();
@@ -93,7 +95,7 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	}
 
 	fbx_importer->Destroy();
-	fbx_scene->Destroy();
+	//fbx_scene->Destroy();
 	fbx_manager->Destroy();
 
 	for (auto& m : meshes)
@@ -365,19 +367,11 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	LoadTextures();
 }
 
-void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv, UINT rootParamIndex, bool isAddTexture)
+void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList)
 {
 	if (descHeap) {
 		ID3D12DescriptorHeap* ppHeaps[] = { descHeap };
 		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	}
-
-	if (isAddTexture) {
-		cmdList->SetGraphicsRootDescriptorTable(rootParamIndex,
-			CD3DX12_GPU_DESCRIPTOR_HANDLE(
-				srv->GetGPUDescriptorHandleForHeapStart(),
-				0,
-				descriptorHandleIncrementSize));
 	}
 
 	for (auto& mesh : meshes) {

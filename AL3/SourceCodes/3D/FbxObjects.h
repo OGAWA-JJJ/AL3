@@ -22,6 +22,14 @@ private:
 		DirectX::XMFLOAT3 cameraPos;	//カメラ座標（ワールド座標）
 	};
 
+	struct ConstBufferDataSkin
+	{
+		DirectX::XMMATRIX bones[MAX_BONES];
+	};
+
+public:
+	static FbxObjects* Create(FbxModels* model = nullptr);
+
 public:
 	static void StaticInit(ID3D12Device* dev);
 	static void SetDevice(ID3D12Device* device) { FbxObjects::device = device; }
@@ -35,7 +43,7 @@ private:
 	DirectX::XMFLOAT3 position = { 0,0,0 };
 	DirectX::XMMATRIX matWorld = DirectX::XMMatrixIdentity();
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffTransform;
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
 	FbxTime frameTime;
@@ -43,4 +51,31 @@ private:
 	FbxTime endTime;
 	FbxTime currentTime;
 	bool isPlay = false;
+
+	ID3D12DescriptorHeap* fbxDescHeap = {};
+	//ボーンの名前と行列(Update後に更新)
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affineTrans;
+	//手のワールド行列
+	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
+	//ボーン全部の回転行列
+	std::vector<DirectX::XMMATRIX> matRots;
+
+public:
+	bool Init();
+	void Update(bool isShadowCamera);
+	void Draw();
+	void PlayAnimation();
+
+public:
+	void SetModel(FbxModels* model) { this->model = model; }
+
+private:
+	void ConvertMatrixFromFbx(DirectX::XMMATRIX* dst, const FbxAMatrix& src)
+	{
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				dst->r[i].m128_f32[j] = (float)src.Get(i, j);
+			}
+		}
+	}
 };
