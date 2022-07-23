@@ -15,102 +15,11 @@ private:
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 	using XMMATRIX = DirectX::XMMATRIX;
 
-private:	//自機のパターン
-	enum AnimationType
-	{
-		STAND, SLOWRUN, RUN, ATTACK
-	};
-
-private:	//定数
-	const float MAX_DISTANCE = 125.0f;			//カメラと自機の距離(いつか可変に)
-	const float MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
-	const float MAX_CAMERA_MOVE_SPEED = 2.0f;	//カメラの最大速度
-	const float EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
-
-private:	//パイプライン
-	ObjPipelineSet normal;
-	ObjPipelineSet shadow;
-	ObjPipelineSet receiveShadow;
-
-	FbxPipelineSet fbx_normal;
-	FbxPipelineSet fbx_shadow;
-
-private:	//変数
-	XMFLOAT3 cameraAngle;
-	int animationType;
-	float cameraMoveEase = 0.0f;
-	float cameraY = 0.0f;
-	float count = 0.0f;
-	bool isTarget = false;
-	bool isEase = false;
-
-	int rot = 0;
-	bool isHit = false;
-
 	//MT4
 	float accY = 0.0f;
 	float dist = 0.0f;
 	float posY = 0.0f;
 	float velY = 0.0f;
-
-private:	//光
-	Light* light = nullptr;
-	//std::weak_ptr<Light> light;
-
-private:	//モデル(Load用)
-	Model* model_Lich = nullptr;
-	Model* model_stage = nullptr;
-	Model* model_sponza = nullptr;
-	Model* model_eyeball = nullptr;
-	Model* model_sword = nullptr;
-
-	Model* model_box = nullptr;
-	Model* model_box2 = nullptr;
-	//std::weak_ptr<Model> model_Lich;
-	//std::weak_ptr<Model> model_stage;
-	//std::weak_ptr<Model> model_eyeball;
-	//std::weak_ptr<Model> model_sword;
-
-	FbxModel* fbxmodel_standMiku = nullptr;
-	FbxModel* fbxmodel_slowRunMiku = nullptr;
-	FbxModel* fbxmodel_fastRunMiku = nullptr;
-	FbxModel* fbxmodel_oneSwrordAttack = nullptr;
-	//std::weak_ptr<FbxModel> fbxmodel_standMiku;
-	//std::weak_ptr<FbxModel> fbxmodel_slowRunMiku;
-	//std::weak_ptr<FbxModel> fbxmodel_fastRunMiku;
-
-private:	//オブジェクト(Draw用)
-	Object* obj_EyeBall = nullptr;
-	Object* obj_Stage = nullptr;
-	Object* obj_Lich = nullptr;
-	Object* obj_Sword = nullptr;
-	Object* obj_ShadowSword = nullptr;
-	Object* obj_Sponza = nullptr;
-
-	Object* obj_Box[28] = { nullptr };
-	Object* obj_SwordBox = nullptr;
-	Object* obj_HitBox = nullptr;
-	//std::weak_ptr<Object> obj_EyeBall;
-	//std::weak_ptr<Object> obj_Stage;
-	//std::weak_ptr<Object> obj_Lich;
-	//std::weak_ptr<Object> obj_Sword;
-	//std::weak_ptr<Object> obj_ShadowSword;
-
-	FbxObject3D* fbxobj_StandMiku = nullptr;
-	FbxObject3D* fbxobj_SlowRunMiku = nullptr;
-	FbxObject3D* fbxobj_FastRunMiku = nullptr;
-	FbxObject3D* fbxobj_StandShadowMiku = nullptr;
-	FbxObject3D* fbxobj_SlowRunShadowMiku = nullptr;
-	FbxObject3D* fbxobj_FastRunShadowMiku = nullptr;
-
-	FbxObject3D* fbxobj_OneSwordAttack = nullptr;
-	FbxObject3D* fbxobj_OneSwordAttackShadow = nullptr;
-	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
-	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
-	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;
-	//std::weak_ptr<FbxObject> fbxobj_StandShadowMiku;
-	//std::weak_ptr<FbxObject> fbxobj_SlowRunShadowMiku;
-	//std::weak_ptr<FbxObject> fbxobj_FastRunShadowMiku;
 
 	Sprite* GH1 = nullptr;
 
