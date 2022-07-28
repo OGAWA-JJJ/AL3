@@ -22,9 +22,9 @@ FbxMaterial* FbxMaterial::Create()
 
 void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
-	//テクスチャなし
 	if (textureFilename.size() == 0) {
 		textureFilename = "white1x1.png";
+		//textureFilename = "StandMiku/StandMiku.fbm/body.png";
 	}
 
 	cpuDescHandleSRV = cpuHandle;
@@ -32,15 +32,12 @@ void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESC
 
 	HRESULT result = S_FALSE;
 
-	//WICテクスチャのロード
 	DirectX::TexMetadata metadata{};
 	DirectX::ScratchImage scratchImg{};
 
-	//ファイルパスを結合
 	std::string filepath = directoryPath + textureFilename;
 	wchar_t wfilepath[128];
 
-	//ユニコード文字列に変換
 	MultiByteToWideChar(CP_ACP, 0, filepath.c_str(), -1, wfilepath, _countof(wfilepath));
 
 	result = LoadFromWICFile(
@@ -50,9 +47,8 @@ void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESC
 		assert(0);
 	}
 
-	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出
+	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0);
 
-	//リソース設定
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		metadata.format,
 		metadata.width,
@@ -61,41 +57,38 @@ void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESC
 		(UINT16)metadata.mipLevels
 	);
 
-	//テクスチャ用バッファの生成
 	result = device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
 		D3D12_HEAP_FLAG_NONE,
 		&texresDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, //テクスチャ用指定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&texbuff));
 	if (FAILED(result)) {
 		assert(0);
 	}
 
-	//テクスチャバッファにデータ転送
 	result = texbuff->WriteToSubresource(
 		0,
-		nullptr, //全領域へコピー
-		img->pixels,    //元データアドレス
-		(UINT)img->rowPitch,  //1ラインサイズ
-		(UINT)img->slicePitch //1枚サイズ
+		nullptr,
+		img->pixels,
+		(UINT)img->rowPitch,
+		(UINT)img->slicePitch
 	);
 	if (FAILED(result)) {
 		assert(0);
 	}
 
-	//シェーダリソースビュー作成
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
 
 	srvDesc.Format = resDesc.Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(texbuff.Get(), //ビューと関連付けるバッファ
-		&srvDesc, //テクスチャ設定情報
+	device->CreateShaderResourceView(texbuff.Get(),
+		&srvDesc,
 		cpuDescHandleSRV
 	);
 }

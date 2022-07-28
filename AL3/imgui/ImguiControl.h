@@ -1,4 +1,7 @@
 #pragma once
+#include <d3dx12.h> 
+#include <DirectXTex.h>
+#include <unordered_map>
 
 class ImguiControl
 {
@@ -38,7 +41,22 @@ public:
 	static bool Imgui_isShadowMap;
 
 public:
-	//InguiControl();
+	static const int MAX_TEX_NUM = 10;
+
+private:
+	static int texnum;
+	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> l_descHeap;
+	static UINT64 address;
+
+	static int width;
+	static int height;
+
+public:
+	static UINT64 LoadTexture(const wchar_t* filename);
+
+	static void SetDescHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descHeap) { l_descHeap = descHeap; }
+
+	static void Init();
 	static void Update();
 };
 

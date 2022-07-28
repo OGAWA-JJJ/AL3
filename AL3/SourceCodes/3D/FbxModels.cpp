@@ -3,6 +3,17 @@
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <xlocbuf>
+#include <codecvt> 
+#include <DirectXTex.h>
+
+const std::string FbxModels::baseDirectory = "Resources/";
+ID3D12Device* FbxModels::device = nullptr;
+UINT FbxModels::descriptorHandleIncrementSize = 0;
+
+FbxModels::FbxModels()
+{
+}
 
 FbxModels::~FbxModels()
 {
@@ -44,8 +55,10 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	const std::string directoryPath = baseDirectory + modelname + "/";
 	const std::string path = directoryPath + filename;
 
+	name = modelname;
+
 	FbxManager* fbx_manager = fbxsdk::FbxManager::Create();
-	assert(fbx_manager == nullptr);
+	assert(fbx_manager != nullptr);
 
 	FbxImporter* fbx_importer = FbxImporter::Create(fbx_manager, "");
 	if (fbx_importer == nullptr)
@@ -70,16 +83,23 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	converter.SplitMeshesPerMaterial(fbxScene, true);
 	converter.Triangulate(fbxScene, true);
 
+	int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
+	for (int i = 0; i < mesh_num; i++)
+	{
+		CreateMesh(fbxScene->GetSrcObject<FbxMesh>(i));
+	}
+
 	int material_num = fbxScene->GetSrcObjectCount<FbxSurfaceMaterial>();
 	for (int i = 0; i < material_num; i++)
 	{
 		LoadMaterial(directoryPath, filename, fbxScene->GetSrcObject<FbxSurfaceMaterial>(i));
 	}
 
-	int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
-	for (int i = 0; i < mesh_num; i++)
+	FbxNode* fbxNode = fbxScene->GetRootNode();
+
+	for (auto& m : meshes)
 	{
-		CreateMesh(fbxScene->GetSrcObject<FbxMesh>(i));
+		//LoadNode(m, fbxNode);
 	}
 
 	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
@@ -95,22 +115,22 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	}
 
 	fbx_importer->Destroy();
-	//fbx_scene->Destroy();
 	fbx_manager->Destroy();
 
-	for (auto& m : meshes)
-	{
-		if (m->GetMaterial() == nullptr)
-		{
-			if (defaultMaterial == nullptr)
-			{
-				defaultMaterial = FbxMaterial::Create();
-				defaultMaterial->SetName("no material");
-				materials.emplace(defaultMaterial->GetName(), defaultMaterial);
-			}
-			m->SetMaterial(defaultMaterial);
-		}
-	}
+	//for (auto& m : meshes)
+	//{
+	//	//1つのマテリアルしか入ってない
+	//	if (m->GetMaterial() == nullptr)
+	//	{
+	//		if (defaultMaterial == nullptr)
+	//		{
+	//			defaultMaterial = FbxMaterial::Create();
+	//			defaultMaterial->SetName("no material");
+	//			materials.emplace(defaultMaterial->GetName(), defaultMaterial);
+	//		}
+	//		m->SetMaterial(defaultMaterial);
+	//	}
+	//}
 
 	for (auto& m : meshes)
 	{
@@ -123,247 +143,6 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	CreateDescriptorHeap();
 
-	LoadTextures();
-
-	//Test-----
-	const std::string filename = modelname + ".obj";
-	const std::string directoryPath = baseDirectory + modelname + "/";
-
-	// ファイルストリーム
-	std::ifstream file;
-	// .objファイルを開く
-	file.open(directoryPath + filename);
-	// ファイルオープン失敗をチェック
-	if (file.fail()) {
-		assert(0);
-	}
-
-	name = modelname;
-
-	// メッシュ生成
-	Mesh* mesh = new Mesh;
-	int indexCountTex = 0;
-	int indexCountNoTex = 0;
-
-	std::vector<DirectX::XMFLOAT3> positions;	// 頂点座標
-	std::vector<DirectX::XMFLOAT3> normals;	// 法線ベクトル
-	std::vector<DirectX::XMFLOAT2> texcoords;	// テクスチャUV
-	// 1行ずつ読み込む
-	std::string line;
-	while (getline(file, line)) {
-
-		// 1行分の文字列をストリームに変換して解析しやすくする
-		std::istringstream line_stream(line);
-
-		// 半角スペース区切りで行の先頭文字列を取得
-		std::string key;
-		getline(line_stream, key, ' ');
-
-		//マテリアル
-		if (key == "mtllib")
-		{
-			// マテリアルのファイル名読み込み
-			std::string filename;
-			line_stream >> filename;
-			// マテリアル読み込み
-			LoadMaterial(directoryPath, filename);
-		}
-		// 先頭文字列がgならグループの開始
-		if (key == "g") {
-			// カレントメッシュの情報が揃っているなら
-			if (mesh->GetName().size() > 0 && mesh->GetVertexCount() > 0) {
-				//頂点法線の平均によるエッジの平滑化
-				if (smoothing) {
-					mesh->CalculateSmoothedVertexNormals();
-				}
-				// コンテナに登録
-				meshes.emplace_back(mesh);
-				// 次のメッシュ生成
-				mesh = new Mesh;
-				indexCountTex = 0;
-			}
-
-			// グループ名読み込み
-			std::string groupName;
-			line_stream >> groupName;
-
-			// メッシュに名前をセット
-			mesh->SetName(groupName);
-		}
-		// 先頭文字列がvなら頂点座標
-		if (key == "v") {
-			// X,Y,Z座標読み込み
-			DirectX::XMFLOAT3 position{};
-			line_stream >> position.x;
-			line_stream >> position.y;
-			line_stream >> position.z;
-			positions.emplace_back(position);
-
-			//サイズの比較
-			if (position.x > size.x) { size.x = position.x; }
-			if (position.y > size.y) { size.y = position.y; }
-			if (position.z > size.z) { size.z = position.z; }
-		}
-		// 先頭文字列がvtならテクスチャ
-		if (key == "vt")
-		{
-			// U,V成分読み込み
-			DirectX::XMFLOAT2 texcoord{};
-			line_stream >> texcoord.x;
-			line_stream >> texcoord.y;
-			// V方向反転
-			texcoord.y = 1.0f - texcoord.y;
-			// テクスチャ座標データに追加
-			texcoords.emplace_back(texcoord);
-		}
-		// 先頭文字列がvnなら法線ベクトル
-		if (key == "vn") {
-			// X,Y,Z成分読み込み
-			DirectX::XMFLOAT3 normal{};
-			line_stream >> normal.x;
-			line_stream >> normal.y;
-			line_stream >> normal.z;
-			// 法線ベクトルデータに追加
-			normals.emplace_back(normal);
-		}
-		// 先頭文字列がusemtlならマテリアルを割り当てる
-		if (key == "usemtl")
-		{
-			if (mesh->GetMaterial() == nullptr) {
-				// マテリアルの名読み込み
-				std::string materialName;
-				line_stream >> materialName;
-
-				// マテリアル名で検索し、マテリアルを割り当てる
-				auto itr = materials.find(materialName);
-				if (itr != materials.end()) {
-					mesh->SetMaterial(itr->second);
-				}
-			}
-		}
-		// 先頭文字列がfならポリゴン（三角形）
-		if (key == "f")
-		{
-			int faceIndexCount = 0;
-			// 半角スペース区切りで行の続きを読み込む
-			std::string index_string;
-			while (getline(line_stream, index_string, ' ')) {
-				// 頂点インデックス1個分の文字列をストリームに変換して解析しやすくする
-				std::istringstream index_stream(index_string);
-				unsigned short indexPosition, indexNormal, indexTexcoord;
-				// 頂点番号
-				index_stream >> indexPosition;
-
-				Material* material = mesh->GetMaterial();
-				index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
-				// マテリアル、テクスチャがある場合
-				if (material && material->textureFilename.size() > 0) {
-					index_stream >> indexTexcoord;
-					index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
-					index_stream >> indexNormal;
-					// 頂点データの追加
-					Mesh::VertexPosNormalUv vertex{};
-					vertex.pos = positions[indexPosition - 1];
-					vertex.normal = normals[indexNormal - 1];
-					vertex.uv = texcoords[indexTexcoord - 1];
-					mesh->AddVertex(vertex);
-					//エッジ平滑化用のデータを追加
-					if (smoothing) {
-						//vキー（座標データ）の番号と、全て合成した頂点のインデックスをセットで登録する
-						mesh->AddSmoothData(indexPosition, (unsigned short)mesh->GetVertexCount() - 1);
-					}
-				}
-				else {
-					char c;
-					index_stream >> c;
-					// スラッシュ2連続の場合、頂点番号のみ
-					if (c == '/') {
-						// 頂点データの追加
-						Mesh::VertexPosNormalUv vertex{};
-						vertex.pos = positions[indexPosition - 1];
-						vertex.normal = { 0, 0, 1 };
-						vertex.uv = { 0, 0 };
-						mesh->AddVertex(vertex);
-						//エッジ平滑化用のデータを追加
-						if (smoothing) {
-							//vキー（座標データ）の番号と、全て合成した頂点のインデックスをセットで登録する
-							mesh->AddSmoothData(indexPosition, (unsigned short)mesh->GetVertexCount() - 1);
-						}
-					}
-					else {
-						index_stream.seekg(-1, std::ios_base::cur); // 1文字戻る
-						index_stream >> indexTexcoord;
-						index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
-						index_stream >> indexNormal;
-						// 頂点データの追加
-						Mesh::VertexPosNormalUv vertex{};
-						vertex.pos = positions[indexPosition - 1];
-						vertex.normal = normals[indexNormal - 1];
-						vertex.uv = { 0, 0 };
-						mesh->AddVertex(vertex);
-						//エッジ平滑化用のデータを追加
-						if (smoothing) {
-							//vキー（座標データ）の番号と、全て合成した頂点のインデックスをセットで登録する
-							mesh->AddSmoothData(indexPosition, (unsigned short)mesh->GetVertexCount() - 1);
-						}
-					}
-				}
-				// インデックスデータの追加
-				if (faceIndexCount >= 3) {
-					// 四角形ポリゴンの4点目なので、
-					// 四角形の0,1,2,3の内 2,3,0で三角形を構築する
-					mesh->AddIndex(indexCountTex - 1);
-					mesh->AddIndex(indexCountTex);
-					mesh->AddIndex(indexCountTex - 3);
-				}
-				else
-				{
-					mesh->AddIndex(indexCountTex);
-				}
-				indexCountTex++;
-				faceIndexCount++;
-			}
-		}
-	}
-	file.close();
-
-	//頂点法線の平均によるエッジの平滑化
-	if (smoothing) {
-		mesh->CalculateSmoothedVertexNormals();
-	}
-
-	// コンテナに登録
-	meshes.emplace_back(mesh);
-
-	// メッシュのマテリアルチェック
-	for (auto& m : meshes) {
-		// マテリアルの割り当てがない
-		if (m->GetMaterial() == nullptr) {
-			if (defaultMaterial == nullptr) {
-				// デフォルトマテリアルを生成
-				defaultMaterial = Material::Create();
-				defaultMaterial->name = "no material";
-				materials.emplace(defaultMaterial->name, defaultMaterial);
-			}
-			// デフォルトマテリアルをセット
-			m->SetMaterial(defaultMaterial);
-		}
-	}
-
-	// メッシュのバッファ生成
-	for (auto& m : meshes) {
-		m->CreateBuffers();
-	}
-
-	// マテリアルの数値を定数バッファに反映
-	for (auto& m : materials) {
-		m.second->Update();
-	}
-
-	// デスクリプタヒープ生成
-	CreateDescriptorHeap();
-
-	// テクスチャの読み込み
 	LoadTextures();
 }
 
@@ -374,8 +153,11 @@ void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList)
 		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
+	//設計が不安、アルファが今は固定
+	int count = 0;
 	for (auto& mesh : meshes) {
-		mesh->Draw(cmdList);
+		mesh->Draw(cmdList, materials[names[count]]);
+		count++;
 	}
 }
 
@@ -384,7 +166,9 @@ void FbxModels::LoadMaterial(const std::string& directoryPath, const std::string
 {
 	//Test-----
 	FbxMaterial* l_material = FbxMaterial::Create();
+	l_material->SetName(fbx_material->GetName());
 	FbxMaterial::ConstBufferDataB1 entry_material;
+
 	enum class MaterialOrder
 	{
 		Ambient,
@@ -437,93 +221,32 @@ void FbxModels::LoadMaterial(const std::string& directoryPath, const std::string
 
 	l_material->SetMaterial(entry_material);
 
-	if (l_material) { AddMaterial(l_material); }
-
-	//Test-----
-
-	//ファイルストリーム
-	std::ifstream file;
-	//マテリアルファイルを開く
-	file.open(directoryPath + filename);
-	//ファイルオープン失敗をチェック
-	if (file.fail()) {
-		assert(0);
+	//名前とかテクスチャ取得の処理がない↓
+	prop = fbx_material->FindProperty(FbxSurfaceMaterial::sDiffuse);
+	FbxFileTexture* texture = nullptr;
+	int texture_num = prop.GetSrcObjectCount<FbxFileTexture>();
+	if (texture_num > 0)
+	{
+		texture = prop.GetSrcObject<FbxFileTexture>(0);
 	}
-
-	FbxMaterial* material = nullptr;
-
-	//1行ずつ読み込む
-	std::string line;
-	while (getline(file, line)) {
-
-		//1行分の文字列をストリームに変換して解析しやすくする
-		std::istringstream line_stream(line);
-
-		//半角スペース区切りで行の先頭文字列を取得
-		std::string key;
-		getline(line_stream, key, ' ');
-
-		//先頭のタブ文字は無視する
-		if (key[0] == '\t') {
-			key.erase(key.begin()); // 先頭の文字を削除
-		}
-
-		//先頭文字列がnewmtlならマテリアル名
-		if (key == "newmtl") {
-
-			//既にマテリアルがあれば
-			if (material) {
-				//マテリアルをコンテナに登録
-				AddMaterial(material);
-			}
-
-			//新しいマテリアルを生成
-			material = FbxMaterial::Create();
-			//マテリアル名読み込み
-			line_stream >> material->GetName();
-		}
-		//先頭文字列がKaならアンビエント色
-		if (key == "Ka") {
-			line_stream >> material->ambient.x;
-			line_stream >> material->ambient.y;
-			line_stream >> material->ambient.z;
-		}
-		//先頭文字列がKdならディフューズ色
-		if (key == "Kd") {
-			line_stream >> material->diffuse.x;
-			line_stream >> material->diffuse.y;
-			line_stream >> material->diffuse.z;
-		}
-		//先頭文字列がKsならスペキュラー色
-		if (key == "Ks") {
-			line_stream >> material->specular.x;
-			line_stream >> material->specular.y;
-			line_stream >> material->specular.z;
-		}
-		//先頭文字列がmap_Kdならテクスチャファイル名
-		if (key == "map_Kd") {
-			//テクスチャのファイル名読み込み
-			line_stream >> material->textureFilename;
-
-			//フルパスからファイル名を取り出す
-			size_t pos1;
-			pos1 = material->textureFilename.rfind('\\');
-			if (pos1 != std::string::npos) {
-				material->textureFilename = material->textureFilename.substr(pos1 + 1, material->textureFilename.size() - pos1 - 1);
-			}
-
-			pos1 = material->textureFilename.rfind('/');
-			if (pos1 != std::string::npos) {
-				material->textureFilename = material->textureFilename.substr(pos1 + 1, material->textureFilename.size() - pos1 - 1);
-			}
+	else
+	{
+		int layer_num = prop.GetSrcObjectCount<FbxLayeredTexture>();
+		if (layer_num > 0)
+		{
+			texture = prop.GetSrcObject<FbxFileTexture>(0);
 		}
 	}
-	//ファイルを閉じる
-	file.close();
+	std::string name = LoadName(texture);
+	if (name.size() > 0)
+	{
+		l_material->SetTextureFileName(name);
+	}
 
-	if (material) {
-		//マテリアルを登録
-		AddMaterial(material);
+	if (l_material)
+	{
+		names.push_back(l_material->GetName());
+		AddMaterial(l_material);
 	}
 }
 
@@ -564,17 +287,27 @@ void FbxModels::LoadTextures()
 
 		//テクスチャあり
 		if (material->GetTextureFilename().size() > 0) {
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			//マテリアルにテクスチャ読み込み
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+				descHeap->GetCPUDescriptorHandleForHeapStart(),
+				textureIndex,
+				descriptorHandleIncrementSize);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+				descHeap->GetGPUDescriptorHandleForHeapStart(),
+				textureIndex,
+				descriptorHandleIncrementSize);
 			material->LoadTexture(directoryPath, cpuDescHandleSRV, gpuDescHandleSRV);
 			textureIndex++;
 		}
 		//テクスチャなし
 		else {
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			//マテリアルにテクスチャ読み込み
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+				descHeap->GetCPUDescriptorHandleForHeapStart(),
+				textureIndex,
+				descriptorHandleIncrementSize);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+				descHeap->GetGPUDescriptorHandleForHeapStart(),
+				textureIndex,
+				descriptorHandleIncrementSize);
 			material->LoadTexture(baseDirectory, cpuDescHandleSRV, gpuDescHandleSRV);
 			textureIndex++;
 		}
@@ -679,7 +412,7 @@ void FbxModels::LoadColors(FbxMeshes* mesh_data, FbxMesh* mesh)
 				mesh_data->GetVertices()[i].color.x = (float)color.mRed;
 				mesh_data->GetVertices()[i].color.y = (float)color.mGreen;
 				mesh_data->GetVertices()[i].color.z = (float)color.mBlue;
-				mesh_data->GetVertices()[i].color.w = (float)color.mAlpha;
+				//mesh_data->GetVertices()[i].color.w = (float)color.mAlpha;
 			}
 		}
 	}
@@ -703,5 +436,241 @@ void FbxModels::SetMaterialName(FbxMeshes* mesh_data, FbxMesh* mesh)
 	else
 	{
 		mesh_data->SetName("");
+	}
+}
+
+void FbxModels::LoadNode(FbxMeshes* mesh_data, FbxNode* fbxNode, FbxMeshes::Node* parent)
+{
+	std::string name = fbxNode->GetName();
+
+	mesh_data->GetNodes().emplace_back();
+	FbxMeshes::Node& node = mesh_data->GetNodes().back();
+
+	node.name = fbxNode->GetName();
+
+	FbxDouble3 rotation = fbxNode->LclRotation.Get();
+	FbxDouble3 scaling = fbxNode->LclScaling.Get();
+	FbxDouble3 translation = fbxNode->LclTranslation.Get();
+
+	node.rotation = { (float)rotation[0],(float)rotation[1],(float)rotation[2],0.0f };
+	node.scaling = { (float)scaling[0],(float)scaling[1],(float)scaling[2],0.0f };
+	node.translation = { (float)translation[0],(float)translation[1],(float)translation[2],1.0f };
+
+	node.rotation.m128_f32[0] = DirectX::XMConvertToRadians(node.rotation.m128_f32[0]);
+	node.rotation.m128_f32[1] = DirectX::XMConvertToRadians(node.rotation.m128_f32[1]);
+	node.rotation.m128_f32[2] = DirectX::XMConvertToRadians(node.rotation.m128_f32[2]);
+
+	DirectX::XMMATRIX matScaling, matRotation, matTranslaton;
+	matScaling = DirectX::XMMatrixScalingFromVector(node.scaling);
+	matRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(node.rotation);
+	matTranslaton = DirectX::XMMatrixTranslationFromVector(node.translation);
+
+	node.transform = DirectX::XMMatrixIdentity();
+	node.transform *= matScaling;
+	node.transform *= matRotation;
+	node.transform *= matTranslaton;
+
+	node.globalTransform = node.transform;
+	if (parent)
+	{
+		node.parent = parent;
+		node.globalTransform *= parent->globalTransform;
+	}
+
+	FbxNodeAttribute* fbxNodeAttribute = fbxNode->GetNodeAttribute();
+
+	if (fbxNodeAttribute)
+	{
+		if (fbxNodeAttribute->GetAttributeType() == FbxNodeAttribute::eMesh)
+		{
+			mesh_data->SetMeshNode(&node);
+			transform = node.globalTransform;
+			FbxMesh* fbx_mesh = fbxNode->GetMesh();
+			LoadSkin(mesh_data, fbx_mesh);
+		}
+	}
+
+	for (int i = 0; i < fbxNode->GetChildCount(); i++)
+	{
+		LoadNode(mesh_data, fbxNode->GetChild(i), &node);
+	}
+}
+
+void FbxModels::LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh)
+{
+	FbxSkin* fbxSkin =
+		static_cast<FbxSkin*>(mesh->GetDeformer(0, FbxDeformer::eSkin));
+
+	std::vector<FbxMeshes::Skin> skinVert = mesh_data->GetSkins();
+
+	if (fbxSkin == nullptr)
+	{
+		mesh_data->GetSkins().resize(mesh_data->GetVertexCount());
+		for (int i = 0; i < mesh_data->GetVertexCount(); i++)
+		{
+			skinVert[i].boneIndex[0] = 0;
+			skinVert[i].boneWeight[0] = 1.0f;
+		}
+		return;
+	}
+
+	std::vector<FbxMeshes::Bone>& bones = mesh_data->GetBones();
+
+	int clusterCount = fbxSkin->GetClusterCount();
+	bones.reserve(clusterCount);
+
+	for (int i = 0; i < clusterCount; i++)
+	{
+		FbxCluster* fbxCluster = fbxSkin->GetCluster(i);
+
+		const char* boneName = fbxCluster->GetLink()->GetName();
+
+		bones.emplace_back(FbxMeshes::Bone(boneName));
+		FbxMeshes::Bone& bone = bones.back();
+
+		bone.fbxCluster = fbxCluster;
+
+		FbxAMatrix fbxMat;
+		fbxCluster->GetTransformLinkMatrix(fbxMat);
+
+		DirectX::XMMATRIX initialPose;
+		ConvertMatrixFromFbx(&initialPose, fbxMat);
+
+		bone.invInitialPose = DirectX::XMMatrixInverse(nullptr, initialPose);
+	}
+
+	struct  WeightSet
+	{
+		UINT index;
+		float weight;
+	};
+
+	std::vector<std::list<WeightSet>>
+		weightLists(mesh_data->GetVertexCount());
+
+	for (int i = 0; i < clusterCount; i++)
+	{
+		FbxCluster* fbxCluster = fbxSkin->GetCluster(i);
+
+		int controlPointIndicesCount = fbxCluster->GetControlPointIndicesCount();
+
+		int* controlPointIndices = fbxCluster->GetControlPointIndices();
+		double* controlPointWeights = fbxCluster->GetControlPointWeights();
+
+		for (int j = 0; j < controlPointIndicesCount; j++)
+		{
+			int vertIndex = controlPointIndices[j];
+
+			float weight = (float)controlPointWeights[j];
+
+			weightLists[vertIndex].emplace_back(WeightSet{ (UINT)i,weight });
+		}
+
+		auto& vertices = skinVert;
+
+		for (int i = 0; i < vertices.size(); i++)
+		{
+			auto& weightList = weightLists[i];
+
+			weightList.sort(
+				[](auto const& lhs, auto const& rhs)
+				{
+					return lhs.weight > rhs.weight;
+				});
+
+			int weightArrayIndex = 0;
+
+			for (auto& weightSet : weightList)
+			{
+				vertices[i].boneIndex[weightArrayIndex] = weightSet.index;
+				vertices[i].boneWeight[weightArrayIndex] = weightSet.weight;
+
+				if (++weightArrayIndex >= FbxMeshes::MAX_BONE_INDICES)
+				{
+					float weight = 0.0f;
+
+					for (int j = 1; j < FbxMeshes::MAX_BONE_INDICES; j++)
+					{
+						weight += vertices[i].boneWeight[j];
+					}
+
+					vertices[i].boneWeight[0] = 1.0f - weight;
+					break;
+				}
+			}
+		}
+	}
+}
+
+std::string FbxModels::LoadName(FbxFileTexture* texture)
+{
+	//テクスチャを読み込んで各meshのtextureFileNameに持たせる
+
+	std::string str;
+	if (texture == nullptr) { return str; }
+
+	std::string file_path = texture->GetRelativeFileName();
+
+	char buffer[256];
+	ZeroMemory(buffer, sizeof(char) * 256);
+	memcpy(buffer, file_path.c_str(), sizeof(char) * 256);
+
+	Replace('\\', '/', buffer);
+	std::vector<std::string> split_list;
+	std::string replace_file_name = buffer;
+	Split('/', buffer, split_list);
+
+	str = buffer;
+
+	return str;
+}
+
+void FbxModels::Replace(char search_char, char replace_char, char* buffer)
+{
+	int len = (int)strlen(buffer);
+
+	for (int i = 0; i < len; i++)
+	{
+		if (buffer[i] == search_char)
+		{
+			buffer[i] = replace_char;
+		}
+	}
+}
+
+void FbxModels::Split(char split_char, char* buffer, std::vector<std::string>& out)
+{
+	int count = 0;
+	if (buffer == nullptr)
+	{
+		return;
+	}
+
+	int start_point = 0;
+
+	while (buffer[count] != '\0')
+	{
+		if (buffer[count] == split_char)
+		{
+			if (start_point != count)
+			{
+				char split_str[256] = { 0 };
+				strncpy_s(split_str, 256, &buffer[start_point], count - start_point);
+				out.emplace_back(split_str);
+			}
+			else
+			{
+				out.emplace_back("");
+			}
+			start_point = count + 1;
+		}
+		count++;
+	}
+
+	if (start_point != count)
+	{
+		char split_str[256] = { 0 };
+		strncpy_s(split_str, 256, &buffer[start_point], count - start_point);
+		out.emplace_back(split_str);
 	}
 }

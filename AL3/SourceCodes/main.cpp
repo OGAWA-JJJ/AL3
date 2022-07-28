@@ -48,6 +48,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
 
+	FbxObjects::StaticInit(DirectXImportant::dev.Get(), DirectXImportant::cmdList.Get());
+
 	//ƒƒCƒ“
 	GameScene* Gamescene = nullptr;
 	Gamescene = new GameScene();

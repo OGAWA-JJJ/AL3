@@ -4,7 +4,8 @@
 #include "../3D/Model.h"
 #include "../3D/Shape.h"
 #include "../XAudio2/Music.h"
-#include "../3D/FbxObject3D.h"
+//#include "../3D/FbxObject3D.h"
+#include "../3D/FbxObjects.h"
 
 class GameScene
 {
@@ -22,6 +23,13 @@ private:
 	float velY = 0.0f;
 
 	Sprite* GH1 = nullptr;
+
+	Light* light = nullptr;
+
+	FbxModels* l_model0 = nullptr;
+	FbxObjects* l_obj0 = nullptr;
+
+	FbxObjects::FbxPipelineSet l_normal = {};
 
 public:
 	GameScene();

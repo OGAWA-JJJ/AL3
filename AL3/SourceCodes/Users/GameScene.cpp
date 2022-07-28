@@ -1,6 +1,6 @@
 #include "GameScene.h"
-#include "../3D/FbxLoader.h"
-#include "../3D/FbxObject3D.h"
+//#include "../3D/FbxLoader.h"
+//#include "../3D/FbxObject3D.h"
 #include "../../imgui/ImguiControl.h"
 #include "../Math/OgaJHelper.h"
 #include "../Input/Input.h"
@@ -16,6 +16,31 @@ GameScene::GameScene()
 	GH1->SetSize(DirectX::XMFLOAT2(64, 64));
 
 	posY = 64.0f;
+
+	light = Light::Create();
+	light->SetLightColor(
+		{
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
+		{
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
+
+	FbxObjects::FbxInitData initData;
+	initData.m_vsEntryPoint = "PSmain";
+	initData.m_vsEntryPoint = "VSmain";
+	l_normal = FbxObjects::CreateGraphicsPipeline(initData);
+
+	//–¼‘O•ª‚©‚è‚É‚­‚¢
+	l_model0 = FbxModels::CreateFromFbx("StandMiku");
+	l_obj0 = FbxObjects::Create(l_model0);
+
+	l_obj0->SetScale(XMFLOAT3(2.5, 2.5, 2.5));
 }
 
 GameScene::~GameScene()
@@ -40,14 +65,36 @@ void GameScene::Update()
 	GH1->SetPosition(XMFLOAT2(0, posY));
 
 	if (Input::isKeyTrigger(DIK_R)) { posY = 0.0f; }
+
+	light->SetLightColor(
+		{
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
+		{
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
+	light->Update();
+	FbxObjects::SetLight(light);
+
+	XMFLOAT3 rot = l_obj0->GetRotation();
+	rot.y += 0.5f;
+	l_obj0->SetRotation(rot);
+	l_obj0->Update();
 }
 
 void GameScene::Draw()
 {
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//if (isHit) { GH1->Draw(); }
-	GH1->Draw();
+	//GH1->Draw();
 	Sprite::PostDraw();
+
+	l_obj0->Draw(l_normal);
 }
 
 void GameScene::LuminanceDraw()

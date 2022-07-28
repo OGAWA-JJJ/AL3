@@ -13,6 +13,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //テクスチャマッピング
     //float4 texcolor = { 0.5, 0.5, 1, 1 };
     float4 texcolor = tex.Sample(smp, input.uv);
+    //return texcolor;
     
     //シェーディングによる色
     float4 shadecolor;

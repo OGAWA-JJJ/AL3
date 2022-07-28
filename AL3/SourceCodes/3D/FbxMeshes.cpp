@@ -90,15 +90,15 @@ void FbxMeshes::CreateBuffers()
 	ibView.SizeInBytes = sizeIB;
 }
 
-void FbxMeshes::Draw(ID3D12GraphicsCommandList* cmdList)
+void FbxMeshes::Draw(ID3D12GraphicsCommandList* cmdList, FbxMaterial* fbxMaterial)
 {
 	cmdList->IASetVertexBuffers(0, 1, &vbView);
 	cmdList->IASetIndexBuffer(&ibView);
-	cmdList->SetGraphicsRootDescriptorTable(2, material->GetGpuHandle());
+	cmdList->SetGraphicsRootDescriptorTable(1, fbxMaterial->GetGpuHandle());
 
 	//FbxMaterial‚ÌConstBuff
-	ID3D12Resource* constBuff = material->GetConstantBuffer();
-	cmdList->SetGraphicsRootConstantBufferView(1, constBuff->GetGPUVirtualAddress());
+	ID3D12Resource* constBuff = fbxMaterial->GetConstantBuffer();
+	cmdList->SetGraphicsRootConstantBufferView(4, constBuff->GetGPUVirtualAddress());
 
 	cmdList->DrawIndexedInstanced((UINT)indices.size(), 1, 0, 0, 0);
 }
