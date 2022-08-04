@@ -177,8 +177,12 @@
     <ClCompile Include="SourceCodes\2D\Sprite.cpp" />
     <ClCompile Include="SourceCodes\2D\Texture.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxLoader.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxMaterial.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxModel.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxModels.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxObject3D.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxObjects.cpp" />
     <ClCompile Include="SourceCodes\3D\Light.cpp" />
     <ClCompile Include="SourceCodes\3D\Material.cpp" />
     <ClCompile Include="SourceCodes\3D\Mesh.cpp" />
@@ -194,12 +198,12 @@
     <ClCompile Include="SourceCodes\DirectX\DirectXBase.cpp" />
     <ClCompile Include="SourceCodes\DirectX\DirectXImportant.cpp" />
     <ClCompile Include="SourceCodes\DirectX\GraphicsPipeline.cpp" />
-    <ClCompile Include="SourceCodes\Input\FunaInput.cpp" />
     <ClCompile Include="SourceCodes\Input\Input.cpp" />
     <ClCompile Include="SourceCodes\main.cpp" />
     <ClCompile Include="SourceCodes\Math\Collision.cpp" />
     <ClCompile Include="SourceCodes\Math\CollisionManager.cpp" />
     <ClCompile Include="SourceCodes\Math\CollisionPrimitive.cpp" />
+    <ClCompile Include="SourceCodes\Math\OBBCollision.cpp" />
     <ClCompile Include="SourceCodes\Math\SphereCollider.cpp" />
     <ClCompile Include="SourceCodes\Users\GameScene.cpp" />
     <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp" />
@@ -225,8 +229,12 @@
     <ClInclude Include="SourceCodes\2D\Sprite.h" />
     <ClInclude Include="SourceCodes\2D\Texture.h" />
     <ClInclude Include="SourceCodes\3D\FbxLoader.h" />
+    <ClInclude Include="SourceCodes\3D\FbxMaterial.h" />
+    <ClInclude Include="SourceCodes\3D\FbxMeshes.h" />
     <ClInclude Include="SourceCodes\3D\FbxModel.h" />
+    <ClInclude Include="SourceCodes\3D\FbxModels.h" />
     <ClInclude Include="SourceCodes\3D\FbxObject3D.h" />
+    <ClInclude Include="SourceCodes\3D\FbxObjects.h" />
     <ClInclude Include="SourceCodes\3D\Light.h" />
     <ClInclude Include="SourceCodes\3D\Material.h" />
     <ClInclude Include="SourceCodes\3D\Mesh.h" />
@@ -242,7 +250,6 @@
     <ClInclude Include="SourceCodes\DirectX\DirectXBase.h" />
     <ClInclude Include="SourceCodes\DirectX\DirectXImportant.h" />
     <ClInclude Include="SourceCodes\DirectX\GraphicsPipeline.h" />
-    <ClInclude Include="SourceCodes\Input\FunaInput.h" />
     <ClInclude Include="SourceCodes\Input\Input.h" />
     <ClInclude Include="SourceCodes\Math\BaseCollider.h" />
     <ClInclude Include="SourceCodes\Math\Collision.h" />
@@ -252,6 +259,7 @@
     <ClInclude Include="SourceCodes\Math\CollisionTypes.h" />
     <ClInclude Include="SourceCodes\Math\Easing.h" />
     <ClInclude Include="SourceCodes\Math\MeshCollider.h" />
+    <ClInclude Include="SourceCodes\Math\OBBCollision.h" />
     <ClInclude Include="SourceCodes\Math\OgaJHelper.h" />
     <ClInclude Include="SourceCodes\Math\RaycastHit.h" />
     <ClInclude Include="SourceCodes\Math\SphereCollider.h" />
