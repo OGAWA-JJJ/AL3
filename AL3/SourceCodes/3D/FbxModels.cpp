@@ -390,6 +390,7 @@ void FbxModels::LoadUV(FbxMeshes* mesh_data, FbxMesh* mesh)
 	}
 }
 
+//“Ç‚Ýž‚ñ‚Å‚é‚¯‚Ç¡‘—‚Á‚Ä‚È‚¢
 void FbxModels::LoadColors(FbxMeshes* mesh_data, FbxMesh* mesh)
 {
 	int color_count = mesh->GetElementVertexColorCount();
