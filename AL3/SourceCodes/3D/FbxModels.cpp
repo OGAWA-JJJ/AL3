@@ -99,6 +99,7 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	FbxNode* fbxNode = fbxScene->GetRootNode();
 
+	/*----------–â‘è‚Ì‰ÓŠ----------*/
 	LoadNode(meshes[0], fbxNode);
 	//for (auto& m : meshes)
 	//{
@@ -487,6 +488,7 @@ void FbxModels::LoadNode(FbxMeshes* mesh_data, FbxNode* fbxNode, FbxMeshes::Node
 		{
 			mesh_data->SetMeshNode(&node);
 			transform = node.globalTransform;
+			//‚±‚±‚ª•Ï‚È‰Â”\«ƒAƒŠ
 			FbxMesh* fbx_mesh = fbxNode->GetMesh();
 			LoadSkin(mesh_data, fbx_mesh);
 		}

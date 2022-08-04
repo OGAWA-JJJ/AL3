@@ -59,7 +59,7 @@ VSOutput VSmain(VSInput input)
     float4 wnormal = normalize(mul(world, float4(input.normal, 0)));
     float4 wpos = mul(world, input.pos);
     
-    VSOutput output; // ピクセルシェーダーに渡す値
+    VSOutput output;
     output.svpos = mul(mul(viewproj, world), input.pos);
     output.normal = wnormal.xyz;
     output.uv = input.uv;
