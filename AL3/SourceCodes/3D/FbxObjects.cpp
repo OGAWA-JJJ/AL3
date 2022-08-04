@@ -288,7 +288,7 @@ void FbxObjects::Update(bool isShadowCamera)
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 
-	//一旦コメントアウト
+	//一旦コメントアウト←FbxMeshesでUpdateすべき
 	/*for (int i = 0; i < bones.size(); i++) {
 
 		DirectX::XMMATRIX matCurrentPose;

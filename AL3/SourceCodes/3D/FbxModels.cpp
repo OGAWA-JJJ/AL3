@@ -27,6 +27,8 @@ FbxModels::~FbxModels()
 	}
 	materials.clear();
 
+	fbx_manager->Destroy();
+	fbx_importer->Destroy();
 	fbxScene->Destroy();
 }
 
@@ -57,10 +59,10 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	name = modelname;
 
-	FbxManager* fbx_manager = fbxsdk::FbxManager::Create();
+	fbx_manager = fbxsdk::FbxManager::Create();
 	assert(fbx_manager != nullptr);
 
-	FbxImporter* fbx_importer = FbxImporter::Create(fbx_manager, "");
+	fbx_importer = FbxImporter::Create(fbx_manager, "");
 	if (fbx_importer == nullptr)
 	{
 		fbx_manager->Destroy();
@@ -97,10 +99,12 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	FbxNode* fbxNode = fbxScene->GetRootNode();
 
-	for (auto& m : meshes)
-	{
-		//LoadNode(m, fbxNode);
-	}
+	LoadNode(meshes[0], fbxNode);
+	//for (auto& m : meshes)
+	//{
+	//	//fbxNode‚ªˆ«‚¢‚Ì‚©GetMesh()‚ªˆ«‚¢‚Ì‚©...
+	//	LoadNode(m, fbxNode);
+	//}
 
 	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
 	for (int i = 0; i < texture_num; i++)
@@ -113,9 +117,6 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 			int tex = texture->GetSrcObjectCount< FbxSurfaceMaterial>();
 		}
 	}
-
-	fbx_importer->Destroy();
-	fbx_manager->Destroy();
 
 	//for (auto& m : meshes)
 	//{
@@ -516,6 +517,7 @@ void FbxModels::LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh)
 
 	std::vector<FbxMeshes::Bone>& bones = mesh_data->GetBones();
 
+	//Žó‚¯Žæ‚Á‚½ƒƒbƒVƒ…‚ÌClusterCount‚ª—~‚µ‚¢A28‚É‚È‚é‚Ì‚ª•Ï
 	int clusterCount = fbxSkin->GetClusterCount();
 	bones.reserve(clusterCount);
 
@@ -566,7 +568,8 @@ void FbxModels::LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh)
 			weightLists[vertIndex].emplace_back(WeightSet{ (UINT)i,weight });
 		}
 
-		auto& vertices = skinVert;
+		auto& vertices = mesh_data->GetSkins();
+		vertices.resize(mesh_data->GetVertexCount());
 
 		for (int i = 0; i < vertices.size(); i++)
 		{

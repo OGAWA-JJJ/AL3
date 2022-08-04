@@ -38,6 +38,31 @@ void FbxMeshes::CreateBuffers()
 {
 	HRESULT result;
 
+	//そもそも別で作る意味はあったのか←アニメーション以外から実装したからだろ！
+	//struct l_VertexPosNormalUvSkin
+	//{
+	//	DirectX::XMFLOAT3 pos;
+	//	DirectX::XMFLOAT3 normal;
+	//	DirectX::XMFLOAT2 uv;
+	//	UINT boneIndex[MAX_BONE_INDICES];
+	//	float boneWeight[MAX_BONE_INDICES];
+	//};
+	//std::vector<l_VertexPosNormalUvSkin> l_vertices;
+	//l_vertices.resize(vertices.size());
+	//for (int i = 0; i < l_vertices.size(); i++)
+	//{
+	//	l_vertices[i].pos = vertices[i].pos;
+	//	l_vertices[i].normal = vertices[i].normal;
+	//	l_vertices[i].uv = vertices[i].uv;
+
+	//	for (int j = 0; j < MAX_BONE_INDICES; j++)
+	//	{
+	//		l_vertices[i].boneIndex[j] = skinVert[i].boneIndex[j];
+	//		l_vertices[i].boneWeight[j] = skinVert[i].boneWeight[j];
+	//	}
+	//}
+
+	//UINT sizeVB = static_cast<UINT>(sizeof(l_VertexPosNormalUvSkin) * l_vertices.size());
 	UINT sizeVB = static_cast<UINT>(sizeof(VertexPosNormalUv) * vertices.size());
 
 	result = device->CreateCommittedResource(
@@ -48,15 +73,18 @@ void FbxMeshes::CreateBuffers()
 		nullptr,
 		IID_PPV_ARGS(&vertBuff));
 
+	//l_VertexPosNormalUvSkin* vertMap = nullptr;
 	VertexPosNormalUv* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	if (SUCCEEDED(result)) {
+		//std::copy(l_vertices.begin(), l_vertices.end(), vertMap);
 		std::copy(vertices.begin(), vertices.end(), vertMap);
 		vertBuff->Unmap(0, nullptr);
 	}
 
 	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
 	vbView.SizeInBytes = sizeVB;
+	//vbView.StrideInBytes = sizeof(l_vertices[0]);
 	vbView.StrideInBytes = sizeof(vertices[0]);
 
 	if (FAILED(result)) {

@@ -114,7 +114,7 @@ UINT64 ImguiControl::LoadTexture(const wchar_t* filename)
 
 void ImguiControl::Init()
 {
-	address = LoadTexture(L"Resources/hamu.png");
+	address = LoadTexture(L"Resources/hamurabyss.png");
 }
 
 void ImguiControl::Update()

@@ -55,6 +55,7 @@ SkinOutput ComputeSkin(VSInput input)
 
 VSOutput VSmain(VSInput input)
 {
+    //’Êí•`‰æ—p
     float4 wnormal = normalize(mul(world, float4(input.normal, 0)));
     float4 wpos = mul(world, input.pos);
     

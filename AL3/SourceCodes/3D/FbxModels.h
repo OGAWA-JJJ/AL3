@@ -18,6 +18,8 @@ private:
 	ID3D12DescriptorHeap* descHeap = nullptr;
 	DirectX::XMFLOAT3 size = { 0,0,0 };
 
+	FbxManager* fbx_manager = nullptr;
+	FbxImporter* fbx_importer = nullptr;
 	FbxScene* fbxScene = nullptr;
 	DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity();
 
@@ -76,11 +78,14 @@ public:
 	FbxScene* GetFbxScene() { return fbxScene; }
 	DirectX::XMMATRIX& GetModelTransform() { return transform; }
 
+	//メッシュ毎に計算することになりそうだからFbxMeshesに持っていくのが正解か
 	std::vector<FbxMeshes::Bone> GetBones()
 	{
+		return meshes[0]->GetBones();
+
 		std::vector<FbxMeshes::Bone> l_bones;
 
-		for (auto& m : meshes)
+		for (auto& m : meshes)//一気に計算しようとした末路
 		{
 			for (int i = 0; i < m->GetBones().size(); i++)
 			{

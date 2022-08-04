@@ -91,7 +91,7 @@ void GameScene::Draw()
 {
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//if (isHit) { GH1->Draw(); }
-	//GH1->Draw();
+	GH1->Draw();
 	Sprite::PostDraw();
 
 	l_obj0->Draw(l_normal);
