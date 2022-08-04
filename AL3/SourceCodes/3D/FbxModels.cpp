@@ -101,7 +101,10 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 
 	/*----------問題の箇所----------*/
+	//動き確認用
 	LoadNode(meshes[0], fbxNode);
+
+	//本当はこうしたい↓
 	//for (auto& m : meshes)
 	//{
 	//	//fbxNodeが悪いのかGetMesh()が悪いのか...
