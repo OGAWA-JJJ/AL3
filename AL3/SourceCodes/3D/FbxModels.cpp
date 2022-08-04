@@ -99,6 +99,7 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	FbxNode* fbxNode = fbxScene->GetRootNode();
 
+
 	/*----------–â‘è‚Ì‰ÓŠ----------*/
 	LoadNode(meshes[0], fbxNode);
 	//for (auto& m : meshes)
@@ -106,6 +107,8 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	//	//fbxNode‚ªˆ«‚¢‚Ì‚©GetMesh()‚ªˆ«‚¢‚Ì‚©...
 	//	LoadNode(m, fbxNode);
 	//}
+	/*----------–â‘è‚Ì‰ÓŠ----------*/
+
 
 	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
 	for (int i = 0; i < texture_num; i++)
