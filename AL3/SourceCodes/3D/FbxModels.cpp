@@ -102,14 +102,14 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	/*----------問題の箇所----------*/
 	//動き確認用
-	LoadNode(meshes[0], fbxNode);
+	//LoadNode(meshes[0], fbxNode);
 
 	//本当はこうしたい↓
-	//for (auto& m : meshes)
-	//{
-	//	//fbxNodeが悪いのかGetMesh()が悪いのか...
-	//	LoadNode(m, fbxNode);
-	//}
+	for (auto& m : meshes)
+	{
+		//fbxNodeが悪いのかGetMesh()が悪いのか...
+		LoadNode(m, fbxNode);
+	}
 	/*----------問題の箇所----------*/
 
 
@@ -584,11 +584,11 @@ void FbxModels::LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh)
 		{
 			auto& weightList = weightLists[i];
 
-			weightList.sort(
+			/*weightList.sort(
 				[](auto const& lhs, auto const& rhs)
 				{
 					return lhs.weight > rhs.weight;
-				});
+				});*/
 
 			int weightArrayIndex = 0;
 
