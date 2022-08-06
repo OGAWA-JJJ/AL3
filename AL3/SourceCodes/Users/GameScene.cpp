@@ -204,13 +204,6 @@ GameScene::GameScene()
 
 #pragma endregion
 
-	//Sprite::LoadTexture(0, L"Resources/ss.png");
-	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
-	GH1 = Sprite::Create(0, DirectX::XMFLOAT2(0, 0));
-	//GH1->SetSize(DirectX::XMFLOAT2(128 * 2.0, 72 * 2.0));
-	GH1->SetSize(DirectX::XMFLOAT2(64, 64));
-
-	posY = 64.0f;
 }
 
 GameScene::~GameScene()
@@ -1063,18 +1056,6 @@ void GameScene::Update()
 		fbxobj_OneSwordAttack->ResetAnimation();
 		animationType = STAND;
 	}
-
-	//MT4
-	dist = 360.0f - posY;
-	const float m = 0.1f;
-	accY = 0.2f;
-	accY += dist * 0.01f / m;
-	velY += accY;
-	velY -= velY * 0.1f;
-	posY += velY;
-	GH1->SetPosition(XMFLOAT2(0, posY));
-
-	if (Input::isKeyTrigger(DIK_R)) { posY = 0.0f; }
 }
 
 void GameScene::Draw()
@@ -1118,11 +1099,6 @@ void GameScene::Draw()
 
 	obj_Stage->Draw(receiveShadow);
 	Object::PostDraw();
-
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
-	//if (isHit) { GH1->Draw(); }
-	GH1->Draw();
-	Sprite::PostDraw();
 }
 
 void GameScene::LuminanceDraw()

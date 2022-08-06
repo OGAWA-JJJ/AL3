@@ -47,12 +47,6 @@ private:	//変数
 	int rot = 0;
 	bool isHit = false;
 
-	//MT4
-	float accY = 0.0f;
-	float dist = 0.0f;
-	float posY = 0.0f;
-	float velY = 0.0f;
-
 private:	//光
 	Light* light = nullptr;
 	//std::weak_ptr<Light> light;
@@ -111,8 +105,6 @@ private:	//オブジェクト(Draw用)
 	//std::weak_ptr<FbxObject> fbxobj_StandShadowMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunShadowMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunShadowMiku;
-
-	Sprite* GH1 = nullptr;
 
 public:
 	GameScene();
