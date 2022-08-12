@@ -18,7 +18,7 @@ public:
 	Enemy();
 	~Enemy();
 	void Init();
-	void Update();
+	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
 
 public:
