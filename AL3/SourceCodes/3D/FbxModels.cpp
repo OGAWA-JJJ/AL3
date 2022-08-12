@@ -108,7 +108,7 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	for (auto& m : meshes)
 	{
 		//fbxNode‚ªˆ«‚¢‚Ì‚©GetMesh()‚ªˆ«‚¢‚Ì‚©...
-		LoadNode(m, fbxNode);
+		//LoadNode(m, fbxNode);
 	}
 	/*----------–â‘è‚Ì‰ÓŠ----------*/
 
