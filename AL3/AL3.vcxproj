@@ -201,7 +201,11 @@
     <ClCompile Include="SourceCodes\Math\CollisionPrimitive.cpp" />
     <ClCompile Include="SourceCodes\Math\OBBCollision.cpp" />
     <ClCompile Include="SourceCodes\Math\SphereCollider.cpp" />
+    <ClCompile Include="SourceCodes\Users\Enemy.cpp" />
     <ClCompile Include="SourceCodes\Users\GameScene.cpp" />
+    <ClCompile Include="SourceCodes\Users\Player.cpp" />
+    <ClCompile Include="SourceCodes\Users\Stage.cpp" />
+    <ClCompile Include="SourceCodes\Users\StageObject.cpp" />
     <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp" />
     <ClCompile Include="SourceCodes\XAudio2\Music.cpp" />
   </ItemGroup>
@@ -256,7 +260,11 @@
     <ClInclude Include="SourceCodes\Math\RaycastHit.h" />
     <ClInclude Include="SourceCodes\Math\SphereCollider.h" />
     <ClInclude Include="SourceCodes\Singleton.h" />
+    <ClInclude Include="SourceCodes\Users\Enemy.h" />
     <ClInclude Include="SourceCodes\Users\GameScene.h" />
+    <ClInclude Include="SourceCodes\Users\Player.h" />
+    <ClInclude Include="SourceCodes\Users\Stage.h" />
+    <ClInclude Include="SourceCodes\Users\StageObject.h" />
     <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h" />
     <ClInclude Include="SourceCodes\XAudio2\Music.h" />
   </ItemGroup>

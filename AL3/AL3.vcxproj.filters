@@ -168,6 +168,18 @@
     <ClCompile Include="SourceCodes\Math\OBBCollision.cpp">
       <Filter>SourceCodes\Math</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Player.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Enemy.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Stage.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\StageObject.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -328,6 +340,18 @@
     </ClInclude>
     <ClInclude Include="SourceCodes\Math\OBBCollision.h">
       <Filter>SourceCodes\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Player.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Enemy.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Stage.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\StageObject.h">
+      <Filter>SourceCodes\Users</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
