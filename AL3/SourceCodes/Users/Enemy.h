@@ -3,7 +3,9 @@
 
 class Enemy
 {
-private:	//敵モデル
+private:	//モデル(Load用)
+
+private:	//オブジェクト(Load用)
 
 private:	//モーション
 	enum AnimationType

@@ -48,6 +48,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
 
+	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+
 	//‹P“x’Šo—p
 	SpriteInitData luminanceData;
 	luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";

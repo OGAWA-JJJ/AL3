@@ -6,66 +6,13 @@
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
 #include "../Math/OBBCollision.h"
+#include "PipelineManager.h"
 
 Player::Player()
 {
 	animationType = STAND;
-	playerPos = { 0,0,0 };
+	pos = { 0,0,0 };
 	cameraAngle = { 0,0,0 };
-
-#pragma region Light
-
-	light = Light::Create();
-	light->SetLightColor(
-		{
-			ImguiControl::Imgui_lightColor_r,
-			ImguiControl::Imgui_lightColor_g,
-			ImguiControl::Imgui_lightColor_b
-		});
-	light->SetLightDir(
-		{
-			ImguiControl::Imgui_lightDir_x,
-			ImguiControl::Imgui_lightDir_y,
-			ImguiControl::Imgui_lightDir_z,
-		});
-
-#pragma endregion
-
-#pragma region Settings
-
-	Object::SetLight(light);
-	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
-
-#pragma endregion
-
-#pragma region Pipeline
-
-	ObjectInitData normalInit;
-	normalInit.m_psEntryPoint = "PSmain";
-	normalInit.m_vsEntryPoint = "VSmain";
-	normal = Object::CreateGraphicsPipeline(normalInit);
-
-	ObjectInitData shadowInit;
-	shadowInit.m_psEntryPoint = "PSBlack";
-	shadowInit.m_vsEntryPoint = "VSShadowMain";
-	shadow = Object::CreateGraphicsPipeline(shadowInit);
-
-	ObjectInitData receiveInit;
-	receiveInit.m_psEntryPoint = "PSShadowMain";
-	receiveInit.m_vsEntryPoint = "VSShadowMain";
-	receiveShadow = Object::CreateGraphicsPipeline(receiveInit);
-
-	FbxInitData fbxNormalInit;
-	fbxNormalInit.m_vsEntryPoint = "PSmain";
-	fbxNormalInit.m_vsEntryPoint = "VSmain";
-	fbx_normal = FbxObject3D::CreateGraphicsPipeline(fbxNormalInit);
-
-	FbxInitData fbxShadowInit;
-	fbxShadowInit.m_psEntryPoint = "PSBlack";
-	fbxShadowInit.m_vsEntryPoint = "VSShadowMain";
-	fbx_shadow = FbxObject3D::CreateGraphicsPipeline(fbxShadowInit);
-
-#pragma endregion
 
 #pragma region ModelLoad
 
@@ -192,8 +139,6 @@ Player::Player()
 
 Player::~Player()
 {
-	delete light;
-
 	delete fbxmodel_standMiku;
 	delete fbxobj_StandMiku;
 	delete fbxmodel_slowRunMiku;
@@ -241,12 +186,10 @@ void Player::Init()
 
 void Player::Update(DirectX::XMFLOAT3 enemyPos)
 {
-	Object::SetLight(light);
-	FbxObject3D::SetLight(light);
 
 #pragma region Game
 	//•Ï”
-	playerPos = fbxobj_StandMiku->GetPosition();
+	pos = fbxobj_StandMiku->GetPosition();
 	XMFLOAT3 cameraPos = Camera::GetEye();
 	XMFLOAT3 targetPos = Camera::GetTarget();
 	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_StandMiku->GetPosition());
@@ -279,13 +222,13 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 					vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-					playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+					pos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+					pos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 					float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					rad += DirectX::XM_PI / 2;
-					playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+					pos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+					pos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 
 					cameraPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
 					cameraPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
@@ -359,9 +302,9 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 				float c = cosf(xz);
 				//sin.cos
 				Camera::SetEye(XMFLOAT3(
-					playerPos.x + s * (MAX_DISTANCE + diff),
+					pos.x + s * (MAX_DISTANCE + diff),
 					cameraPos.y,
-					playerPos.z + c * (MAX_DISTANCE + diff)
+					pos.z + c * (MAX_DISTANCE + diff)
 				));
 			}
 
@@ -574,13 +517,13 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 					vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-					playerPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					playerPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+					pos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
+					pos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
 
 					float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					rad += DirectX::XM_PI / 2;
-					playerPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					playerPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+					pos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
+					pos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
 				}
 			}
 
@@ -639,9 +582,9 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			enemyPos.z
 		};
 		const XMFLOAT3 GoalCameraEye = {
-			playerPos.x + enemyToPlayer.x * MAX_DISTANCE,
+			pos.x + enemyToPlayer.x * MAX_DISTANCE,
 			50.0f,
-			playerPos.z + enemyToPlayer.z * MAX_DISTANCE,
+			pos.z + enemyToPlayer.z * MAX_DISTANCE,
 		};
 
 		XMFLOAT3 target;
@@ -708,7 +651,6 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 #pragma endregion
 
 	Setter();
-	light->Update();
 	Input();
 	OtherUpdate();
 	Collision();
@@ -726,33 +668,33 @@ void Player::Draw()
 	{
 		if (animationType == STAND)
 		{
-			fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+			fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 		}
 		else if (animationType == SLOWRUN)
 		{
-			fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+			fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 		}
 		else if (animationType == RUN)
 		{
-			fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+			fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 		}
 		else if (animationType == ATTACK)
 		{
-			fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+			fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 		}
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_Sword->Draw(normal);
-	obj_HitBox->Draw(normal);
+	obj_Sword->Draw(PipelineManager::GetObjNormalPipeline());
+	obj_HitBox->Draw(PipelineManager::GetObjNormalPipeline());
 
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < 28; i++)
 		{
-			obj_Box[i]->Draw(normal);
+			obj_Box[i]->Draw(PipelineManager::GetObjNormalPipeline());
 		}
-		obj_SwordBox->Draw(normal);
+		obj_SwordBox->Draw(PipelineManager::GetObjNormalPipeline());
 	}
 
 	Object::PostDraw();
@@ -762,19 +704,19 @@ void Player::LuminanceDraw()
 {
 	if (animationType == STAND)
 	{
-		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 	}
 	else if (animationType == SLOWRUN)
 	{
-		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 	}
 	else if (animationType == RUN)
 	{
-		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 	}
 	else if (animationType == ATTACK)
 	{
-		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), fbx_normal);
+		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
 	}
 }
 
@@ -784,24 +726,24 @@ void Player::ShadowDraw()
 	{
 		if (animationType == STAND)
 		{
-			fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+			fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
 		}
 		else if (animationType == SLOWRUN)
 		{
-			fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+			fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
 		}
 		else if (animationType == RUN)
 		{
-			fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+			fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
 		}
 		else if (animationType == ATTACK)
 		{
-			fbxobj_OneSwordAttackShadow->Draw(DirectXImportant::cmdList.Get(), fbx_shadow);
+			fbxobj_OneSwordAttackShadow->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
 		}
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_ShadowSword->Draw(shadow);
+	obj_ShadowSword->Draw(PipelineManager::GetObjShadowPipeline());
 	Object::PostDraw();
 }
 
@@ -856,36 +798,15 @@ void Player::Input()
 
 void Player::Setter()
 {
-	fbxobj_StandMiku->SetPosition(playerPos);
-	fbxobj_SlowRunMiku->SetPosition(playerPos);
-	fbxobj_FastRunMiku->SetPosition(playerPos);
-	fbxobj_OneSwordAttack->SetPosition(playerPos);
+	fbxobj_StandMiku->SetPosition(pos);
+	fbxobj_SlowRunMiku->SetPosition(pos);
+	fbxobj_FastRunMiku->SetPosition(pos);
+	fbxobj_OneSwordAttack->SetPosition(pos);
 
-	fbxobj_StandShadowMiku->SetPosition(playerPos);
-	fbxobj_SlowRunShadowMiku->SetPosition(playerPos);
-	fbxobj_FastRunShadowMiku->SetPosition(playerPos);
-	fbxobj_OneSwordAttackShadow->SetPosition(playerPos);
-
-	//Œõ
-	light->SetLightColor(
-		{
-			ImguiControl::Imgui_lightColor_r,
-			ImguiControl::Imgui_lightColor_g,
-			ImguiControl::Imgui_lightColor_b
-		});
-	light->SetLightDir(
-		{
-			ImguiControl::Imgui_lightDir_x,
-			ImguiControl::Imgui_lightDir_y,
-			ImguiControl::Imgui_lightDir_z,
-		});
-
-	XMFLOAT3 shadowCameraPos = light->GetShadowLigitEye();
-	light->SetShadowLigitEye(XMFLOAT3(
-		fbxobj_StandMiku->GetPosition().x,
-		shadowCameraPos.y,
-		fbxobj_StandMiku->GetPosition().z));
-	light->SetShadowLigitTarget(fbxobj_StandMiku->GetPosition());
+	fbxobj_StandShadowMiku->SetPosition(pos);
+	fbxobj_SlowRunShadowMiku->SetPosition(pos);
+	fbxobj_FastRunShadowMiku->SetPosition(pos);
+	fbxobj_OneSwordAttackShadow->SetPosition(pos);
 }
 
 void Player::Collision()

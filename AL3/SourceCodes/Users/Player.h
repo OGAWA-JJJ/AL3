@@ -19,26 +19,20 @@ private:	//自機のパターン
 		STAND, SLOWRUN, RUN, ATTACK
 	};
 
-private:	//定数
+public:	//定数
 	const float MAX_DISTANCE = 125.0f;			//カメラと自機の距離(いつか可変に)
+
+private:
 	const float MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float MAX_CAMERA_MOVE_SPEED = 2.0f;	//カメラの最大速度
 	const float EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
-
-private:	//パイプライン
-	ObjPipelineSet normal;
-	ObjPipelineSet shadow;
-	ObjPipelineSet receiveShadow;
-
-	FbxPipelineSet fbx_normal;
-	FbxPipelineSet fbx_shadow;
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
 	std::vector<DirectX::XMMATRIX> matRot;
 
 private:	//変数
-	XMFLOAT3 playerPos;
+	XMFLOAT3 pos;
 	XMFLOAT3 cameraAngle;
 	int animationType;
 	float cameraMoveEase = 0.0f;
@@ -48,10 +42,6 @@ private:	//変数
 	bool isEase = false;
 
 	bool isHit = false;
-
-private:	//光
-	Light* light = nullptr;
-	//std::weak_ptr<Light> light;
 
 private:	//モデル(Load用)
 	Model* model_sword = nullptr;
@@ -107,4 +97,7 @@ private:
 	void Setter();
 	void Collision();
 	void OtherUpdate();
+
+public:
+	const DirectX::XMFLOAT3& GetPos() { return pos; }
 };
