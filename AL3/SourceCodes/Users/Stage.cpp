@@ -1,40 +1,47 @@
 #include "Stage.h"
 #include "PipelineManager.h"
 #include "../DirectX/DirectXImportant.h"
+#include "ModelManager.h"
 
 Stage::Stage()
 {
-	model_stage = Model::CreateFromObj("yuka");
-	model_sponza = Model::CreateFromObj("triangle");
-
-	obj_Stage = Object::Create(model_stage);
+	obj_Stage = Object::Create(ModelManager::model_stage);
+	obj_colosseum = Object::Create(ModelManager::model_sponza);
 
 	const float Stage_Scale = 100.0f;
 	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 100.0f, Stage_Scale, Stage_Scale));
+
+	const float colosseumScale = 0.5f;
+	obj_colosseum->SetScale(DirectX::XMFLOAT3(colosseumScale, colosseumScale, colosseumScale));
 }
 
 Stage::~Stage()
 {
-	delete model_stage;
 	delete obj_Stage;
 }
 
 void Stage::Init(ID3D12Resource* texbuff)
 {
-	obj_Stage->AddTexture(texbuff, model_stage->GetDescHeap());
+	obj_Stage->AddTexture(texbuff, ModelManager::model_stage->GetDescHeap());
 
 	obj_Stage->SetPosition(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	obj_Stage->SetRotation(DirectX::XMFLOAT3(0, 90, 0));
+
+	obj_colosseum->SetRotation(DirectX::XMFLOAT3(0.0f, 90.0f, 0.0f));
 }
 
 void Stage::Update()
 {
+	obj_Stage->SetColor(DirectX::XMFLOAT4(0.4f, 0.2f, 0.1f, 1.0f));
 	obj_Stage->Update();
+
+	obj_colosseum->Update();
 }
 
 void Stage::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_Stage->Draw(PipelineManager::GetObjReceiveShadowPipeline());
+	obj_Stage->Draw(PipelineManager::obj_receiveShadow);
+	obj_colosseum->Draw(PipelineManager::obj_normal);
 	Object::PostDraw();
 }

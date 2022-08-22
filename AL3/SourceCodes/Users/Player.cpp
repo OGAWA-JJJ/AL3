@@ -5,87 +5,94 @@
 #include "../Math/OgaJHelper.h"
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
-#include "../Math/OBBCollision.h"
 #include "PipelineManager.h"
+#include "ModelManager.h"
 
 Player::Player()
 {
-	animationType = STAND;
-	pos = { 0,0,0 };
-	cameraAngle = { 0,0,0 };
+	m_obb = {};
+	m_pos = { 0,0,0 };
+	m_cameraAngle = { 0,0,0 };
+	m_animationType = STAND;
+	m_animationTimer = 0;
+	m_cameraMoveEase = 0.0f;
+	m_cameraY = 0.0f;
+	m_isTarget = false;
+	m_isEase = false;
+	m_isAttack = false;
 
-#pragma region ModelLoad
-
-	model_sword = Model::CreateFromObj("Sword");
-
-	model_box = Model::CreateFromObj("TestBox");
-	model_box2 = Model::CreateFromObj("TestBox");
-
-	fbxmodel_standMiku = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
-	fbxmodel_slowRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
-	fbxmodel_fastRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
-
-	fbxmodel_oneSwrordAttack = FbxLoader::GetInstance()->LoadModelFromFile("OneSwordAttack");
-
-#pragma endregion
+	m_hp = C_MAX_HP;
+	m_mp = C_MAX_MP;
+	m_stamina = C_MAX_STAMINA;
+	m_power = C_MAX_POWER;
 
 #pragma region ModelCreate
 
 	//Obj
-	obj_Sword = Object::Create(model_sword);
-	obj_ShadowSword = Object::Create(model_sword);
+	obj_Sword = Object::Create(ModelManager::model_sword);
+	obj_ShadowSword = Object::Create(ModelManager::model_sword);
 
 	for (int i = 0; i < 28; i++)
 	{
-		obj_Box[i] = Object::Create(model_box);
+		obj_Box[i] = Object::Create(ModelManager::model_box);
 	}
-	obj_SwordBox = Object::Create(model_box);
-	obj_HitBox = Object::Create(model_box2);
+	obj_SwordBox = Object::Create(ModelManager::model_box);
+	obj_HitBox = Object::Create(ModelManager::model_box);
 
 	//Fbx
 	fbxobj_StandMiku = new FbxObject3D();
 	fbxobj_StandMiku->Init();
-	fbxobj_StandMiku->SetModel(fbxmodel_standMiku);
+	fbxobj_StandMiku->SetModel(ModelManager::fbxmodel_standMiku);
 	fbxobj_StandMiku->PlayAnimation();
 
 	fbxobj_SlowRunMiku = new FbxObject3D();
 	fbxobj_SlowRunMiku->Init();
-	fbxobj_SlowRunMiku->SetModel(fbxmodel_slowRunMiku);
+	fbxobj_SlowRunMiku->SetModel(ModelManager::fbxmodel_slowRunMiku);
 	fbxobj_SlowRunMiku->PlayAnimation();
 
 	fbxobj_FastRunMiku = new FbxObject3D();
 	fbxobj_FastRunMiku->Init();
-	fbxobj_FastRunMiku->SetModel(fbxmodel_fastRunMiku);
+	fbxobj_FastRunMiku->SetModel(ModelManager::fbxmodel_fastRunMiku);
 	fbxobj_FastRunMiku->PlayAnimation();
 
 	//Fbx(Shadow)
 	fbxobj_StandShadowMiku = new FbxObject3D();
 	fbxobj_StandShadowMiku->Init();
-	fbxobj_StandShadowMiku->SetModel(fbxmodel_standMiku);
+	fbxobj_StandShadowMiku->SetModel(ModelManager::fbxmodel_standMiku);
 	fbxobj_StandShadowMiku->PlayAnimation();
 
 	fbxobj_SlowRunShadowMiku = new FbxObject3D();
 	fbxobj_SlowRunShadowMiku->Init();
-	fbxobj_SlowRunShadowMiku->SetModel(fbxmodel_slowRunMiku);
+	fbxobj_SlowRunShadowMiku->SetModel(ModelManager::fbxmodel_slowRunMiku);
 	fbxobj_SlowRunShadowMiku->PlayAnimation();
 
 	fbxobj_FastRunShadowMiku = new FbxObject3D();
 	fbxobj_FastRunShadowMiku->Init();
-	fbxobj_FastRunShadowMiku->SetModel(fbxmodel_fastRunMiku);
+	fbxobj_FastRunShadowMiku->SetModel(ModelManager::fbxmodel_fastRunMiku);
 	fbxobj_FastRunShadowMiku->PlayAnimation();
 
 	//Attack
 	fbxobj_OneSwordAttack = new FbxObject3D();
 	fbxobj_OneSwordAttack->Init();
-	fbxobj_OneSwordAttack->SetModel(fbxmodel_oneSwrordAttack);
+	fbxobj_OneSwordAttack->SetModel(ModelManager::fbxmodel_oneSwrordAttack);
 	fbxobj_OneSwordAttack->PlayAnimation();
 	fbxobj_OneSwordAttack->StopAnimation();
 
 	fbxobj_OneSwordAttackShadow = new FbxObject3D();
 	fbxobj_OneSwordAttackShadow->Init();
-	fbxobj_OneSwordAttackShadow->SetModel(fbxmodel_oneSwrordAttack);
+	fbxobj_OneSwordAttackShadow->SetModel(ModelManager::fbxmodel_oneSwrordAttack);
 	fbxobj_OneSwordAttackShadow->PlayAnimation();
 	fbxobj_OneSwordAttackShadow->StopAnimation();
+
+	fbxobj_dieMiku = new FbxObject3D();
+	fbxobj_dieMiku->Init();
+	fbxobj_dieMiku->SetModel(ModelManager::fbxmodel_dieMiku);
+	fbxobj_dieMiku->PlayAnimation();
+
+	fbxobj_impactMiku = new FbxObject3D();
+	fbxobj_impactMiku->Init();
+	fbxobj_impactMiku->SetModel(ModelManager::fbxmodel_impactMiku);
+	fbxobj_impactMiku->PlayAnimation();
 
 #pragma endregion
 
@@ -133,17 +140,22 @@ Player::Player()
 	fbxobj_OneSwordAttackShadow->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
 	fbxobj_OneSwordAttackShadow->SetRotation(XMFLOAT3(0, 0, 0));
 
+	fbxobj_dieMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_dieMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_dieMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
+	fbxobj_impactMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_impactMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_impactMiku->SetRotation(XMFLOAT3(0, 0, 0));
+
 #pragma endregion
 
 }
 
 Player::~Player()
 {
-	delete fbxmodel_standMiku;
 	delete fbxobj_StandMiku;
-	delete fbxmodel_slowRunMiku;
 	delete fbxobj_SlowRunMiku;
-	delete fbxmodel_fastRunMiku;
 	delete fbxobj_FastRunMiku;
 
 	delete fbxobj_StandShadowMiku;
@@ -174,7 +186,7 @@ void Player::Init()
 		fbxobj_StandMiku->GetPosition().y,
 		fbxobj_StandMiku->GetPosition().z));
 
-	cameraY = Camera::GetEye().y;
+	m_cameraY = Camera::GetEye().y;
 
 	//Test
 	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
@@ -186,10 +198,37 @@ void Player::Init()
 
 void Player::Update(DirectX::XMFLOAT3 enemyPos)
 {
+	if (IsDead())
+	{
+		if (fbxobj_dieMiku->GetNowTime() == fbxobj_dieMiku->GetEndTime())
+		{
+			fbxobj_dieMiku->StopAnimation();
+		}
+
+		fbxobj_dieMiku->SetPosition(m_pos);
+		fbxobj_dieMiku->Update();
+		return;
+	}
+
+	if (m_animationType == DAMAGED)
+	{
+		if (fbxobj_impactMiku->GetNowTime() != fbxobj_impactMiku->GetEndTime())
+		{
+			fbxobj_impactMiku->SetPosition(m_pos);
+			fbxobj_impactMiku->Update();
+			//return;
+		}
+		else
+		{
+			//fbxobj_impactMiku->StopAnimation();
+			fbxobj_impactMiku->ResetAnimation();
+			m_animationType = STAND;
+		}
+	}
 
 #pragma region Game
 	//変数
-	pos = fbxobj_StandMiku->GetPosition();
+	m_pos = fbxobj_StandMiku->GetPosition();
 	XMFLOAT3 cameraPos = Camera::GetEye();
 	XMFLOAT3 targetPos = Camera::GetTarget();
 	XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_StandMiku->GetPosition());
@@ -197,455 +236,460 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_StandMiku->GetPosition());
 	cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
 
-	if (!isTarget)
+	if (m_animationType != DAMAGED)
 	{
-		//pad
-		if (Input::isPadConnect())
+		if (!m_isTarget)
 		{
-			if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
+			//pad
+			if (Input::isPadConnect())
 			{
-				cameraMoveEase = 0.0f;
-				isTarget = true;
+				if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
+				{
+					m_cameraMoveEase = 0.0f;
+					m_isTarget = true;
+				}
+
+				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+				{
+					bool isAttack = false;
+					if (m_animationType == ATTACK) { isAttack = true; }
+
+					if (!isAttack)
+					{
+						m_animationType = RUN;
+
+						XMFLOAT3 vec = { 0,0,0 };
+						vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+						vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+
+						m_pos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
+						m_pos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+
+						float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						rad += DirectX::XM_PI / 2;
+						m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
+						m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+
+						cameraPos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
+						cameraPos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+						cameraPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
+						cameraPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+
+						targetPos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
+						targetPos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+						targetPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
+						targetPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+
+						float deg = atan2(vec.x, vec.z);
+						OgaJHelper::ConvertToDegree(deg);
+						float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						OgaJHelper::ConvertToDegree(cameraRad);
+
+						Camera::SetEye(cameraPos);
+						Camera::SetTarget(targetPos);
+						fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_OneSwordAttack->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_dieMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_impactMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+
+						fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						fbxobj_OneSwordAttackShadow->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+					}
+				}
+
+				else { if (m_animationType != ATTACK) { m_animationType = STAND; } }
+
+				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
+					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
+				{
+					//ここをどうにかしたい,targetは最悪補完かける
+					XMFLOAT3 objc = fbxobj_StandMiku->GetPosition();
+					XMFLOAT3 eye = Camera::GetEye();
+
+					XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxobj_StandMiku->GetPosition(), Camera::GetEye());
+					playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
+
+					float xz = atan2(playerToCamera.x, playerToCamera.z);
+					OgaJHelper::ConvertToDegree(xz);
+					//計算
+					xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * C_MAX_CAMERA_MOVE_SPEED;
+					cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
+					m_cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
+
+					//距離と差分
+					float diff = 0;
+					const float MAX_DIST = -50.0f;
+					const float MAX_HEIGHT = 100.0f;
+					if (m_cameraY < 0.1f)
+					{
+						if (m_cameraY < MAX_DIST) { m_cameraY = MAX_DIST; }
+						diff = m_cameraY;
+
+						//地面との仮判定
+						cameraPos.y = 0.1f;
+					}
+					else if (m_cameraY > MAX_HEIGHT)
+					{
+						cameraPos.y = MAX_HEIGHT;
+						m_cameraY = MAX_HEIGHT;
+					}
+
+					//radに戻す
+					OgaJHelper::ConvertToRadian(xz);
+					float s = sinf(xz);
+					float c = cosf(xz);
+					//sin.cos
+					Camera::SetEye(XMFLOAT3(
+						m_pos.x + s * (C_MAX_DISTANCE + diff),
+						cameraPos.y,
+						m_pos.z + c * (C_MAX_DISTANCE + diff)
+					));
+				}
+
+				if (m_isEase)
+				{
+					XMFLOAT3 target;
+					if (m_cameraMoveEase < 1.0f)
+					{
+						target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), m_cameraMoveEase);
+						m_cameraMoveEase += C_EASE_CAMERA_TIMER * 2;
+					}
+					else
+					{
+						m_cameraMoveEase = 1.0f;
+						target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), m_cameraMoveEase);
+					}
+					Camera::SetTarget(target);
+				}
 			}
 
-			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+			//キー(一旦放置)
+			else
 			{
-				bool isAttack = false;
-				if (animationType == ATTACK) { isAttack = true; }
-
-				if (!isAttack)
+				/*if (Input::isKeyTrigger(DIK_T))
 				{
-					animationType = RUN;
+					cameraMoveEase = 0.0f;
+					m_isTarget = true;
+				}*/
 
-					XMFLOAT3 vec = { 0,0,0 };
-					vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-					vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+				//カメラ系
+				/*if (Input::isKey(DIK_RIGHT) || Input::isKey(DIK_LEFT) || Input::isKey(DIK_UP) || Input::isKey(DIK_DOWN))
+				{
+					if (Input::isKey(DIK_RIGHT))
+					{
+						cameraPos.x += MAX_CAMERA_MOVE_SPEED;
+						targetPos.x -= MAX_CAMERA_MOVE_SPEED;
+					}
+					if (Input::isKey(DIK_LEFT))
+					{
+						cameraPos.x -= MAX_CAMERA_MOVE_SPEED;
+						targetPos.x += MAX_CAMERA_MOVE_SPEED;
+					}
+					if (Input::isKey(DIK_UP))
+					{
+						cameraPos.y += MAX_CAMERA_MOVE_SPEED;
+						targetPos.y -= MAX_CAMERA_MOVE_SPEED;
+					}
+					if (Input::isKey(DIK_DOWN))
+					{
+						cameraPos.y -= MAX_CAMERA_MOVE_SPEED;
+						targetPos.y += MAX_CAMERA_MOVE_SPEED;
+					}
 
-					pos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					pos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+					//距離と差分
+					float diff = 0;
+					const float MAX_DIST = -50.0f;
+					const float MAX_HEIGHT = 100.0f;
+					if (m_cameraY < 0.1f)
+					{
+						if (m_cameraY < MAX_DIST) { m_cameraY = MAX_DIST; }
+						diff = m_cameraY;
 
-					float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					rad += DirectX::XM_PI / 2;
-					pos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					pos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+						//地面との仮判定
+						cameraPos.y = 0.1f;
+					}
+					else if (m_cameraY > MAX_HEIGHT)
+					{
+						cameraPos.y = MAX_HEIGHT;
+						m_cameraY = MAX_HEIGHT;
+					}
 
-					cameraPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					cameraPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
-					cameraPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					cameraPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+					//セット
+					XMFLOAT3 targetToCamera = OgaJHelper::CalcDirectionVec3(targetPos, cameraPos);
+					targetToCamera = OgaJHelper::CalcNormalizeVec3(targetToCamera);
+					XMFLOAT3 cameraToTarget = OgaJHelper::CalcDirectionVec3(cameraPos, targetPos);
+					cameraToTarget = OgaJHelper::CalcNormalizeVec3(cameraToTarget);
 
-					targetPos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					targetPos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
-					targetPos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					targetPos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
+					Camera::SetEye(XMFLOAT3(
+						fbxobj_StandMiku->GetPosition().x + targetToCamera.x * (MAX_DISTANCE + diff),
+						fbxobj_StandMiku->GetPosition().y + targetToCamera.y * (MAX_DISTANCE + diff),
+						fbxobj_StandMiku->GetPosition().z + targetToCamera.z * (MAX_DISTANCE + diff)
+					));
+					//Camera::SetEye(cameraPos);
+					Camera::SetTarget(XMFLOAT3(
+						fbxobj_StandMiku->GetPosition().x + cameraToTarget.x * (MAX_DISTANCE + diff),
+						fbxobj_StandMiku->GetPosition().y + cameraToTarget.y * (MAX_DISTANCE + diff),
+						fbxobj_StandMiku->GetPosition().z + cameraToTarget.z * (MAX_DISTANCE + diff)
+					));
+					//Camera::SetTarget(targetPos);
 
-					float deg = atan2(vec.x, vec.z);
+					XMFLOAT3 eye = Camera::GetEye();
+					XMFLOAT3 target = Camera::GetTarget();
+				}*/
+
+				//移動と回転
+				/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+				{
+					//animationType = RUN;
+
+					XMFLOAT2 vec = { 0,0 };
+
+					if (Input::isKey(DIK_W))
+					{
+						playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+						playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+						cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+						cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+						targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+						targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+
+						vec.x += 0;
+						vec.y += 1;
+					}
+
+					if (Input::isKey(DIK_S))
+					{
+						playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+						playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+						cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+						cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+						targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+						targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+
+						vec.x += 0;
+						vec.y += -1;
+					}
+
+					if (Input::isKey(DIK_D))
+					{
+						float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						cameraRad += DirectX::XM_PI / 2;
+						playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+						cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+						targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+						//OgaJHelper::ConvertToDegree(cameraRad);
+
+						vec.x += -1;
+						vec.y += 0;
+					}
+
+					if (Input::isKey(DIK_A)) {
+						float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						cameraRad -= DirectX::XM_PI / 2;
+						playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+						cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+
+						targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+						//OgaJHelper::ConvertToDegree(cameraRad);
+
+						vec.x += 1;
+						vec.y += 0;
+					}
+
+					float deg = atan2(vec.y, vec.x);
 					OgaJHelper::ConvertToDegree(deg);
 					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
 					OgaJHelper::ConvertToDegree(cameraRad);
 
-					Camera::SetEye(cameraPos);
-					Camera::SetTarget(targetPos);
-					fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_OneSwordAttack->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+					//Camera::SetEye(cameraPos);
+					//Camera::SetTarget(targetPos);
+					//fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+					//fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+					//fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
 
-					fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					fbxobj_OneSwordAttackShadow->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-				}
-			}
+					//fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+					//fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+					//fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
+				}*/
 
-			else { if (animationType != ATTACK) { animationType = STAND; } }
-
-			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE)) ||
-				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_RIGHTVERT)))
-			{
-				//ここをどうにかしたい,targetは最悪補完かける
-				XMFLOAT3 objc = fbxobj_StandMiku->GetPosition();
-				XMFLOAT3 eye = Camera::GetEye();
-
-				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(fbxobj_StandMiku->GetPosition(), Camera::GetEye());
-				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
-
-				float xz = atan2(playerToCamera.x, playerToCamera.z);
-				OgaJHelper::ConvertToDegree(xz);
-				//計算
-				xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * MAX_CAMERA_MOVE_SPEED;
-				cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
-				cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * MAX_CAMERA_MOVE_SPEED;
-
-				//距離と差分
-				float diff = 0;
-				const float MAX_DIST = -50.0f;
-				const float MAX_HEIGHT = 100.0f;
-				if (cameraY < 0.1f)
-				{
-					if (cameraY < MAX_DIST) { cameraY = MAX_DIST; }
-					diff = cameraY;
-
-					//地面との仮判定
-					cameraPos.y = 0.1f;
-				}
-				else if (cameraY > MAX_HEIGHT)
-				{
-					cameraPos.y = MAX_HEIGHT;
-					cameraY = MAX_HEIGHT;
-				}
-
-				//radに戻す
-				OgaJHelper::ConvertToRadian(xz);
-				float s = sinf(xz);
-				float c = cosf(xz);
-				//sin.cos
-				Camera::SetEye(XMFLOAT3(
-					pos.x + s * (MAX_DISTANCE + diff),
-					cameraPos.y,
-					pos.z + c * (MAX_DISTANCE + diff)
-				));
-			}
-
-			if (isEase)
-			{
-				XMFLOAT3 target;
-				if (cameraMoveEase < 1.0f)
-				{
-					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), cameraMoveEase);
-					cameraMoveEase += EASE_CAMERA_TIMER * 2;
-				}
-				else
-				{
-					cameraMoveEase = 1.0f;
-					target = OgaJEase::easeOutCubicXMFLOAT3(Camera::GetTarget(), fbxobj_StandMiku->GetPosition(), cameraMoveEase);
-				}
-				Camera::SetTarget(target);
+				//else { animationType = STAND; }
 			}
 		}
 
-		//キー(一旦放置)
 		else
 		{
-			/*if (Input::isKeyTrigger(DIK_T))
+			//pad
+			if (Input::isPadConnect())
 			{
-				cameraMoveEase = 0.0f;
-				isTarget = true;
-			}*/
-
-			//カメラ系
-			/*if (Input::isKey(DIK_RIGHT) || Input::isKey(DIK_LEFT) || Input::isKey(DIK_UP) || Input::isKey(DIK_DOWN))
-			{
-				if (Input::isKey(DIK_RIGHT))
+				if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
 				{
-					cameraPos.x += MAX_CAMERA_MOVE_SPEED;
-					targetPos.x -= MAX_CAMERA_MOVE_SPEED;
+					m_cameraMoveEase = 0.0f;
+					m_isTarget = false;
+					m_isEase = true;
 				}
-				if (Input::isKey(DIK_LEFT))
+
+				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
 				{
-					cameraPos.x -= MAX_CAMERA_MOVE_SPEED;
-					targetPos.x += MAX_CAMERA_MOVE_SPEED;
-				}
-				if (Input::isKey(DIK_UP))
-				{
-					cameraPos.y += MAX_CAMERA_MOVE_SPEED;
-					targetPos.y -= MAX_CAMERA_MOVE_SPEED;
-				}
-				if (Input::isKey(DIK_DOWN))
-				{
-					cameraPos.y -= MAX_CAMERA_MOVE_SPEED;
-					targetPos.y += MAX_CAMERA_MOVE_SPEED;
-				}
+					bool isAttack = false;
+					if (m_animationType == ATTACK) { isAttack = true; }
 
-				//距離と差分
-				float diff = 0;
-				const float MAX_DIST = -50.0f;
-				const float MAX_HEIGHT = 100.0f;
-				if (cameraY < 0.1f)
-				{
-					if (cameraY < MAX_DIST) { cameraY = MAX_DIST; }
-					diff = cameraY;
+					if (!isAttack)
+					{
+						m_animationType = RUN;
 
-					//地面との仮判定
-					cameraPos.y = 0.1f;
-				}
-				else if (cameraY > MAX_HEIGHT)
-				{
-					cameraPos.y = MAX_HEIGHT;
-					cameraY = MAX_HEIGHT;
+						XMFLOAT3 vec = { 0,0,0 };
+						vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+						vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+
+						m_pos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
+						m_pos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+
+						float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						rad += DirectX::XM_PI / 2;
+						m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
+						m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+					}
 				}
 
-				//セット
-				XMFLOAT3 targetToCamera = OgaJHelper::CalcDirectionVec3(targetPos, cameraPos);
-				targetToCamera = OgaJHelper::CalcNormalizeVec3(targetToCamera);
-				XMFLOAT3 cameraToTarget = OgaJHelper::CalcDirectionVec3(cameraPos, targetPos);
-				cameraToTarget = OgaJHelper::CalcNormalizeVec3(cameraToTarget);
-
-				Camera::SetEye(XMFLOAT3(
-					fbxobj_StandMiku->GetPosition().x + targetToCamera.x * (MAX_DISTANCE + diff),
-					fbxobj_StandMiku->GetPosition().y + targetToCamera.y * (MAX_DISTANCE + diff),
-					fbxobj_StandMiku->GetPosition().z + targetToCamera.z * (MAX_DISTANCE + diff)
-				));
-				//Camera::SetEye(cameraPos);
-				Camera::SetTarget(XMFLOAT3(
-					fbxobj_StandMiku->GetPosition().x + cameraToTarget.x * (MAX_DISTANCE + diff),
-					fbxobj_StandMiku->GetPosition().y + cameraToTarget.y * (MAX_DISTANCE + diff),
-					fbxobj_StandMiku->GetPosition().z + cameraToTarget.z * (MAX_DISTANCE + diff)
-				));
-				//Camera::SetTarget(targetPos);
-
-				XMFLOAT3 eye = Camera::GetEye();
-				XMFLOAT3 target = Camera::GetTarget();
-			}*/
-
-			//移動と回転
-			/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
-			{
-				//animationType = RUN;
-
-				XMFLOAT2 vec = { 0,0 };
-
-				if (Input::isKey(DIK_W))
-				{
-					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-
-					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-
-					targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-
-					vec.x += 0;
-					vec.y += 1;
-				}
-
-				if (Input::isKey(DIK_S))
-				{
-					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
-
-					cameraPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					cameraPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
-
-					targetPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					targetPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
-
-					vec.x += 0;
-					vec.y += -1;
-				}
-
-				if (Input::isKey(DIK_D))
-				{
-					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad += DirectX::XM_PI / 2;
-					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-
-					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-
-					targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-					//OgaJHelper::ConvertToDegree(cameraRad);
-
-					vec.x += -1;
-					vec.y += 0;
-				}
-
-				if (Input::isKey(DIK_A)) {
-					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad -= DirectX::XM_PI / 2;
-					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-
-					cameraPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					cameraPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-
-					targetPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					targetPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-					//OgaJHelper::ConvertToDegree(cameraRad);
-
-					vec.x += 1;
-					vec.y += 0;
-				}
-
-				float deg = atan2(vec.y, vec.x);
-				OgaJHelper::ConvertToDegree(deg);
-				float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-				OgaJHelper::ConvertToDegree(cameraRad);
-
-				//Camera::SetEye(cameraPos);
-				//Camera::SetTarget(targetPos);
-				//fbxobj_StandMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//fbxobj_SlowRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//fbxobj_FastRunMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-
-				//fbxobj_StandShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//fbxobj_SlowRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-				//fbxobj_FastRunShadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad - 90.0f, 0));
-			}*/
-
-			//else { animationType = STAND; }
-		}
-	}
-
-	else
-	{
-		//pad
-		if (Input::isPadConnect())
-		{
-			if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_THUMB))
-			{
-				cameraMoveEase = 0.0f;
-				isTarget = false;
-				isEase = true;
+				else { if (m_animationType != ATTACK) { m_animationType = STAND; } }
 			}
 
-			if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-				0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+			else
 			{
-				bool isAttack = false;
-				if (animationType == ATTACK) { isAttack = true; }
+				//切り替え
+				/*if (Input::isKeyTrigger(DIK_T))
+				{
+					cameraMoveEase = 0.0f;
+					//m_isTarget = false;
+				}*/
 
-				if (!isAttack)
+				//移動
+				/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
 				{
 					animationType = RUN;
 
-					XMFLOAT3 vec = { 0,0,0 };
-					vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-					vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+					if (Input::isKey(DIK_W))
+					{
+						playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
+						playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
+					}
 
-					pos.x += vec.z * cameraToPlayer.x * MAX_MOVE_SPEED;
-					pos.z += vec.z * cameraToPlayer.z * MAX_MOVE_SPEED;
+					if (Input::isKey(DIK_S))
+					{
+						playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
+						playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
+					}
 
-					float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					rad += DirectX::XM_PI / 2;
-					pos.x += vec.x * sinf(rad) * MAX_MOVE_SPEED;
-					pos.z += vec.x * cosf(rad) * MAX_MOVE_SPEED;
-				}
+					if (Input::isKey(DIK_D))
+					{
+						float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						cameraRad += DirectX::XM_PI / 2;
+						playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					}
+
+					if (Input::isKey(DIK_A)) {
+						float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						cameraRad -= DirectX::XM_PI / 2;
+						playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
+						playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
+					}
+				}*/
+
+				//else { animationType = STAND; }
 			}
 
-			else { if (animationType != ATTACK) { animationType = STAND; } }
-		}
+			//ゴール地点
+			const XMFLOAT3 GoalCameraTarget = {
+				enemyPos.x,
+				enemyPos.y - 30.0f,
+				enemyPos.z
+			};
+			const XMFLOAT3 GoalCameraEye = {
+				m_pos.x + enemyToPlayer.x * C_MAX_DISTANCE,
+				50.0f,
+				m_pos.z + enemyToPlayer.z * C_MAX_DISTANCE,
+			};
 
-		else
-		{
-			//切り替え
-			/*if (Input::isKeyTrigger(DIK_T))
+			XMFLOAT3 target;
+			XMFLOAT3 eye;
+
+			//カメラ挙動管理用
+			if (m_cameraMoveEase < 1.0f)
 			{
-				cameraMoveEase = 0.0f;
-				//isTarget = false;
-			}*/
+				target = OgaJEase::easeOutCubicXMFLOAT3(
+					Camera::GetTarget(),
+					GoalCameraTarget,
+					m_cameraMoveEase);
+				eye = OgaJEase::easeOutCubicXMFLOAT3(
+					Camera::GetEye(),
+					GoalCameraEye,
+					m_cameraMoveEase);
 
-			//移動
-			/*if (Input::isKey(DIK_W) || Input::isKey(DIK_S) || Input::isKey(DIK_D) || Input::isKey(DIK_A))
+				m_cameraMoveEase += C_EASE_CAMERA_TIMER;
+			}
+
+			else
 			{
-				animationType = RUN;
+				m_cameraMoveEase = 1.0f;
 
-				if (Input::isKey(DIK_W))
-				{
-					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED;
-					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED;
-				}
+				target = OgaJEase::easeOutCubicXMFLOAT3(
+					Camera::GetTarget(),
+					GoalCameraTarget,
+					m_cameraMoveEase);
+				eye = OgaJEase::easeOutCubicXMFLOAT3(
+					Camera::GetEye(),
+					GoalCameraEye,
+					m_cameraMoveEase);
+			}
 
-				if (Input::isKey(DIK_S))
-				{
-					playerPos.x += cameraToPlayer.x * MAX_MOVE_SPEED * -1;
-					playerPos.z += cameraToPlayer.z * MAX_MOVE_SPEED * -1;
-				}
+			//セット
+			Camera::SetTarget(target);
+			Camera::SetEye(eye);
 
-				if (Input::isKey(DIK_D))
-				{
-					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad += DirectX::XM_PI / 2;
-					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-				}
+			//向き
+			float pRadian = atan2(cosf(fbxobj_StandMiku->GetRotation().z), sinf(fbxobj_StandMiku->GetRotation().x));
+			OgaJHelper::ConvertToDegree(pRadian);
+			float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
+			OgaJHelper::ConvertToDegree(cRadian);
+			float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
+			float diff = 0;
+			if (fbxobj_StandMiku->GetRotation().y - rot > 0) { diff = 2.0f; }
+			else if (fbxobj_StandMiku->GetRotation().y - rot < 0) { diff = -2.0f; }
+			fbxobj_StandMiku->SetRotation(XMFLOAT3(
+				fbxobj_StandMiku->GetRotation().x,
+				rot + diff,
+				fbxobj_StandMiku->GetRotation().z
+			));
 
-				if (Input::isKey(DIK_A)) {
-					float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
-					cameraRad -= DirectX::XM_PI / 2;
-					playerPos.x += sinf(cameraRad) * MAX_MOVE_SPEED;
-					playerPos.z += cosf(cameraRad) * MAX_MOVE_SPEED;
-				}
-			}*/
+			fbxobj_SlowRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+			fbxobj_FastRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+			fbxobj_OneSwordAttack->SetRotation(fbxobj_StandMiku->GetRotation());
 
-			//else { animationType = STAND; }
+			fbxobj_StandShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+			fbxobj_SlowRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+			fbxobj_FastRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
+			fbxobj_OneSwordAttackShadow->SetRotation(fbxobj_StandMiku->GetRotation());
 		}
-
-		//ゴール地点
-		const XMFLOAT3 GoalCameraTarget = {
-			enemyPos.x,
-			enemyPos.y - 30.0f,
-			enemyPos.z
-		};
-		const XMFLOAT3 GoalCameraEye = {
-			pos.x + enemyToPlayer.x * MAX_DISTANCE,
-			50.0f,
-			pos.z + enemyToPlayer.z * MAX_DISTANCE,
-		};
-
-		XMFLOAT3 target;
-		XMFLOAT3 eye;
-
-		//カメラ挙動管理用
-		if (cameraMoveEase < 1.0f)
-		{
-			target = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetTarget(),
-				GoalCameraTarget,
-				cameraMoveEase);
-			eye = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetEye(),
-				GoalCameraEye,
-				cameraMoveEase);
-
-			cameraMoveEase += EASE_CAMERA_TIMER;
-		}
-
-		else
-		{
-			cameraMoveEase = 1.0f;
-
-			target = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetTarget(),
-				GoalCameraTarget,
-				cameraMoveEase);
-			eye = OgaJEase::easeOutCubicXMFLOAT3(
-				Camera::GetEye(),
-				GoalCameraEye,
-				cameraMoveEase);
-		}
-
-		//セット
-		Camera::SetTarget(target);
-		Camera::SetEye(eye);
-
-		//向き
-		float pRadian = atan2(cosf(fbxobj_StandMiku->GetRotation().z), sinf(fbxobj_StandMiku->GetRotation().x));
-		OgaJHelper::ConvertToDegree(pRadian);
-		float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
-		OgaJHelper::ConvertToDegree(cRadian);
-		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
-		float diff = 0;
-		if (fbxobj_StandMiku->GetRotation().y - rot > 0) { diff = 2.0f; }
-		else if (fbxobj_StandMiku->GetRotation().y - rot < 0) { diff = -2.0f; }
-		fbxobj_StandMiku->SetRotation(XMFLOAT3(
-			fbxobj_StandMiku->GetRotation().x,
-			rot + diff,
-			fbxobj_StandMiku->GetRotation().z
-		));
-
-		fbxobj_SlowRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
-		fbxobj_FastRunMiku->SetRotation(fbxobj_StandMiku->GetRotation());
-		fbxobj_OneSwordAttack->SetRotation(fbxobj_StandMiku->GetRotation());
-
-		fbxobj_StandShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
-		fbxobj_SlowRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
-		fbxobj_FastRunShadowMiku->SetRotation(fbxobj_StandMiku->GetRotation());
-		fbxobj_OneSwordAttackShadow->SetRotation(fbxobj_StandMiku->GetRotation());
 	}
 
 #pragma endregion
@@ -653,48 +697,59 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	Setter();
 	Input();
 	OtherUpdate();
-	Collision();
+	CalcOBB();
 
 	if (Input::isPadTrigger(XINPUT_GAMEPAD_LEFT_THUMB))
 	{
 		fbxobj_OneSwordAttack->ResetAnimation();
-		animationType = STAND;
+		m_animationType = STAND;
 	}
 }
 
 void Player::Draw()
 {
+	if (IsDead())
+	{
+		fbxobj_dieMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		return;
+	}
+
+	if (m_animationType == DAMAGED)
+	{
+		fbxobj_impactMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+	}
+
 	if (ImguiControl::Imgui_playerDraw)
 	{
-		if (animationType == STAND)
+		if (m_animationType == STAND)
 		{
-			fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+			fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 		}
-		else if (animationType == SLOWRUN)
+		else if (m_animationType == SLOWRUN)
 		{
-			fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+			fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 		}
-		else if (animationType == RUN)
+		else if (m_animationType == RUN)
 		{
-			fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+			fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 		}
-		else if (animationType == ATTACK)
+		else if (m_animationType == ATTACK)
 		{
-			fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+			fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 		}
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_Sword->Draw(PipelineManager::GetObjNormalPipeline());
-	obj_HitBox->Draw(PipelineManager::GetObjNormalPipeline());
+	obj_Sword->Draw(PipelineManager::obj_normal);
+	//obj_HitBox->Draw(PipelineManager::obj_normal);
 
-	if (ImguiControl::Imgui_isOBBDraw)
+	if (ImguiControl::Imgui_isOBBDraw && m_animationType != DAMAGED)
 	{
 		for (int i = 0; i < 28; i++)
 		{
-			obj_Box[i]->Draw(PipelineManager::GetObjNormalPipeline());
+			obj_Box[i]->Draw(PipelineManager::obj_normal);
 		}
-		obj_SwordBox->Draw(PipelineManager::GetObjNormalPipeline());
+		obj_SwordBox->Draw(PipelineManager::obj_normal);
 	}
 
 	Object::PostDraw();
@@ -702,62 +757,83 @@ void Player::Draw()
 
 void Player::LuminanceDraw()
 {
-	if (animationType == STAND)
+	if (IsDead())
 	{
-		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+		return;
 	}
-	else if (animationType == SLOWRUN)
+
+	if (m_animationType == STAND)
 	{
-		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+		fbxobj_StandMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 	}
-	else if (animationType == RUN)
+	else if (m_animationType == SLOWRUN)
 	{
-		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+		fbxobj_SlowRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 	}
-	else if (animationType == ATTACK)
+	else if (m_animationType == RUN)
 	{
-		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxNormalPipeline());
+		fbxobj_FastRunMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+	}
+	else if (m_animationType == ATTACK)
+	{
+		fbxobj_OneSwordAttack->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
 	}
 }
 
 void Player::ShadowDraw()
 {
+	if (IsDead())
+	{
+		return;
+	}
+
 	if (ImguiControl::Imgui_playerDraw)
 	{
-		if (animationType == STAND)
+		if (m_animationType == STAND)
 		{
-			fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
+			fbxobj_StandShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_shadow);
 		}
-		else if (animationType == SLOWRUN)
+		else if (m_animationType == SLOWRUN)
 		{
-			fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
+			fbxobj_SlowRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_shadow);
 		}
-		else if (animationType == RUN)
+		else if (m_animationType == RUN)
 		{
-			fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
+			fbxobj_FastRunShadowMiku->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_shadow);
 		}
-		else if (animationType == ATTACK)
+		else if (m_animationType == ATTACK)
 		{
-			fbxobj_OneSwordAttackShadow->Draw(DirectXImportant::cmdList.Get(), PipelineManager::GetFbxShadowPipeline());
+			fbxobj_OneSwordAttackShadow->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_shadow);
 		}
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_ShadowSword->Draw(PipelineManager::GetObjShadowPipeline());
+	obj_ShadowSword->Draw(PipelineManager::obj_shadow);
 	Object::PostDraw();
 }
 
 void Player::Input()
 {
 	//Hit確認用
-	if (animationType != ATTACK)
+	if (m_animationType != ATTACK)
 	{
 		if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_SHOULDER))
 		{
-			animationType = ATTACK;
+			m_animationType = ATTACK;
 			fbxobj_OneSwordAttack->ReplayAnimation();
 			fbxobj_OneSwordAttackShadow->ReplayAnimation();
 		}
+	}
+
+	//アニメーションが一定フレームを超えたら判定開始
+	else if (m_animationType == ATTACK && !m_isAttack)
+	{
+		if (m_animationTimer >= C_ATTACK_COLLISION_TIMER)
+		{
+			m_animationTimer = 0;
+			m_isAttack = true;
+		}
+		else { m_animationTimer++; }
 	}
 
 	//アニメーション管理
@@ -798,24 +874,24 @@ void Player::Input()
 
 void Player::Setter()
 {
-	fbxobj_StandMiku->SetPosition(pos);
-	fbxobj_SlowRunMiku->SetPosition(pos);
-	fbxobj_FastRunMiku->SetPosition(pos);
-	fbxobj_OneSwordAttack->SetPosition(pos);
+	fbxobj_StandMiku->SetPosition(m_pos);
+	fbxobj_SlowRunMiku->SetPosition(m_pos);
+	fbxobj_FastRunMiku->SetPosition(m_pos);
+	fbxobj_OneSwordAttack->SetPosition(m_pos);
 
-	fbxobj_StandShadowMiku->SetPosition(pos);
-	fbxobj_SlowRunShadowMiku->SetPosition(pos);
-	fbxobj_FastRunShadowMiku->SetPosition(pos);
-	fbxobj_OneSwordAttackShadow->SetPosition(pos);
+	fbxobj_StandShadowMiku->SetPosition(m_pos);
+	fbxobj_SlowRunShadowMiku->SetPosition(m_pos);
+	fbxobj_FastRunShadowMiku->SetPosition(m_pos);
+	fbxobj_OneSwordAttackShadow->SetPosition(m_pos);
 }
 
-void Player::Collision()
+void Player::CalcOBB()
 {
 	obj_SwordBox->MultiMatrix(obj_Sword->GetMatWorld());
 	obj_SwordBox->SetScale(DirectX::XMFLOAT3(
-		model_sword->GetModelSize().x / 2.0f,
-		model_sword->GetModelSize().y / 2.0f,
-		model_sword->GetModelSize().z / 2.0f
+		ModelManager::model_sword->GetModelSize().x / 2.0f,
+		ModelManager::model_sword->GetModelSize().y / 2.0f,
+		ModelManager::model_sword->GetModelSize().z / 2.0f
 	));
 
 	obj_HitBox->SetScale(DirectX::XMFLOAT3(
@@ -837,35 +913,9 @@ void Player::Collision()
 	obj_SwordBox->Update();
 	obj_HitBox->Update();
 
-	OBB hitObb;
-	hitObb.pos = obj_HitBox->GetPosition();
-	hitObb.matRot = obj_HitBox->GetMatRot();
-	hitObb.length = obj_HitBox->GetScale();
-
-	OBB obb[28];
 	OBB swordOBB;
-	isHit = false;
-	//攻撃以外の時の当たり判定(OBB)
-	if (animationType != ATTACK)
-	{
-		for (int i = 0; i < 28; i++)
-		{
-			DirectX::XMFLOAT3 pos = {
-				bones[i].second.r[3].m128_f32[0],
-				bones[i].second.r[3].m128_f32[1],
-				bones[i].second.r[3].m128_f32[2] };
-
-			obb[i].pos = pos;
-			obb[i].matRot = matRot[i];
-			obb[i].length = obj_Box[i]->GetScale();
-			if (OBBCollision::CollisionOBBs(hitObb, obb[i]))
-			{
-				isHit = true;
-			}
-		}
-	}
-	//攻撃時の当たり判定(OBB)
-	else
+	//攻撃時の当たり判定(OBB)←計算してるだけ
+	if (m_animationType == ATTACK)
 	{
 		DirectX::XMFLOAT3 pos = {
 			obj_SwordBox->GetMatWorld().r[3].m128_f32[0],
@@ -875,21 +925,27 @@ void Player::Collision()
 		swordOBB.pos = pos;
 		swordOBB.matRot = fbxobj_OneSwordAttack->GetMatrix();
 		swordOBB.length = obj_SwordBox->GetScale();
-		if (OBBCollision::CollisionOBBs(hitObb, swordOBB))
-		{
-			if (ImguiControl::Imgui_isHitStopAnimation)
-			{
-				fbxobj_OneSwordAttack->StopAnimation();
-				fbxobj_OneSwordAttackShadow->StopAnimation();
-			}
-			isHit = true;
-		}
+		m_obb = swordOBB;
 	}
+
+	std::vector<OBB> l_obbs;
+	for (int i = 0; i < matRot.size(); i++)
+	{
+		OBB l_obb;
+		l_obb.pos = DirectX::XMFLOAT3(
+			bones[i].second.r[3].m128_f32[0],
+			bones[i].second.r[3].m128_f32[1],
+			bones[i].second.r[3].m128_f32[2]);
+		l_obb.matRot = matRot[i];
+		l_obb.length = obj_Box[i]->GetScale();
+		l_obbs.push_back(l_obb);
+	}
+	m_obbs = l_obbs;
 }
 
 void Player::OtherUpdate()
 {
-	if (animationType == STAND)
+	if (m_animationType == STAND)
 	{
 		fbxobj_StandMiku->Update();
 		fbxobj_StandShadowMiku->Update(true);
@@ -906,7 +962,7 @@ void Player::OtherUpdate()
 		bones = fbxobj_StandMiku->GetAffineTrans();
 		matRot = fbxobj_StandMiku->GetMatRots();
 	}
-	else if (animationType == SLOWRUN)
+	else if (m_animationType == SLOWRUN)
 	{
 		fbxobj_SlowRunMiku->Update();
 		fbxobj_SlowRunShadowMiku->Update(true);
@@ -920,7 +976,7 @@ void Player::OtherUpdate()
 			obj_Box[i]->Update();
 		}
 	}
-	else if (animationType == RUN)
+	else if (m_animationType == RUN)
 	{
 		fbxobj_FastRunMiku->Update();
 		fbxobj_FastRunShadowMiku->Update(true);
@@ -937,7 +993,7 @@ void Player::OtherUpdate()
 		bones = fbxobj_FastRunMiku->GetAffineTrans();
 		matRot = fbxobj_FastRunMiku->GetMatRots();
 	}
-	else if (animationType == ATTACK)
+	else if (m_animationType == ATTACK)
 	{
 		//攻撃用
 		fbxobj_OneSwordAttack->Update();
@@ -957,12 +1013,14 @@ void Player::OtherUpdate()
 		obj_ShadowSword->MultiMatrix(fbxobj_OneSwordAttack->GetMatrix());
 		if (fbxobj_OneSwordAttack->GetNowTime() == fbxobj_OneSwordAttack->GetEndTime())
 		{
-			animationType = STAND;
+			m_animationType = STAND;
 			fbxobj_OneSwordAttack->ResetAnimation();
 			fbxobj_OneSwordAttack->StopAnimation();
 
 			fbxobj_OneSwordAttackShadow->ResetAnimation();
 			fbxobj_OneSwordAttackShadow->StopAnimation();
+
+			m_isAttack = false;
 		}
 	}
 

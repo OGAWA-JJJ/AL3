@@ -3,6 +3,7 @@
 #include "../3D/Object.h"
 #include "../XAudio2/Music.h"
 #include "../3D/FbxObject3D.h"
+#include "../Math/OBBCollision.h"
 
 class Player
 {
@@ -16,46 +17,48 @@ private:
 private:	//自機のパターン
 	enum AnimationType
 	{
-		STAND, SLOWRUN, RUN, ATTACK
+		STAND, SLOWRUN, RUN, ATTACK, DAMAGED
 	};
 
-public:	//定数
-	const float MAX_DISTANCE = 125.0f;			//カメラと自機の距離(いつか可変に)
+public:		//定数
+	const float C_MAX_DISTANCE = 125.0f;			//カメラと自機の距離(いつか可変に)
 
 private:
-	const float MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
-	const float MAX_CAMERA_MOVE_SPEED = 2.0f;	//カメラの最大速度
-	const float EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
+	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
+	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
+	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
+	const float C_EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
+
+private:	//定数(ステータス関係)
+	const int C_MAX_HP = 1000;
+	const int C_MAX_MP = 100;
+	const int C_MAX_STAMINA = 1000;
+	const int C_MAX_POWER = 100;
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
 	std::vector<DirectX::XMMATRIX> matRot;
 
 private:	//変数
-	XMFLOAT3 pos;
-	XMFLOAT3 cameraAngle;
-	int animationType;
-	float cameraMoveEase = 0.0f;
-	float cameraY = 0.0f;
-	float count = 0.0f;
-	bool isTarget = false;
-	bool isEase = false;
+	std::vector<OBB> m_obbs;
+	OBB m_obb;
+	XMFLOAT3 m_pos;
+	XMFLOAT3 m_cameraAngle;
+	int m_animationTimer;
+	int m_animationType;
+	float m_cameraMoveEase;
+	float m_cameraY;
+	bool m_isTarget;
+	bool m_isEase;
+	bool m_isAttack;
+	bool m_isInvincible;
 
-	bool isHit = false;
+private:	//変数(ステータス関係)
+	int m_hp;
+	int m_mp;
+	int m_stamina;
 
-private:	//モデル(Load用)
-	Model* model_sword = nullptr;
-	//std::weak_ptr<Model> model_sword;
-	Model* model_box = nullptr;
-	Model* model_box2 = nullptr;
-
-	FbxModel* fbxmodel_standMiku = nullptr;
-	FbxModel* fbxmodel_slowRunMiku = nullptr;
-	FbxModel* fbxmodel_fastRunMiku = nullptr;
-	FbxModel* fbxmodel_oneSwrordAttack = nullptr;
-	//std::weak_ptr<FbxModel> fbxmodel_standMiku;
-	//std::weak_ptr<FbxModel> fbxmodel_slowRunMiku;
-	//std::weak_ptr<FbxModel> fbxmodel_fastRunMiku;
+	int m_power;
 
 private:	//オブジェクト(Draw用)
 	Object* obj_Sword = nullptr;
@@ -75,6 +78,9 @@ private:	//オブジェクト(Draw用)
 
 	FbxObject3D* fbxobj_OneSwordAttack = nullptr;
 	FbxObject3D* fbxobj_OneSwordAttackShadow = nullptr;
+
+	FbxObject3D* fbxobj_dieMiku = nullptr;
+	FbxObject3D* fbxobj_impactMiku = nullptr;
 	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;
@@ -95,9 +101,30 @@ public:
 private:
 	void Input();
 	void Setter();
-	void Collision();
+	void CalcOBB();
 	void OtherUpdate();
 
+public:		//Getter,Setter
+	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
+	const bool& IsAttack() { return m_isAttack; }
+	const OBB& GetSwordOBB() { return m_obb; }
+	const int& GetPower() { return m_power; }
+	void UnInvincible() { m_isInvincible = false; }
+	bool IsInvincible() { return m_isInvincible; }
+	const std::vector<OBB>& GetOBBs() { return m_obbs; }
+
 public:
-	const DirectX::XMFLOAT3& GetPos() { return pos; }
+	const bool IsDead()
+	{
+		if (m_hp <= 0) { return true; }
+		return false;
+	}
+	void HitAttack(int damage)
+	{
+		m_hp -= damage;
+		m_isInvincible = true;
+		m_animationType = DAMAGED;
+		if (m_hp < 0) { m_hp = 0; }
+		OutputDebugStringA("Hit!\n");
+	}
 };

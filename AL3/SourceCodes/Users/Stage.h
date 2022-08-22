@@ -3,12 +3,9 @@
 
 class Stage
 {
-private:	//モデル(Load用)
-	Model* model_stage = nullptr;
-	Model* model_sponza = nullptr;
-
 private:	//オブジェクト(Draw用)
 	Object* obj_Stage = nullptr;
+	Object* obj_colosseum = nullptr;
 
 public:
 	Stage();

@@ -8,6 +8,8 @@
 #include "2D/RenderTarget.h"
 #include "2D/ShadowMap.h"
 #include "Input/Input.h"
+#include "Users/ModelManager.h"
+#include "Users/SpriteManager.h"
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -47,8 +49,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		return 1;
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
-
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+
+	//モデルのロード
+	ModelManager::Init();
+
+	//画像のロード
+	SpriteManager::Init();
 
 	//輝度抽出用
 	SpriteInitData luminanceData;

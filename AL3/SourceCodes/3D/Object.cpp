@@ -335,6 +335,7 @@ void Object::Update(bool isShadowCamera)
 	else { constMap->viewproj = matViewProjection; }
 	constMap->world = matWorld;
 	constMap->cameraPos = cameraPos;
+	constMap->color = color;
 	constBuffB0->Unmap(0, nullptr);
 
 	//“–‚½‚è”»’èXV

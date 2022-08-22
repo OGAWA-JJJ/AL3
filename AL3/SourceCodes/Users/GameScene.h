@@ -12,10 +12,10 @@ private:
 	Light* light = nullptr;
 
 private:
-	std::unique_ptr<Player> l_player = std::make_unique<Player>();
-	std::unique_ptr<Enemy> l_enemy = std::make_unique<Enemy>();
-	std::unique_ptr<Stage> l_stage = std::make_unique<Stage>();
-	std::unique_ptr<StageObject> l_stageObj = std::make_unique<StageObject>();
+	std::unique_ptr<Player> m_player = std::make_unique<Player>();
+	std::unique_ptr<Enemy> m_enemy = std::make_unique<Enemy>();
+	std::unique_ptr<Stage> m_stage = std::make_unique<Stage>();
+	std::unique_ptr<StageObject> m_stageObj = std::make_unique<StageObject>();
 
 public:
 	GameScene();
@@ -25,4 +25,8 @@ public:
 	void Draw();
 	void LuminanceDraw();	//ãPìxíäèoóp
 	void ShadowDraw();		//âeï`âÊóp
+
+private:
+	void PlayerUpdate();
+	void EnemyUpdate();
 };
