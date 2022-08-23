@@ -76,7 +76,7 @@ public:
 	{
 		m_hp -= damage;
 		m_isInvincible = true;
-		if (m_hp < 0) { m_hp = 0; }
+		if (m_hp <= 0) { m_hp = 0; }
 		OutputDebugStringA("Hit!\n");
 	}
 	const bool IsDead()

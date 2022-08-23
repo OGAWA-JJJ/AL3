@@ -33,7 +33,7 @@ private:	//定数(ステータス関係)
 	const int C_MAX_HP = 1000;
 	const int C_MAX_MP = 100;
 	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER = 100;
+	const int C_MAX_POWER = 500;
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
@@ -124,6 +124,7 @@ public:
 		m_hp -= damage;
 		m_isInvincible = true;
 		m_animationType = DAMAGED;
+		fbxobj_OneSwordAttack->ResetAnimation();
 		if (m_hp < 0) { m_hp = 0; }
 		OutputDebugStringA("Hit!\n");
 	}
