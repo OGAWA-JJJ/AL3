@@ -33,7 +33,7 @@ private:	//定数(ステータス関係)
 	const int C_MAX_HP = 1000;
 	const int C_MAX_MP = 100;
 	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER = 500;
+	const int C_MAX_POWER = 100;
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
