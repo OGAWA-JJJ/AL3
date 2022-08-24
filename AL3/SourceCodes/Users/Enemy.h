@@ -51,6 +51,7 @@ private:	//オブジェクト(Draw用)
 public:
 	Enemy();
 	~Enemy();
+
 	void Init();
 	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
@@ -59,30 +60,27 @@ private:
 	void CalcOBB();
 	void JudgAnimationType();
 
-public:	//Getter,Setter
+public:	//Getter
+	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
 	const int& GetBoneCount() { return m_boneCount; }
-	const std::vector<OBB>& GetOBBs() { return m_obbs; }
-	void UnInvincible() { m_isInvincible = false; }
-	bool IsInvincible() { return m_isInvincible; }
-	inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
-	void DiscoverPlayer() { m_animationType = RUN; }
-	bool IsAttack() { return m_isAttack; }
 	const int& GetPower() { return C_MAX_POWER; }
+	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
+	const bool IsInvincible() { return m_isInvincible; }
+	const bool IsAttack() { return m_isAttack; }
 	const bool GetIsCalc() { return m_isCalc; }
 
-public:
+public:	//Setter
+	void UnInvincible() { m_isInvincible = false; }
+	void DiscoverPlayer() { m_animationType = RUN; }
+
+public:	//呼ぶやつ
 	void HitAttack(int damage)
 	{
 		m_hp -= damage;
 		m_isInvincible = true;
 		if (m_hp <= 0) { m_hp = 0; }
 		OutputDebugStringA("Hit!\n");
-	}
-	const bool IsDead()
-	{
-		if (m_hp <= 0) { return true; }
-		return false;
 	}
 	const OBB& GetAttackOBB()
 	{
@@ -95,7 +93,12 @@ public:
 			return m_obbs[26];
 		}
 	}
-	const bool IsFighting() 
+	const bool IsDead()
+	{
+		if (m_hp <= 0) { return true; }
+		return false;
+	}
+	const bool IsFighting()
 	{
 		if (m_animationType == STAND) { return false; }
 		return true;

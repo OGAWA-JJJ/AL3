@@ -104,16 +104,18 @@ private:
 	void CalcOBB();
 	void OtherUpdate();
 
-public:		//Getter,Setter
-	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	const bool& IsAttack() { return m_isAttack; }
-	const OBB& GetSwordOBB() { return m_obb; }
-	const int& GetPower() { return m_power; }
-	void UnInvincible() { m_isInvincible = false; }
-	bool IsInvincible() { return m_isInvincible; }
+public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
+	const OBB& GetSwordOBB() { return m_obb; }
+	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
+	const int& GetPower() { return m_power; }
+	const bool IsAttack() { return m_isAttack; }
+	const bool IsInvincible() { return m_isInvincible; }
 
-public:
+public:	//Setter
+	void UnInvincible() { m_isInvincible = false; }
+
+public:	//ŒÄ‚Ô‚â‚Â
 	const bool IsDead()
 	{
 		if (m_hp <= 0) { return true; }
