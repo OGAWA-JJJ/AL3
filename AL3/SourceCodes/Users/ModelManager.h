@@ -14,6 +14,7 @@ public:	//Player
 	static FbxModel* fbxmodel_oneSwrordAttack;
 	static FbxModel* fbxmodel_dieMiku;
 	static FbxModel* fbxmodel_impactMiku;
+	static FbxModel* fbxmodel_rollingMiku;
 
 public:	//Enemy
 	static FbxModel* fbxmodel_idleCreature;

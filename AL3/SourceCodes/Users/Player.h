@@ -17,7 +17,7 @@ private:
 private:	//自機のパターン
 	enum AnimationType
 	{
-		STAND, SLOWRUN, RUN, ATTACK, DAMAGED
+		STAND, SLOWRUN, RUN, ATTACK, DAMAGED, ROLLING
 	};
 
 public:		//定数
@@ -25,6 +25,7 @@ public:		//定数
 
 private:
 	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
+	const int C_ATTACK_COLLISION_ENDTIMER = 30;		//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)
 	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
@@ -44,6 +45,7 @@ private:	//変数
 	OBB m_obb;
 	XMFLOAT3 m_pos;
 	XMFLOAT3 m_cameraAngle;
+	XMFLOAT3 m_rollingAngle;
 	int m_animationTimer;
 	int m_animationType;
 	float m_cameraMoveEase;
@@ -81,6 +83,7 @@ private:	//オブジェクト(Draw用)
 
 	FbxObject3D* fbxobj_dieMiku = nullptr;
 	FbxObject3D* fbxobj_impactMiku = nullptr;
+	FbxObject3D* fbxobj_rollingMiku = nullptr;
 	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;
@@ -99,10 +102,10 @@ public:
 	void ShadowDraw();
 
 private:
-	void Input();
-	void Setter();
-	void CalcOBB();
-	void OtherUpdate();
+	void Input();		//本当にInputなのか分からん
+	void Setter();		//今のところ、いる??
+	void CalcOBB();		//剣のOBB算出
+	void OtherUpdate();	//基本的にUpdateと剣の追従処理
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
@@ -116,18 +119,6 @@ public:	//Setter
 	void UnInvincible() { m_isInvincible = false; }
 
 public:	//呼ぶやつ
-	const bool IsDead()
-	{
-		if (m_hp <= 0) { return true; }
-		return false;
-	}
-	void HitAttack(int damage)
-	{
-		m_hp -= damage;
-		m_isInvincible = true;
-		m_animationType = DAMAGED;
-		fbxobj_OneSwordAttack->ResetAnimation();
-		if (m_hp < 0) { m_hp = 0; }
-		OutputDebugStringA("Hit!\n");
-	}
+	bool IsDead();
+	void HitAttack(int damage);
 };

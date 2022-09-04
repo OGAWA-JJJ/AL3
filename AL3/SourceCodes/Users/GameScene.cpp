@@ -179,7 +179,7 @@ void GameScene::EnemyUpdate()
 			}
 		}
 	}
-	else
+	else if (!m_enemy->IsAttack())
 	{
 		m_player->UnInvincible();
 	}

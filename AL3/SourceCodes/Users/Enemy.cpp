@@ -17,6 +17,7 @@ Enemy::Enemy()
 	m_isAttack = false;
 	m_isAttackTrigger = false;
 	m_isCalc = false;
+	m_isCalcEnd = false;
 
 	m_hp = C_MAX_HP;
 
@@ -166,17 +167,39 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		{
 			fbxobj_kickCreature->ResetAnimation();
 			m_isAttackTrigger = false;
+			m_isCalcEnd = false;
 		}
 
 		//‰¼
-		if (m_animationTimer < C_ATTACK_COLLISION_TIMER)
+		if (!m_isCalcEnd)
 		{
-			m_animationTimer++;
+			if (!m_isCalc)
+			{
+				if (m_animationTimer < C_KICK_COLLISION_TIMER)
+				{
+					m_animationTimer++;
+				}
+				else
+				{
+					m_animationTimer = 0;
+					m_isCalc = true;
+				}
+			}
+			else
+			{
+				if (m_animationTimer < C_KICK_COLLISION_ENDTIMER)
+				{
+					m_animationTimer++;
+				}
+				else
+				{
+					m_animationTimer = 0;
+					m_isCalc = false;
+					m_isCalcEnd = true;
+				}
+			}
 		}
-		else
-		{
-			m_isCalc = true;
-		}
+
 
 		fbxobj_kickCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
 		fbxobj_kickCreature->SetPosition(m_pos);
@@ -190,10 +213,11 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			fbxobj_runCreature->Update();
 
 			//m_animationType = RUN;
+			//m_animationTimer = 0;
 			m_endKick = true;
 			m_isAttack = false;
 
-			m_isCalc = false;
+			//m_isCalc = false;
 		}
 	}
 	else if (m_animationType == PUNCH)
@@ -202,17 +226,38 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		{
 			fbxobj_punchCreature->ResetAnimation();
 			m_isAttackTrigger = false;
+			m_isCalcEnd = false;
 		}
 
 		//‰¼
-		if (m_animationTimer < C_ATTACK_COLLISION_TIMER)
+		if (!m_isCalcEnd)
 		{
-			m_animationTimer++;
+			if (!m_isCalc)
+			{
+				if (m_animationTimer < C_PUNCH_COLLISION_TIMER)
+				{
+					m_animationTimer++;
+				}
+				else
+				{
+					m_isCalc = true;
+				}
+			}
+			else
+			{
+				if (m_animationTimer < C_PUNCH_COLLISION_ENDTIMER)
+				{
+					m_animationTimer++;
+				}
+				else
+				{
+					m_animationTimer = 0;
+					m_isCalc = false;
+					m_isCalcEnd = true;
+				}
+			}
 		}
-		else
-		{
-			m_isCalc = true;
-		}
+
 
 		fbxobj_punchCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
 		fbxobj_punchCreature->SetPosition(m_pos);
@@ -226,10 +271,11 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			fbxobj_runCreature->Update();
 
 			//m_animationType = RUN;
+			//m_animationTimer = 0;
 			m_endPunch = true;
 			m_isAttack = false;
 
-			m_isCalc = false;
+			//m_isCalc = false;
 		}
 	}
 
@@ -309,4 +355,37 @@ void Enemy::JudgAnimationType()
 {
 	if (std::rand() % 2 == 0) { m_animationType = KICK; }
 	else { m_animationType = PUNCH; }
+}
+
+/*----------ŒÄ‚Ô‚â‚Â----------*/
+void Enemy::HitAttack(int damage)
+{
+	m_hp -= damage;
+	m_isInvincible = true;
+	if (m_hp <= 0) { m_hp = 0; }
+	OutputDebugStringA("Hit!\n");
+}
+
+OBB& Enemy::GetAttackOBB()
+{
+	if (m_animationType == KICK)
+	{
+		return m_obbs[36];
+	}
+	else
+	{
+		return m_obbs[26];
+	}
+}
+
+bool Enemy::IsDead()
+{
+	if (m_hp <= 0) { return true; }
+	return false;
+}
+
+bool Enemy::IsFighting()
+{
+	if (m_animationType == STAND) { return false; }
+	return true;
 }

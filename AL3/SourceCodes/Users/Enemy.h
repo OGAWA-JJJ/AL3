@@ -11,14 +11,20 @@ private:	//モーション
 		STAND, RUN, KICK, PUNCH
 	};
 
+private:	//定数(判定系)
+	const int C_KICK_COLLISION_TIMER = 30;		//攻撃判定を取り出すフレーム
+	const int C_KICK_COLLISION_ENDTIMER = 20;	//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)
+
+	const int C_PUNCH_COLLISION_TIMER = 15;		//攻撃判定を取り出すフレーム
+	const int C_PUNCH_COLLISION_ENDTIMER = 30;	//攻撃判定後、判定を取り消すフレーム
+
 private:	//定数
-	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
-	const int C_MAX_POWER = 100;
-	const float C_MAX_MOVE_SPEED = 2.0f;	//移動速度
 	const float C_MAX_DIST = 35.0f;
 
 private:	//定数(ステータス関係)
+	const int C_MAX_POWER = 100;
 	const int C_MAX_HP = 1000;
+	const float C_MAX_MOVE_SPEED = 2.0f;		//移動速度
 
 private:
 	std::vector<OBB> m_obbs;
@@ -31,6 +37,7 @@ private:
 	bool m_isAttack;
 	bool m_isAttackTrigger;
 	bool m_isCalc;
+	bool m_isCalcEnd;
 
 	//仮
 	bool m_endKick = false;
@@ -75,33 +82,9 @@ public:	//Setter
 	void DiscoverPlayer() { m_animationType = RUN; }
 
 public:	//呼ぶやつ
-	void HitAttack(int damage)
-	{
-		m_hp -= damage;
-		m_isInvincible = true;
-		if (m_hp <= 0) { m_hp = 0; }
-		OutputDebugStringA("Hit!\n");
-	}
-	const OBB& GetAttackOBB()
-	{
-		if (m_animationType == KICK)
-		{
-			return m_obbs[36];
-		}
-		else
-		{
-			return m_obbs[26];
-		}
-	}
-	const bool IsDead()
-	{
-		if (m_hp <= 0) { return true; }
-		return false;
-	}
-	const bool IsFighting()
-	{
-		if (m_animationType == STAND) { return false; }
-		return true;
-	}
+	void HitAttack(int damage);
+	OBB& GetAttackOBB();
+	bool IsDead();
+	bool IsFighting();
 };
 
