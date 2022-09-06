@@ -185,7 +185,6 @@
     <ClCompile Include="SourceCodes\3D\Model.cpp" />
     <ClCompile Include="SourceCodes\3D\Object.cpp" />
     <ClCompile Include="SourceCodes\3D\Object3D.cpp" />
-    <ClCompile Include="SourceCodes\3D\Model3DManager.cpp" />
     <ClCompile Include="SourceCodes\3D\PointLight.cpp" />
     <ClCompile Include="SourceCodes\3D\Shape.cpp" />
     <ClCompile Include="SourceCodes\DirectX\Camera.cpp" />
@@ -203,9 +202,12 @@
     <ClCompile Include="SourceCodes\Math\SphereCollider.cpp" />
     <ClCompile Include="SourceCodes\Users\Enemy.cpp" />
     <ClCompile Include="SourceCodes\Users\GameScene.cpp" />
+    <ClCompile Include="SourceCodes\Users\ModelManager.cpp" />
+    <ClCompile Include="SourceCodes\Users\PipelineManager.cpp" />
     <ClCompile Include="SourceCodes\Users\Player.cpp" />
     <ClCompile Include="SourceCodes\Users\Stage.cpp" />
     <ClCompile Include="SourceCodes\Users\StageObject.cpp" />
+    <ClCompile Include="SourceCodes\Users\SpriteManager.cpp" />
     <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp" />
     <ClCompile Include="SourceCodes\XAudio2\Music.cpp" />
   </ItemGroup>
@@ -237,7 +239,6 @@
     <ClInclude Include="SourceCodes\3D\Model.h" />
     <ClInclude Include="SourceCodes\3D\Object.h" />
     <ClInclude Include="SourceCodes\3D\Object3D.h" />
-    <ClInclude Include="SourceCodes\3D\Model3DManager.h" />
     <ClInclude Include="SourceCodes\3D\PointLight.h" />
     <ClInclude Include="SourceCodes\3D\Shape.h" />
     <ClInclude Include="SourceCodes\DirectX\Camera.h" />
@@ -262,9 +263,12 @@
     <ClInclude Include="SourceCodes\Singleton.h" />
     <ClInclude Include="SourceCodes\Users\Enemy.h" />
     <ClInclude Include="SourceCodes\Users\GameScene.h" />
+    <ClInclude Include="SourceCodes\Users\ModelManager.h" />
+    <ClInclude Include="SourceCodes\Users\PipelineManager.h" />
     <ClInclude Include="SourceCodes\Users\Player.h" />
     <ClInclude Include="SourceCodes\Users\Stage.h" />
     <ClInclude Include="SourceCodes\Users\StageObject.h" />
+    <ClInclude Include="SourceCodes\Users\SpriteManager.h" />
     <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h" />
     <ClInclude Include="SourceCodes\XAudio2\Music.h" />
   </ItemGroup>

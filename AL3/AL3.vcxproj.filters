@@ -63,9 +63,6 @@
     <ClCompile Include="SourceCodes\3D\Object3D.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\3D\Model3DManager.cpp">
-      <Filter>SourceCodes\3D</Filter>
-    </ClCompile>
     <ClCompile Include="SourceCodes\3D\Shape.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
@@ -180,6 +177,15 @@
     <ClCompile Include="SourceCodes\Users\StageObject.cpp">
       <Filter>SourceCodes\Users</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\Users\PipelineManager.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\ModelManager.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\SpriteManager.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -210,9 +216,6 @@
       <Filter>SourceCodes\2D</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\3D\Object3D.h">
-      <Filter>SourceCodes\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodes\3D\Model3DManager.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\3D\Shape.h">
@@ -351,6 +354,15 @@
       <Filter>SourceCodes\Users</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\Users\StageObject.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\PipelineManager.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\ModelManager.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\SpriteManager.h">
       <Filter>SourceCodes\Users</Filter>
     </ClInclude>
   </ItemGroup>
