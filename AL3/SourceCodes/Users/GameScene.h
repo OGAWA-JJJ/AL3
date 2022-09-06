@@ -9,6 +9,12 @@
 class GameScene
 {
 private:
+	enum GameSceneType
+	{
+		TITLE, GAME, RESULT
+	};
+
+private:
 	Light* light = nullptr;
 
 private:
@@ -16,6 +22,10 @@ private:
 	std::unique_ptr<Enemy> m_enemy = std::make_unique<Enemy>();
 	std::unique_ptr<Stage> m_stage = std::make_unique<Stage>();
 	std::unique_ptr<StageObject> m_stageObj = std::make_unique<StageObject>();
+
+private:
+	int m_gameSceneType;
+	bool m_sceneChangeTri;
 
 public:
 	GameScene();

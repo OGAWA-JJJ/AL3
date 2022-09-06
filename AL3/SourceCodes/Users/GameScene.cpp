@@ -10,6 +10,9 @@
 
 GameScene::GameScene()
 {
+	m_gameSceneType = TITLE;
+	m_sceneChangeTri = false;
+
 	PipelineManager::Init();
 
 	light = Light::Create();
@@ -53,75 +56,118 @@ void GameScene::Init(ID3D12Resource* texbuff)
 
 void GameScene::Update()
 {
-	DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
-	light->SetShadowLigitEye(DirectX::XMFLOAT3(
-		m_player->GetPos().x,
-		l_shadowCameraPos.y,
-		m_player->GetPos().z));
-	light->SetShadowLigitTarget(m_player->GetPos());
-
-	light->SetLightColor(
-		{
-			ImguiControl::Imgui_lightColor_r,
-			ImguiControl::Imgui_lightColor_g,
-			ImguiControl::Imgui_lightColor_b
-		});
-	light->SetLightDir(
-		{
-			ImguiControl::Imgui_lightDir_x,
-			ImguiControl::Imgui_lightDir_y,
-			ImguiControl::Imgui_lightDir_z,
-		});
-	light->Update();
-
-	//Light情報を更新
-	Object::SetLight(light);
-	FbxObject3D::SetLight(light);
-
-	//敵起動
-	if (Input::isPadTrigger(XINPUT_GAMEPAD_X))
+	if (m_sceneChangeTri)
 	{
-		m_enemy->DiscoverPlayer();
+		if (SpriteManager::IsSceneChangeEnd())
+		{
+			m_gameSceneType = GAME;
+		}
 	}
 
-	m_player->Update(m_enemy->GetPos());
-	m_enemy->Update(m_player->GetPos());
-	m_stage->Update();
+	if (m_gameSceneType == TITLE)
+	{
+		if (Input::isPadTrigger(XINPUT_GAMEPAD_A))
+		{
+			m_sceneChangeTri = true;
+		}
+	}
+	else if (m_gameSceneType == GAME)
+	{
+		DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
+		light->SetShadowLigitEye(DirectX::XMFLOAT3(
+			m_player->GetPos().x,
+			l_shadowCameraPos.y,
+			m_player->GetPos().z));
+		light->SetShadowLigitTarget(m_player->GetPos());
 
-	//死亡判定(SceneChange用)
-	bool isDead = m_player->IsDead();
-	isDead = m_enemy->IsDead();
+		light->SetLightColor(
+			{
+				ImguiControl::Imgui_lightColor_r,
+				ImguiControl::Imgui_lightColor_g,
+				ImguiControl::Imgui_lightColor_b
+			});
+		light->SetLightDir(
+			{
+				ImguiControl::Imgui_lightDir_x,
+				ImguiControl::Imgui_lightDir_y,
+				ImguiControl::Imgui_lightDir_z,
+			});
+		light->Update();
 
-	SpriteManager::Update();
+		//Light情報を更新
+		Object::SetLight(light);
+		FbxObject3D::SetLight(light);
 
-	PlayerUpdate();
-	EnemyUpdate();
+		//敵起動
+		if (Input::isPadTrigger(XINPUT_GAMEPAD_X))
+		{
+			m_enemy->DiscoverPlayer();
+		}
+
+		//ゲーム開始(シーン泉二)
+
+
+		m_player->Update(m_enemy->GetPos());
+		m_enemy->Update(m_player->GetPos());
+		m_stage->Update();
+
+		//死亡判定(SceneChange用)
+		bool isDead = m_player->IsDead();
+		isDead = m_enemy->IsDead();
+
+		SpriteManager::Update();
+
+		PlayerUpdate();
+		EnemyUpdate();
+	}
 }
 
 void GameScene::Draw()
 {
-	m_player->Draw();
-	m_enemy->Draw();
-	m_stage->Draw();
-
-	if (m_enemy->IsFighting())
+	if (m_gameSceneType == TITLE)
 	{
-		SpriteManager::EnemyUIDraw();
+		SpriteManager::TitleDraw(m_sceneChangeTri);
 	}
-	if (m_player->IsDead())
+	else if (m_gameSceneType == GAME)
 	{
-		SpriteManager::DiedDraw();
+		m_player->Draw();
+		m_enemy->Draw();
+		m_stage->Draw();
+		SpriteManager::PlayerUIDraw();
+
+		if (m_enemy->IsFighting())
+		{
+			SpriteManager::EnemyUIDraw();
+		}
+		if (m_player->IsDead())
+		{
+			SpriteManager::DiedDraw();
+		}
 	}
 }
 
 void GameScene::LuminanceDraw()
 {
-	m_player->LuminanceDraw();
+	if (m_gameSceneType == TITLE)
+	{
+
+	}
+	else if (m_gameSceneType == GAME)
+	{
+		m_player->LuminanceDraw();
+	}
 }
 
 void GameScene::ShadowDraw()
 {
-	m_player->ShadowDraw();
+	if (m_gameSceneType == TITLE)
+	{
+
+	}
+	else if (m_gameSceneType == GAME)
+	{
+		m_player->ShadowDraw();
+	}
 }
 
 void GameScene::PlayerUpdate()
