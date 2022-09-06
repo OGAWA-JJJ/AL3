@@ -8,10 +8,10 @@ Stage::Stage()
 	obj_Stage = Object::Create(ModelManager::model_stage);
 	obj_colosseum = Object::Create(ModelManager::model_sponza);
 
-	const float Stage_Scale = 100.0f;
-	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 100.0f, Stage_Scale, Stage_Scale));
+	const float Stage_Scale = 200.0f;
+	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 200.0f, Stage_Scale, Stage_Scale));
 
-	const float colosseumScale = 0.5f;
+	const float colosseumScale = 1.0f;
 	obj_colosseum->SetScale(DirectX::XMFLOAT3(colosseumScale, colosseumScale, colosseumScale));
 }
 
@@ -32,7 +32,7 @@ void Stage::Init(ID3D12Resource* texbuff)
 
 void Stage::Update()
 {
-	obj_Stage->SetColor(DirectX::XMFLOAT4(0.4f, 0.2f, 0.1f, 1.0f));
+	obj_Stage->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	obj_Stage->Update();
 
 	obj_colosseum->Update();

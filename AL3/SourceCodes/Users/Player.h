@@ -26,6 +26,10 @@ public:		//定数
 private:
 	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
 	const int C_ATTACK_COLLISION_ENDTIMER = 30;		//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)
+	const int C_HEAL_TIMER = 90;					//回復し始めるまでのフレーム
+	const int C_ATTACK_SUB_STAMINA = 100;			//減少スタミナ(攻撃)
+	const int C_ROLLING_SUB_STAMINA = 100;			//減少スタミナ(回避)
+	const int C_HEAL_VOL = 10;						//1フレームのスタミナ回復量
 	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
@@ -48,6 +52,7 @@ private:	//変数
 	XMFLOAT3 m_rollingAngle;
 	int m_animationTimer;
 	int m_animationType;
+	int m_healTimer;
 	float m_cameraMoveEase;
 	float m_cameraY;
 	bool m_isTarget;
@@ -84,6 +89,10 @@ private:	//オブジェクト(Draw用)
 	FbxObject3D* fbxobj_dieMiku = nullptr;
 	FbxObject3D* fbxobj_impactMiku = nullptr;
 	FbxObject3D* fbxobj_rollingMiku = nullptr;
+
+	FbxObject3D* fbxobj_dieShadowMiku = nullptr;
+	FbxObject3D* fbxobj_impactShadowMiku = nullptr;
+	FbxObject3D* fbxobj_rollingShadowMiku = nullptr;
 	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;
@@ -112,6 +121,9 @@ public:	//Getter
 	const OBB& GetSwordOBB() { return m_obb; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
 	const int& GetPower() { return m_power; }
+	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
+	const inline float GetMpRate() { return static_cast<float>(m_mp) / static_cast<float>(C_MAX_MP); }
+	const inline float GetStaminaRate() { return static_cast<float>(m_stamina) / static_cast<float>(C_MAX_STAMINA); }
 	const bool IsAttack() { return m_isAttack; }
 	const bool IsInvincible() { return m_isInvincible; }
 

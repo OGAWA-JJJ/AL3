@@ -72,5 +72,5 @@ void ModelManager::Init()
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
-	model_sponza = Model::CreateFromObj("triangle");
+	model_sponza = Model::CreateFromObj("sponza");
 }

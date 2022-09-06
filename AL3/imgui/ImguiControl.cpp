@@ -65,23 +65,23 @@ void ImguiControl::Update()
 	//ImGui::SliderFloat("SWORD_ROT_Y", &Imgui_swordRot_y, 0.0f, 360.0f);
 	//ImGui::SliderFloat("SWORD_ROT_Z", &Imgui_swordRot_z, 0.0f, 360.0f);
 
-	ImGui::Checkbox("CAMERA_TARGET_DRAW(Click or Y Button)", &Imgui_targetDraw);
-	ImGui::Checkbox("ENEMY_MOVE(Click or X Button)", &Imgui_isTargetMove);
-	ImGui::Checkbox("HITSTOP_MODE(LSTICK PUSH->REPLAY)", &Imgui_isHitStopAnimation);
+	//ImGui::Checkbox("CAMERA_TARGET_DRAW(Click or Y Button)", &Imgui_targetDraw);
+	//ImGui::Checkbox("ENEMY_MOVE(Click or X Button)", &Imgui_isTargetMove);
+	//ImGui::Checkbox("HITSTOP_MODE(LSTICK PUSH->REPLAY)", &Imgui_isHitStopAnimation);
 	ImGui::Checkbox("OBB_BOX_DRAW", &Imgui_isOBBDraw);
 	ImGui::Checkbox("PLAYER_DRAW", &Imgui_playerDraw);
 
-	ImGui::SliderFloat("boxPos_x", &boxPos1_x, -100.0f, 100.0f);
-	ImGui::SliderFloat("boxPos_y", &boxPos1_y, -100.0f, 100.0f);
-	ImGui::SliderFloat("boxPos_z", &boxPos1_z, -100.0f, 100.0f);
+	//ImGui::SliderFloat("boxPos_x", &boxPos1_x, -100.0f, 100.0f);
+	//ImGui::SliderFloat("boxPos_y", &boxPos1_y, -100.0f, 100.0f);
+	//ImGui::SliderFloat("boxPos_z", &boxPos1_z, -100.0f, 100.0f);
 
-	ImGui::SliderFloat("boxRot_x", &boxRot1_x, 0.0f, 360.0f);
-	ImGui::SliderFloat("boxRot_y", &boxRot1_y, 0.0f, 360.0f);
-	ImGui::SliderFloat("boxRot_z", &boxRot1_z, 0.0f, 360.0f);
+	//ImGui::SliderFloat("boxRot_x", &boxRot1_x, 0.0f, 360.0f);
+	//ImGui::SliderFloat("boxRot_y", &boxRot1_y, 0.0f, 360.0f);
+	//ImGui::SliderFloat("boxRot_z", &boxRot1_z, 0.0f, 360.0f);
 
-	ImGui::SliderFloat("boxSca_x", &boxSca1_x, 1.0f, 30.0f);
-	ImGui::SliderFloat("boxSca_y", &boxSca1_y, 1.0f, 30.0f);
-	ImGui::SliderFloat("boxSca_z", &boxSca1_z, 1.0f, 30.0f);
+	//ImGui::SliderFloat("boxSca_x", &boxSca1_x, 1.0f, 30.0f);
+	//ImGui::SliderFloat("boxSca_y", &boxSca1_y, 1.0f, 30.0f);
+	//ImGui::SliderFloat("boxSca_z", &boxSca1_z, 1.0f, 30.0f);
 
 	///ImGui::DragFloat("swordPos_x", &swordPos_x, 0.01f);
 	///ImGui::DragFloat("swordPos_y", &swordPos_y, 0.01f);

@@ -116,6 +116,11 @@ void GameScene::Update()
 		isDead = m_enemy->IsDead();
 
 		SpriteManager::Update();
+		SpriteManager::PlayerMpAndStaminaUpdate(
+			m_player->GetMpRate(),
+			m_player->GetStaminaRate(),
+			false
+		);
 
 		PlayerUpdate();
 		EnemyUpdate();
@@ -218,8 +223,8 @@ void GameScene::EnemyUpdate()
 				{
 					m_player->HitAttack(m_enemy->GetPower());
 
-					//‚Ü‚¾‹ó
-					//SpriteManager::PlayerDamaged(m_enemy->GetHpRate());
+					//‚Ü‚¾‹ó©“ü‚ê‚½
+					SpriteManager::PlayerDamaged(m_player->GetHpRate());
 					break;
 				}
 			}
