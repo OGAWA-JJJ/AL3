@@ -32,7 +32,7 @@ void Stage::Init(ID3D12Resource* texbuff)
 
 void Stage::Update()
 {
-	obj_Stage->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	obj_Stage->SetColor(DirectX::XMFLOAT4(0.6f, 0.4f, 0.2f, 1.0f));
 	obj_Stage->Update();
 
 	obj_colosseum->Update();

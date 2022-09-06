@@ -45,6 +45,7 @@ Sprite* SpriteManager::tex_player_stamina_yellow = nullptr;
 Sprite* SpriteManager::tex_player_stamina_back = nullptr;
 
 Sprite* SpriteManager::tex_title = nullptr;
+Sprite* SpriteManager::tex_title_press_a = nullptr;
 
 void SpriteManager::Init()
 {
@@ -75,6 +76,7 @@ void SpriteManager::Init()
 	Sprite::LoadTexture(16, L"Resources/UIs/mp_bar_blue.png");
 	Sprite::LoadTexture(17, L"Resources/UIs/stamina_bar_green.png");
 	Sprite::LoadTexture(18, L"Resources/UIs/title.png");
+	Sprite::LoadTexture(19, L"Resources/UIs/press_a.png");
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -122,11 +124,15 @@ void SpriteManager::Init()
 
 	tex_title = Sprite::Create(18, DirectX::XMFLOAT2(0, 0));
 	tex_title->SetColor(DirectX::XMFLOAT4(0, 0, 0, 1));
+
+	tex_title_press_a = Sprite::Create(19, DirectX::XMFLOAT2(469, 574));
+	//tex_title_press_a->SetColor(DirectX::XMFLOAT4(0, 0, 0, 1));
 }
 
 void SpriteManager::TitleDraw(bool& isSceneChange)
 {
 	//アルファ値変更処理
+	bool l_isAlphaMax = false;
 	if (!isSceneChange)
 	{
 		if (m_texColor.x < 1.0f)
@@ -135,6 +141,7 @@ void SpriteManager::TitleDraw(bool& isSceneChange)
 			m_texColor.y += 0.01f;
 			m_texColor.z += 0.01f;
 		}
+		else { l_isAlphaMax = true; }
 		tex_title->SetColor(m_texColor);
 	}
 	else
@@ -154,6 +161,7 @@ void SpriteManager::TitleDraw(bool& isSceneChange)
 
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_title->Draw();
+	if (l_isAlphaMax) { tex_title_press_a->Draw(); }
 	Sprite::PostDraw();
 }
 

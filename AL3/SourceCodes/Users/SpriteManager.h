@@ -51,6 +51,7 @@ private:
 	static Sprite* tex_player_stamina_back;
 
 	static Sprite* tex_title;
+	static Sprite* tex_title_press_a;
 
 public:
 	static void Init();

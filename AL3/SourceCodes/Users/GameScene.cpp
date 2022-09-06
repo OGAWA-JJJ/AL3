@@ -99,13 +99,12 @@ void GameScene::Update()
 		FbxObject3D::SetLight(light);
 
 		//敵起動
-		if (Input::isPadTrigger(XINPUT_GAMEPAD_X))
+		if (m_moveTimer > 0) { m_moveTimer--; }
+		else
 		{
-			m_enemy->DiscoverPlayer();
+			if (!m_moveTrigger) { m_enemy->DiscoverPlayer(); }
+			m_moveTrigger = true;
 		}
-
-		//ゲーム開始(シーン泉二)
-
 
 		m_player->Update(m_enemy->GetPos());
 		m_enemy->Update(m_player->GetPos());
