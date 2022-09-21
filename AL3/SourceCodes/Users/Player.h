@@ -25,11 +25,12 @@ public:		//定数
 
 private:
 	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
-	const int C_ATTACK_COLLISION_ENDTIMER = 30;		//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)
+	const int C_ATTACK_COLLISION_ENDTIMER = 60;		//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレーム
 	const int C_HEAL_TIMER = 90;					//回復し始めるまでのフレーム
 	const int C_ATTACK_SUB_STAMINA = 100;			//減少スタミナ(攻撃)
 	const int C_ROLLING_SUB_STAMINA = 100;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 10;						//1フレームのスタミナ回復量
+	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
 	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
@@ -53,12 +54,15 @@ private:	//変数
 	int m_animationTimer;
 	int m_animationType;
 	int m_healTimer;
+	int m_padState;
+	int m_padRetentionTimer;
 	float m_cameraMoveEase;
 	float m_cameraY;
 	bool m_isTarget;
 	bool m_isEase;
 	bool m_isAttack;
 	bool m_isInvincible;
+	bool m_isAccept;
 
 private:	//変数(ステータス関係)
 	int m_hp;

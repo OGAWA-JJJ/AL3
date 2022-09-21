@@ -12,18 +12,6 @@ public:
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
 
-	static float boxPos1_x;
-	static float boxPos1_y;
-	static float boxPos1_z;
-
-	static float boxRot1_x;
-	static float boxRot1_y;
-	static float boxRot1_z;
-
-	static float boxSca1_x;
-	static float boxSca1_y;
-	static float boxSca1_z;
-
 	///static float swordPos_x;
 	///static float swordPos_y;
 	///static float swordPos_z;
@@ -35,9 +23,7 @@ public:
 	//static float Imgui_swordRot_y;
 	//static float Imgui_swordRot_z;
 	static bool Imgui_targetDraw;
-	static bool Imgui_isTargetMove;
 	static bool Imgui_isOBBDraw;
-	static bool Imgui_isHitStopAnimation;
 	static bool Imgui_playerDraw;
 
 public:

@@ -163,6 +163,7 @@ public:
 	const FbxTime& GetStartTime() { return startTime; }	//アニメーションの開始時間の取得
 	const FbxTime& GetEndTime() { return endTime; }		//アニメーションの終了時間の取得
 	const FbxTime& GetNowTime() { return currentTime; }	//現在のアニメーションの時間の取得
+	const FbxTime& GetFrameTime() { return frameTime; }	//1フレームで加算される時間の取得
 	void SetStartTime(FbxTime& startTime) { this->startTime = startTime; }
 	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
 	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }

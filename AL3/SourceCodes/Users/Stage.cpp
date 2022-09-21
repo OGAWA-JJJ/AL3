@@ -26,13 +26,13 @@ void Stage::Init(ID3D12Resource* texbuff)
 
 	obj_Stage->SetPosition(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	obj_Stage->SetRotation(DirectX::XMFLOAT3(0, 90, 0));
+	obj_Stage->SetColor(DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f));
 
 	obj_colosseum->SetRotation(DirectX::XMFLOAT3(0.0f, 90.0f, 0.0f));
 }
 
 void Stage::Update()
 {
-	obj_Stage->SetColor(DirectX::XMFLOAT4(0.6f, 0.4f, 0.2f, 1.0f));
 	obj_Stage->Update();
 
 	obj_colosseum->Update();

@@ -2,25 +2,13 @@
 #include "imgui.h"
 
 float ImguiControl::Imgui_fov = 60.0f;
-float ImguiControl::Imgui_far_z = 2000.0f;
+float ImguiControl::Imgui_far_z = 3000.0f;
 float ImguiControl::Imgui_lightColor_r = 0.6f;
 float ImguiControl::Imgui_lightColor_g = 0.6f;
 float ImguiControl::Imgui_lightColor_b = 0.6f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
-
-float ImguiControl::boxPos1_x = 50.0f;
-float ImguiControl::boxPos1_y = 25.0f;
-float ImguiControl::boxPos1_z = 0.0f;
-
-float ImguiControl::boxRot1_x = -50.0f;
-float ImguiControl::boxRot1_y = 25.0f;
-float ImguiControl::boxRot1_z = 0.0f;
-
-float ImguiControl::boxSca1_x = 10.0f;
-float ImguiControl::boxSca1_y = 20.0f;
-float ImguiControl::boxSca1_z = 10.0f;
 
 //float ImguiControl::swordPos_x = 0.0f;
 //float ImguiControl::swordPos_y = 6.0f;
@@ -37,9 +25,7 @@ float ImguiControl::boxSca1_z = 10.0f;
 //float ImguiControl::Imgui_swordRot_z = 310.0f;
 
 bool ImguiControl::Imgui_targetDraw = false;
-bool ImguiControl::Imgui_isTargetMove = true;
 bool ImguiControl::Imgui_isOBBDraw = true;
-bool ImguiControl::Imgui_isHitStopAnimation = false;
 bool ImguiControl::Imgui_playerDraw = true;
 
 void ImguiControl::Update()

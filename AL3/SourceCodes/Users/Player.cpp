@@ -17,11 +17,14 @@ Player::Player()
 	m_animationType = STAND;
 	m_animationTimer = 0;
 	m_healTimer = 0;
+	m_padState = 0;
+	m_padRetentionTimer = 0;
 	m_cameraMoveEase = 0.0f;
 	m_cameraY = 0.0f;
 	m_isTarget = false;
 	m_isEase = false;
 	m_isAttack = false;
+	m_isAccept = true;
 
 	m_hp = C_MAX_HP;
 	m_mp = C_MAX_MP;
@@ -808,6 +811,15 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	OtherUpdate();
 	CalcOBB();
 
+	if (m_isAttack)
+	{
+		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+	else
+	{
+		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+
 	if (Input::isPadTrigger(XINPUT_GAMEPAD_LEFT_THUMB))
 	{
 		fbxobj_OneSwordAttack->ResetAnimation();
@@ -943,15 +955,40 @@ void Player::ShadowDraw()
 
 void Player::Input()
 {
-	//Hit確認用
+	//先行入力削除
+	if (m_padRetentionTimer < C_MAX_PAD_RETENTION)
+	{
+		m_padRetentionTimer++;
+	}
+	else
+	{
+		m_padState = 0;
+	}
+
+	//先行入力
+	if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_SHOULDER))
+	{
+		m_padRetentionTimer = 0;
+		m_padState = XINPUT_GAMEPAD_RIGHT_SHOULDER;
+	}
+	else if (Input::isPadTrigger(XINPUT_GAMEPAD_B))
+	{
+		m_padRetentionTimer = 0;
+		m_padState = XINPUT_GAMEPAD_B;
+	}
+
+	//攻撃
 	if (m_stamina >= C_ATTACK_SUB_STAMINA)
 	{
-		if (Input::isPadTrigger(XINPUT_GAMEPAD_RIGHT_SHOULDER))
+		if (m_padState == XINPUT_GAMEPAD_RIGHT_SHOULDER)
 		{
 			if (m_animationType != ATTACK &&
 				m_animationType != DAMAGED &&
 				m_animationType != ROLLING)
 			{
+				m_isAccept = false;
+				m_padState = 0;
+
 				m_healTimer = C_HEAL_TIMER;
 				m_stamina -= C_ATTACK_SUB_STAMINA;
 
@@ -973,15 +1010,20 @@ void Player::Input()
 		}
 	}
 
-	//回避用
+	//回避
 	if (m_stamina >= C_ROLLING_SUB_STAMINA && !m_isTarget)
 	{
-		if (Input::isPadTrigger(XINPUT_GAMEPAD_B))
+		if (m_padState == XINPUT_GAMEPAD_B)
 		{
-			if (m_animationType != ATTACK &&
+			if (m_isAccept &&
 				m_animationType != DAMAGED &&
 				m_animationType != ROLLING)
 			{
+				fbxobj_OneSwordAttack->ResetAnimation();
+				fbxobj_OneSwordAttackShadow->ResetAnimation();
+
+				m_padState = 0;
+
 				m_healTimer = C_HEAL_TIMER;
 				m_stamina -= C_ROLLING_SUB_STAMINA;
 
@@ -990,12 +1032,28 @@ void Player::Input()
 				m_isInvincible = true;
 
 				//向きの計算
-				XMFLOAT3 l_deg = fbxobj_StandMiku->GetRotation();
-				OgaJHelper::ConvertToRadian(l_deg.y);
-				float l_radX = sinf(l_deg.y);
-				float l_radZ = cosf(l_deg.y);
+				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+				{
+					XMFLOAT3 l_deg = { 0,0,0 };
+					l_deg.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+					l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+					l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
 
-				m_rollingAngle = { l_radX,0,l_radZ };
+					m_rollingAngle = { -l_deg.x,0,-l_deg.z };
+					float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
+					fbxobj_rollingMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+					fbxobj_rollingShadowMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+				}
+				else
+				{
+					XMFLOAT3 l_deg = fbxobj_StandMiku->GetRotation();
+					OgaJHelper::ConvertToRadian(l_deg.y);
+					float l_radX = sinf(l_deg.y);
+					float l_radZ = cosf(l_deg.y);
+
+					m_rollingAngle = { l_radX,0,l_radZ };
+				}
 			}
 		}
 	}
@@ -1063,24 +1121,8 @@ void Player::CalcOBB()
 		ModelManager::model_sword->GetModelSize().z / 2.0f
 	));
 
-	obj_HitBox->SetScale(DirectX::XMFLOAT3(
-		ImguiControl::boxSca1_x,
-		ImguiControl::boxSca1_y,
-		ImguiControl::boxSca1_z
-	));
-	obj_HitBox->SetPosition(DirectX::XMFLOAT3(
-		ImguiControl::boxPos1_x,
-		ImguiControl::boxPos1_y,
-		ImguiControl::boxPos1_z
-	));
-	obj_HitBox->SetRotation(DirectX::XMFLOAT3(
-		ImguiControl::boxRot1_x,
-		ImguiControl::boxRot1_y,
-		ImguiControl::boxRot1_z
-	));
-
 	obj_SwordBox->Update();
-	obj_HitBox->Update();
+	//obj_HitBox->Update();
 
 	OBB swordOBB;
 	//攻撃時の当たり判定(OBB)←計算してるだけ
@@ -1180,6 +1222,18 @@ void Player::OtherUpdate()
 
 		obj_Sword->MultiMatrix(fbxobj_OneSwordAttack->GetMatrix());
 		obj_ShadowSword->MultiMatrix(fbxobj_OneSwordAttack->GetMatrix());
+
+		//攻撃アニメーション中断ローリング
+		if (!m_isAccept)
+		{
+			if (fbxobj_OneSwordAttack->GetNowTime() >=
+				fbxobj_OneSwordAttack->GetFrameTime() * C_ATTACK_COLLISION_ENDTIMER)
+			{
+				m_isAttack = false;
+				m_isAccept = true;
+			}
+		}
+
 		if (fbxobj_OneSwordAttack->GetNowTime() == fbxobj_OneSwordAttack->GetEndTime())
 		{
 			m_animationType = STAND;
@@ -1278,6 +1332,7 @@ void Player::HitAttack(int damage)
 {
 	m_hp -= damage;
 	m_isInvincible = true;
+	m_isAccept = true;
 	m_animationType = DAMAGED;
 	fbxobj_OneSwordAttack->ResetAnimation();
 	fbxobj_OneSwordAttackShadow->ResetAnimation();
