@@ -6,7 +6,6 @@
 const std::string Model::baseDirectory = "Resources/";
 ID3D12Device* Model::device = nullptr;
 UINT Model::descriptorHandleIncrementSize = 0;
-//ID3D12DescriptorHeap* Model::descHeap;
 
 Model::Model()
 {

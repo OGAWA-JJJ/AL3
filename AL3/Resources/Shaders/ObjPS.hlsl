@@ -33,7 +33,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //return float4(0, 0, 0, 1);
     //シェーディングによる色で描画
     //return texcolor;
-    return shadecolor * texcolor * color;
+    return shadecolor * texcolor;
 }
 
 float4 PSShadowMain(PSOutput input) : SV_TARGET
@@ -64,7 +64,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
 
     texcolor.xyz *= shadowMap.xyz;
     
-    return texcolor * color;
+    return texcolor;
 }
 
 float4 PSBlack() : SV_TARGET

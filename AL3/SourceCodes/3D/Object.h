@@ -35,8 +35,6 @@ public:
 		DirectX::XMMATRIX viewproj;		//ビュープロジェクション行列
 		DirectX::XMMATRIX world;		//ワールド行列
 		DirectX::XMFLOAT3 cameraPos;	//カメラ座標（ワールド座標）
-		float pad;
-		DirectX::XMFLOAT4 color;
 	};
 
 private:

@@ -131,8 +131,6 @@ protected:
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
 	//ボーン全部の回転行列
 	std::vector<DirectX::XMMATRIX> matRots;
-	//回転行列
-	DirectX::XMMATRIX m_matRot = DirectX::XMMatrixIdentity();
 
 public:
 	//初期化
@@ -165,7 +163,6 @@ public:
 	const FbxTime& GetStartTime() { return startTime; }	//アニメーションの開始時間の取得
 	const FbxTime& GetEndTime() { return endTime; }		//アニメーションの終了時間の取得
 	const FbxTime& GetNowTime() { return currentTime; }	//現在のアニメーションの時間の取得
-	const FbxTime& GetFrameTime() { return frameTime; }	//1フレームで加算される時間の取得
 	void SetStartTime(FbxTime& startTime) { this->startTime = startTime; }
 	void SetEndTime(FbxTime& endTime) { this->endTime = endTime; }
 	void SetNowTime(FbxTime& currentTime) { this->currentTime = currentTime; }
@@ -173,6 +170,5 @@ public:
 	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>& GetAffineTrans() { return affineTrans; }	//ボーンの名前とワールド行列
 	XMMATRIX GetMatrix() { return matrix; }	//手固定
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }	//ボーンの回転行列
-	const XMMATRIX& GetMatRot() { return m_matRot; }
 };
 

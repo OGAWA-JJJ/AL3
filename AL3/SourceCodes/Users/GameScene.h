@@ -1,34 +1,35 @@
 #pragma once
 #include "../2D/Sprite.h"
+#include "../3D/Object.h"
+#include "../3D/Model.h"
+#include "../3D/Shape.h"
 #include "../XAudio2/Music.h"
-#include "Player.h"
-#include "Enemy.h"
-#include "Stage.h"
-#include "StageObject.h"
+//#include "../3D/FbxObject3D.h"
+#include "../3D/FbxObjects.h"
 
 class GameScene
 {
 private:
-	enum GameSceneType
-	{
-		TITLE, GAME, RESULT
-	};
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using XMFLOAT2 = DirectX::XMFLOAT2;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMMATRIX = DirectX::XMMATRIX;
 
-private:
+	//MT4
+	float accY = 0.0f;
+	float dist = 0.0f;
+	float posY = 0.0f;
+	float velY = 0.0f;
+
+	Sprite* GH1 = nullptr;
+
 	Light* light = nullptr;
 
-private:
-	std::unique_ptr<Player> m_player = std::make_unique<Player>();
-	std::unique_ptr<Enemy> m_enemy = std::make_unique<Enemy>();
-	std::unique_ptr<Stage> m_stage = std::make_unique<Stage>();
-	std::unique_ptr<StageObject> m_stageObj = std::make_unique<StageObject>();
+	FbxModels* l_model0 = nullptr;
+	FbxObjects* l_obj0 = nullptr;
 
-private:
-	int m_gameSceneType;
-	bool m_sceneChangeTri;
-
-	int m_moveTimer = 120;
-	bool m_moveTrigger = false;
+	FbxObjects::FbxPipelineSet l_normal = {};
 
 public:
 	GameScene();
@@ -38,8 +39,4 @@ public:
 	void Draw();
 	void LuminanceDraw();	//ãPìxíäèoóp
 	void ShadowDraw();		//âeï`âÊóp
-
-private:
-	void PlayerUpdate();
-	void EnemyUpdate();
 };

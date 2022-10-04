@@ -2,7 +2,7 @@
 #include <cmath>
 #include <DirectXMath.h>
 
-static inline const DirectX::XMFLOAT3 operator +(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
+static const DirectX::XMFLOAT3 operator +(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
 {
 	DirectX::XMFLOAT3 result;
 	result.x = v1.x + v2.x;
@@ -11,7 +11,7 @@ static inline const DirectX::XMFLOAT3 operator +(const DirectX::XMFLOAT3 v1, con
 	return result;
 }
 
-static inline const DirectX::XMFLOAT3 operator -(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
+static const DirectX::XMFLOAT3 operator -(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
 {
 	DirectX::XMFLOAT3 result;
 	result.x = v1.x - v2.x;
@@ -20,7 +20,7 @@ static inline const DirectX::XMFLOAT3 operator -(const DirectX::XMFLOAT3 v1, con
 	return result;
 }
 
-static inline const DirectX::XMFLOAT3 operator *(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
+static const DirectX::XMFLOAT3 operator *(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
 {
 	DirectX::XMFLOAT3 result;
 	result.x = v1.x * v2.x;
@@ -29,7 +29,7 @@ static inline const DirectX::XMFLOAT3 operator *(const DirectX::XMFLOAT3 v1, con
 	return result;
 }
 
-static inline const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
+static const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, const DirectX::XMFLOAT3 v2)
 {
 	DirectX::XMFLOAT3 result;
 	result.x = v1.x / v2.x;
@@ -38,7 +38,7 @@ static inline const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, con
 	return result;
 }
 
-static inline const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, float s)
+static const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, float s)
 {
 	DirectX::XMFLOAT3 result;
 	result.x = v1.x / s;
@@ -49,15 +49,16 @@ static inline const DirectX::XMFLOAT3 operator /(const DirectX::XMFLOAT3 v1, flo
 
 namespace OgaJEase {
 
-constexpr float PI = 3.14159265359f;
+float PI = 3.14159265359f;
+using XMFLOAT3 = DirectX::XMFLOAT3;
 
 /*-----Sine-----*/
 
-inline float easeInSine(const float& t) {
+float easeInSine(float t) {
 	return 1 - cosf((t * PI) / 2);
 }
 
-inline DirectX::XMFLOAT3 easeInSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -68,11 +69,11 @@ inline DirectX::XMFLOAT3 easeInSineXMFLOAT3(const DirectX::XMFLOAT3& start, cons
 	return num;
 }
 
-inline float easeOutSine(const float& t) {
+float easeOutSine(float t) {
 	return sinf((t * PI) / 2);
 }
 
-inline DirectX::XMFLOAT3 easeOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -83,11 +84,11 @@ inline DirectX::XMFLOAT3 easeOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, con
 	return num;
 }
 
-inline float easeInOutSine(const float& t) {
+float easeInOutSine(float t) {
 	return -(cosf(PI * t) - 1) / 2;
 }
 
-inline DirectX::XMFLOAT3 easeInOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -100,11 +101,11 @@ inline DirectX::XMFLOAT3 easeInOutSineXMFLOAT3(const DirectX::XMFLOAT3& start, c
 
 /*-----Quad-----*/
 
-inline float easeInQuad(const float& t) {
+float easeInQuad(float t) {
 	return t * t;
 }
 
-inline DirectX::XMFLOAT3 easeInQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -115,11 +116,11 @@ inline DirectX::XMFLOAT3 easeInQuadXMFLOAT3(const DirectX::XMFLOAT3& start, cons
 	return num;
 }
 
-inline float easeOutQuad(const float& t) {
+float easeOutQuad(float t) {
 	return 1 - (1 - t) * (1 - t);
 }
 
-inline DirectX::XMFLOAT3 easeOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -130,11 +131,11 @@ inline DirectX::XMFLOAT3 easeOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, con
 	return num;
 }
 
-inline float easeInOutQuad(const float& t) {
+float easeInOutQuad(float t) {
 	return t < 0.5 ? 2 * t * t : 1 - powf(-2 * t + 2, 2) / 2;
 }
 
-inline DirectX::XMFLOAT3 easeInOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -147,11 +148,11 @@ inline DirectX::XMFLOAT3 easeInOutQuadXMFLOAT3(const DirectX::XMFLOAT3& start, c
 
 /*-----Cubic-----*/
 
-inline float easeInCubic(const float& t) {
+float easeInCubic(float t) {
 	return t * t * t;
 }
 
-inline DirectX::XMFLOAT3 easeInCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -162,11 +163,11 @@ inline DirectX::XMFLOAT3 easeInCubicXMFLOAT3(const DirectX::XMFLOAT3& start, con
 	return num;
 }
 
-inline float easeOutCubic(const float& t) {
+float easeOutCubic(float t) {
 	return 1 - powf(1 - t, 3);
 }
 
-inline DirectX::XMFLOAT3 easeOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -177,11 +178,11 @@ inline DirectX::XMFLOAT3 easeOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, co
 	return num;
 }
 
-inline float easeInOutCubic(const float& t) {
+float easeInOutCubic(float t) {
 	return t < 0.5 ? 4 * t * t * t : 1 - powf(-2 * t + 2, 3) / 2;
 }
 
-inline DirectX::XMFLOAT3 easeInOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -194,11 +195,11 @@ inline DirectX::XMFLOAT3 easeInOutCubicXMFLOAT3(const DirectX::XMFLOAT3& start, 
 
 /*-----Quart-----*/
 
-inline float easeInQuart(const float& t) {
+float easeInQuart(float t) {
 	return t * t * t * t;
 }
 
-inline DirectX::XMFLOAT3 easeInQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -209,11 +210,11 @@ inline DirectX::XMFLOAT3 easeInQuartXMFLOAT3(const DirectX::XMFLOAT3& start, con
 	return num;
 }
 
-inline float easeOutQuart(const float& t) {
+float easeOutQuart(float t) {
 	return 1 - powf(1 - t, 4);
 }
 
-inline DirectX::XMFLOAT3 easeOutQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeOutQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;
@@ -224,11 +225,11 @@ inline DirectX::XMFLOAT3 easeOutQuartXMFLOAT3(const DirectX::XMFLOAT3& start, co
 	return num;
 }
 
-inline float easeInOutQuart(const float& t) {
+float easeInOutQuart(float t) {
 	return t < 0.5 ? 8 * t * t * t * t : 1 - powf(-2 * t + 2, 4) / 2;
 }
 
-inline DirectX::XMFLOAT3 easeInOutQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
+DirectX::XMFLOAT3 easeInOutQuartXMFLOAT3(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, const float& t)
 {
 	DirectX::XMFLOAT3 num;
 	DirectX::XMFLOAT3 sub = end - start;

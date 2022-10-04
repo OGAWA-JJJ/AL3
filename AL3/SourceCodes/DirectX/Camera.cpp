@@ -4,7 +4,7 @@
 DirectX::XMMATRIX Camera::matView;
 DirectX::XMMATRIX Camera::matPerspective;
 DirectX::XMFLOAT3 Camera::eye = { 0,20,-50.0f };
-DirectX::XMFLOAT3 Camera::target = { 0,0,0 };
+DirectX::XMFLOAT3 Camera::target = { 0,5,0 };
 DirectX::XMFLOAT3 Camera::up = { 0,1,0 };
 float Camera::fov = 60.0f;
 

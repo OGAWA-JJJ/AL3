@@ -1,19 +1,21 @@
 #include "GameScene.h"
-#include "../DirectX/Camera.h"
+//#include "../3D/FbxLoader.h"
+//#include "../3D/FbxObject3D.h"
 #include "../../imgui/ImguiControl.h"
-#include "../DirectX/DirectXImportant.h"
-#include "PipelineManager.h"
 #include "../Math/OgaJHelper.h"
-#include "../Math/OBBCollision.h"
-#include "SpriteManager.h"
 #include "../Input/Input.h"
+#include "../DirectX/Camera.h"
+#include "../Math/OBBCollision.h"
 
 GameScene::GameScene()
 {
-	m_gameSceneType = TITLE;
-	m_sceneChangeTri = false;
+	//Sprite::LoadTexture(0, L"Resources/ss.png");
+	Sprite::LoadTexture(0, L"Resources/hamurabyss.png");
+	GH1 = Sprite::Create(0, DirectX::XMFLOAT2(0, 0));
+	//GH1->SetSize(DirectX::XMFLOAT2(128 * 2.0, 72 * 2.0));
+	GH1->SetSize(DirectX::XMFLOAT2(64, 64));
 
-	PipelineManager::Init();
+	posY = 64.0f;
 
 	light = Light::Create();
 	light->SetLightColor(
@@ -29,208 +31,76 @@ GameScene::GameScene()
 			ImguiControl::Imgui_lightDir_z,
 		});
 
-	Object::SetLight(light);
+	FbxObjects::FbxInitData initData;
+	initData.m_vsEntryPoint = "PSmain";
+	initData.m_vsEntryPoint = "VSmain";
+	l_normal = FbxObjects::CreateGraphicsPipeline(initData);
+
+	//名前分かりにくい
+	l_model0 = FbxModels::CreateFromFbx("StandMiku");
+	l_obj0 = FbxObjects::Create(l_model0);
+
+	l_obj0->SetScale(XMFLOAT3(2.5, 2.5, 2.5));
 }
 
 GameScene::~GameScene()
 {
+	delete GH1;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
 {
-	m_player->Init();
-	m_enemy->Init();
-	m_stage->Init(texbuff);
-
-	//Camera
-	DirectX::XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(m_enemy->GetPos(), m_player->GetPos());
-	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-
-	Camera::SetEye(DirectX::XMFLOAT3(
-		m_player->GetPos().x + enemyToPlayer.x * m_player->C_MAX_DISTANCE,
-		50.0f,
-		m_player->GetPos().z + enemyToPlayer.z * m_player->C_MAX_DISTANCE));
-
-	DirectX::XMFLOAT3 hoge = Camera::GetEye();
 }
 
 void GameScene::Update()
 {
-	if (m_sceneChangeTri)
-	{
-		if (SpriteManager::IsSceneChangeEnd())
+	//MT4
+	dist = 360.0f - posY;
+	const float m = 0.1f;
+	accY = 0.2f;
+	accY += dist * 0.01f / m;
+	velY += accY;
+	velY -= velY * 0.1f;
+	posY += velY;
+	GH1->SetPosition(XMFLOAT2(0, posY));
+
+	if (Input::isKeyTrigger(DIK_R)) { posY = 0.0f; }
+
+	light->SetLightColor(
 		{
-			m_gameSceneType = GAME;
-		}
-	}
-
-	if (m_gameSceneType == TITLE)
-	{
-		if (Input::isPadTrigger(XINPUT_GAMEPAD_A))
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
 		{
-			m_sceneChangeTri = true;
-		}
-	}
-	else if (m_gameSceneType == GAME)
-	{
-		DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
-		light->SetShadowLigitEye(DirectX::XMFLOAT3(
-			m_player->GetPos().x,
-			l_shadowCameraPos.y,
-			m_player->GetPos().z));
-		light->SetShadowLigitTarget(m_player->GetPos());
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
+	light->Update();
+	FbxObjects::SetLight(light);
 
-		light->SetLightColor(
-			{
-				ImguiControl::Imgui_lightColor_r,
-				ImguiControl::Imgui_lightColor_g,
-				ImguiControl::Imgui_lightColor_b
-			});
-		light->SetLightDir(
-			{
-				ImguiControl::Imgui_lightDir_x,
-				ImguiControl::Imgui_lightDir_y,
-				ImguiControl::Imgui_lightDir_z,
-			});
-		light->Update();
-
-		//Light情報を更新
-		Object::SetLight(light);
-		FbxObject3D::SetLight(light);
-
-		//敵起動
-		if (m_moveTimer > 0) { m_moveTimer--; }
-		else
-		{
-			if (!m_moveTrigger) { m_enemy->DiscoverPlayer(); }
-			m_moveTrigger = true;
-		}
-
-		m_player->Update(m_enemy->GetPos());
-		m_enemy->Update(m_player->GetPos());
-		m_stage->Update();
-
-		//死亡判定(SceneChange用)
-		bool isDead = m_player->IsDead();
-		isDead = m_enemy->IsDead();
-
-		SpriteManager::Update();
-		SpriteManager::PlayerMpAndStaminaUpdate(
-			m_player->GetMpRate(),
-			m_player->GetStaminaRate(),
-			false
-		);
-
-		PlayerUpdate();
-		EnemyUpdate();
-	}
+	XMFLOAT3 rot = l_obj0->GetRotation();
+	rot.y += 0.5f;
+	l_obj0->SetRotation(rot);
+	l_obj0->Update();
 }
 
 void GameScene::Draw()
 {
-	if (m_gameSceneType == TITLE)
-	{
-		SpriteManager::TitleDraw(m_sceneChangeTri);
-	}
-	else if (m_gameSceneType == GAME)
-	{
-		m_player->Draw();
-		m_enemy->Draw();
-		m_stage->Draw();
-		SpriteManager::PlayerUIDraw();
+	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	//if (isHit) { GH1->Draw(); }
+	GH1->Draw();
+	Sprite::PostDraw();
 
-		if (m_enemy->IsFighting())
-		{
-			SpriteManager::EnemyUIDraw();
-		}
-		if (m_player->IsDead())
-		{
-			SpriteManager::DiedDraw();
-		}
-	}
+	l_obj0->Draw(l_normal);
 }
 
 void GameScene::LuminanceDraw()
 {
-	if (m_gameSceneType == TITLE)
-	{
-
-	}
-	else if (m_gameSceneType == GAME)
-	{
-		m_player->LuminanceDraw();
-	}
 }
 
 void GameScene::ShadowDraw()
 {
-	if (m_gameSceneType == TITLE)
-	{
-
-	}
-	else if (m_gameSceneType == GAME)
-	{
-		m_player->ShadowDraw();
-	}
-}
-
-void GameScene::PlayerUpdate()
-{
-	//プレイヤーの攻撃時判定
-	if (m_player->IsAttack())
-	{
-		//敵が無敵じゃなかったら判定
-		if (!m_enemy->IsInvincible())
-		{
-			std::vector<OBB> l_obbs = m_enemy->GetOBBs();
-			OBB l_obb = m_player->GetSwordOBB();
-
-			//全ボーンと計算(変えたい)→メッシュだと部位特定だるそう
-			for (int i = 0; i < m_enemy->GetBoneCount(); i++)
-			{
-				bool l_isHit = OBBCollision::CollisionOBBs(l_obb, l_obbs[i]);
-				if (l_isHit)
-				{
-					m_enemy->HitAttack(m_player->GetPower());
-					SpriteManager::EnemyDamaged(m_enemy->GetHpRate());
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		//多重ヒット回避
-		m_enemy->UnInvincible();
-	}
-}
-
-void GameScene::EnemyUpdate()
-{
-	//敵の攻撃時判定
-	if (m_enemy->IsAttack() && m_enemy->GetIsCalc())
-	{
-		if (!m_player->IsInvincible())
-		{
-			OBB l_obb = m_enemy->GetAttackOBB();
-			std::vector<OBB> l_obbs = m_player->GetOBBs();
-
-			for (int i = 0; i < l_obbs.size(); i++)
-			{
-				bool l_isHit = OBBCollision::CollisionOBBs(l_obb, l_obbs[i]);
-				if (l_isHit)
-				{
-					m_player->HitAttack(m_enemy->GetPower());
-
-					//まだ空←入れた
-					SpriteManager::PlayerDamaged(m_player->GetHpRate());
-					break;
-				}
-			}
-		}
-	}
-	else if (!m_enemy->IsAttack())
-	{
-		m_player->UnInvincible();
-	}
 }
