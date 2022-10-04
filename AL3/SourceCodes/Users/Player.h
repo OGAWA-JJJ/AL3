@@ -51,6 +51,7 @@ private:	//ïœêî
 	XMFLOAT3 m_pos;
 	XMFLOAT3 m_cameraAngle;
 	XMFLOAT3 m_rollingAngle;
+	XMFLOAT3 m_cameraToPlayer;
 	int m_animationTimer;
 	int m_animationType;
 	int m_healTimer;

@@ -14,6 +14,7 @@ Player::Player()
 	m_pos = { 0,0,0 };
 	m_cameraAngle = { 0,0,0 };
 	m_rollingAngle = { 0,0,0 };
+	m_cameraToPlayer = { 0,0,0 };
 	m_animationType = STAND;
 	m_animationTimer = 0;
 	m_healTimer = 0;
@@ -287,36 +288,36 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		XMFLOAT3 cameraPos = Camera::GetEye();
 		XMFLOAT3 targetPos = Camera::GetTarget();
 		XMFLOAT3 enemyToPlayer = {};
-		XMFLOAT3 cameraToPlayer = {};
+		m_cameraToPlayer = {};
 
 		if (m_animationType == STAND)
 		{
 			enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_StandMiku->GetPosition());
-			cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_StandMiku->GetPosition());
+			m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_StandMiku->GetPosition());
 		}
 		else if (m_animationType == SLOWRUN)
 		{
 			enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_SlowRunMiku->GetPosition());
-			cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_SlowRunMiku->GetPosition());
+			m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_SlowRunMiku->GetPosition());
 		}
 		else if (m_animationType == RUN)
 		{
 			enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_FastRunMiku->GetPosition());
-			cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_FastRunMiku->GetPosition());
+			m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_FastRunMiku->GetPosition());
 		}
 		else if (m_animationType == ATTACK)
 		{
 			enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_OneSwordAttack->GetPosition());
-			cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_OneSwordAttack->GetPosition());
+			m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_OneSwordAttack->GetPosition());
 		}
 		else if (m_animationType == ROLLING)
 		{
 			enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_rollingMiku->GetPosition());
-			cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_rollingMiku->GetPosition());
+			m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_rollingMiku->GetPosition());
 		}
 
 		enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-		cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
+		m_cameraToPlayer = OgaJHelper::CalcNormalizeVec3(m_cameraToPlayer);
 
 		//ターゲット非固定時処理
 		if (!m_isTarget)
@@ -348,27 +349,27 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 							vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 							vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-							m_pos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
-							m_pos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+							m_pos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
+							m_pos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
 
-							float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+							float rad = atan2(m_cameraToPlayer.x, m_cameraToPlayer.z);
 							rad += DirectX::XM_PI / 2;
 							m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
 							m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
 
-							cameraPos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
-							cameraPos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+							cameraPos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
+							cameraPos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
 							cameraPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
 							cameraPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
 
-							targetPos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
-							targetPos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+							targetPos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
+							targetPos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
 							targetPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
 							targetPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
 
 							float deg = atan2(vec.x, vec.z);
 							OgaJHelper::ConvertToDegree(deg);
-							float cameraRad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+							float cameraRad = atan2(m_cameraToPlayer.x, m_cameraToPlayer.z);
 							OgaJHelper::ConvertToDegree(cameraRad);
 
 							Camera::SetEye(cameraPos);
@@ -653,10 +654,10 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 						vec.x += Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 						vec.z += Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-						m_pos.x += vec.z * cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						m_pos.z += vec.z * cameraToPlayer.z * C_MAX_MOVE_SPEED;
+						m_pos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
+						m_pos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
 
-						float rad = atan2(cameraToPlayer.x, cameraToPlayer.z);
+						float rad = atan2(m_cameraToPlayer.x, m_cameraToPlayer.z);
 						rad += DirectX::XM_PI / 2;
 						m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
 						m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
@@ -762,7 +763,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			//向き
 			float pRadian = atan2(cosf(fbxobj_StandMiku->GetRotation().z), sinf(fbxobj_StandMiku->GetRotation().x));
 			OgaJHelper::ConvertToDegree(pRadian);
-			float cRadian = atan2(cameraToPlayer.z, cameraToPlayer.x);
+			float cRadian = atan2(m_cameraToPlayer.z, m_cameraToPlayer.x);
 			OgaJHelper::ConvertToDegree(cRadian);
 			float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
 			float diff = 0;
@@ -1040,7 +1041,10 @@ void Player::Input()
 					l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 					l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
 
-					m_rollingAngle = { -l_deg.x,0,-l_deg.z };
+					DirectX::XMVECTOR l_matRotVec = DirectX::XMLoadFloat3(&l_deg);
+					l_matRotVec = DirectX::XMVector3Transform(l_matRotVec, Camera::BillboardYMatrix());
+
+					m_rollingAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
 					float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
 					fbxobj_rollingMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
 					fbxobj_rollingShadowMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
@@ -1249,6 +1253,7 @@ void Player::OtherUpdate()
 	else if (m_animationType == DAMAGED)
 	{
 		//fbxobj_impactMiku->SetPosition(m_pos);
+		if (m_isAttack) { m_isAttack = false; }
 		fbxobj_impactMiku->Update();
 		fbxobj_impactShadowMiku->Update(true);
 

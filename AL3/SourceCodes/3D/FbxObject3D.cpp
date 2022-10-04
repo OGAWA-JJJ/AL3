@@ -236,7 +236,7 @@ void FbxObject3D::Init()
 
 void FbxObject3D::Update(bool isShadowCamera)
 {
-	XMMATRIX matScale, matRot, matTrans;
+	XMMATRIX matScale, matTrans;
 
 	//アニメーション
 	if (isPlay) {
@@ -249,16 +249,16 @@ void FbxObject3D::Update(bool isShadowCamera)
 
 	//スケール、回転、平行移動行列の計算
 	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-	matRot = DirectX::XMMatrixIdentity();
-	matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
-	matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));
-	matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
+	m_matRot = DirectX::XMMatrixIdentity();
+	m_matRot *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(rotation.z));
+	m_matRot *= DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(rotation.x));
+	m_matRot *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(rotation.y));
 	matTrans = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 	//ワールド行列の合成
 	matWorld = DirectX::XMMatrixIdentity(); //変形をリセット
 	matWorld *= matScale;					//ワールド行列にスケーリングを反映
-	matWorld *= matRot;						//ワールド行列に回転を反映
+	matWorld *= m_matRot;					//ワールド行列に回転を反映
 	matWorld *= matTrans;					//ワールド行列に平行移動を反映
 
 	const XMMATRIX& matViewProjection =
