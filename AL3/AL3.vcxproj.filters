@@ -63,6 +63,9 @@
     <ClCompile Include="SourceCodes\3D\Object3D.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Model3DManager.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
     <ClCompile Include="SourceCodes\3D\Shape.cpp">
       <Filter>SourceCodes\3D</Filter>
     </ClCompile>
@@ -165,26 +168,17 @@
     <ClCompile Include="SourceCodes\Math\OBBCollision.cpp">
       <Filter>SourceCodes\Math</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\Users\Player.cpp">
-      <Filter>SourceCodes\Users</Filter>
+    <ClCompile Include="SourceCodes\3D\FbxModels.cpp">
+      <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\Users\Enemy.cpp">
-      <Filter>SourceCodes\Users</Filter>
+    <ClCompile Include="SourceCodes\3D\FbxMaterial.cpp">
+      <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\Users\Stage.cpp">
-      <Filter>SourceCodes\Users</Filter>
+    <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp">
+      <Filter>SourceCodes\3D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\Users\StageObject.cpp">
-      <Filter>SourceCodes\Users</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodes\Users\PipelineManager.cpp">
-      <Filter>SourceCodes\Users</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodes\Users\ModelManager.cpp">
-      <Filter>SourceCodes\Users</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodes\Users\SpriteManager.cpp">
-      <Filter>SourceCodes\Users</Filter>
+    <ClCompile Include="SourceCodes\3D\FbxObjects.cpp">
+      <Filter>SourceCodes\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -216,6 +210,9 @@
       <Filter>SourceCodes\2D</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\3D\Object3D.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Model3DManager.h">
       <Filter>SourceCodes\3D</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\3D\Shape.h">
@@ -344,26 +341,17 @@
     <ClInclude Include="SourceCodes\Math\OBBCollision.h">
       <Filter>SourceCodes\Math</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\Users\Player.h">
-      <Filter>SourceCodes\Users</Filter>
+    <ClInclude Include="SourceCodes\3D\FbxMaterial.h">
+      <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\Users\Enemy.h">
-      <Filter>SourceCodes\Users</Filter>
+    <ClInclude Include="SourceCodes\3D\FbxMeshes.h">
+      <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\Users\Stage.h">
-      <Filter>SourceCodes\Users</Filter>
+    <ClInclude Include="SourceCodes\3D\FbxModels.h">
+      <Filter>SourceCodes\3D</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\Users\StageObject.h">
-      <Filter>SourceCodes\Users</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodes\Users\PipelineManager.h">
-      <Filter>SourceCodes\Users</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodes\Users\ModelManager.h">
-      <Filter>SourceCodes\Users</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodes\Users\SpriteManager.h">
-      <Filter>SourceCodes\Users</Filter>
+    <ClInclude Include="SourceCodes\3D\FbxObjects.h">
+      <Filter>SourceCodes\3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
