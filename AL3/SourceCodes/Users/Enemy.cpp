@@ -4,6 +4,7 @@
 #include "../Users/PipelineManager.h"
 #include "../Math/OgaJHelper.h"
 #include "ModelManager.h"
+#include "../../imgui/ImguiControl.h"
 #include <random>
 
 Enemy::Enemy()
@@ -183,6 +184,9 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 				{
 					m_animationTimer = 0;
 					m_isCalc = true;
+
+					//確認用
+					fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 				}
 			}
 			else
@@ -196,6 +200,9 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_animationTimer = 0;
 					m_isCalc = false;
 					m_isCalcEnd = true;
+
+					//確認用
+					fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 				}
 			}
 		}
@@ -240,7 +247,11 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 				}
 				else
 				{
+					m_animationTimer = 0;
 					m_isCalc = true;
+
+					//確認用
+					fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 				}
 			}
 			else
@@ -254,6 +265,9 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_animationTimer = 0;
 					m_isCalc = false;
 					m_isCalcEnd = true;
+
+					//確認用
+					fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 				}
 			}
 		}
@@ -339,9 +353,12 @@ void Enemy::Draw()
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	for (int i = 0; i < m_boneCount; i++)
+	if (ImguiControl::Imgui_isOBBDraw)
 	{
-		obj_Box[i]->Draw(PipelineManager::obj_normal);
+		for (int i = 0; i < m_boneCount; i++)
+		{
+			obj_Box[i]->Draw(PipelineManager::obj_normal);
+		}
 	}
 	Object::PostDraw();
 }

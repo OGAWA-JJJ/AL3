@@ -39,7 +39,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     
     //シェーディングによる色で描画
     //return texcolor;
-    return shadecolor * texcolor;
+    return shadecolor * texcolor * m_color;
 }
 
 float4 PSBlack() : SV_TARGET

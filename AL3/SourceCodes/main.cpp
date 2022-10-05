@@ -57,6 +57,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//画像のロード
 	SpriteManager::Init();
 
+	/*----------宣言　ここから----------*/
+#pragma region 宣言
+	//重み係数
+	const float gaussSigma = 8.0f;
+
 	//輝度抽出用
 	SpriteInitData luminanceData;
 	luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
@@ -67,13 +72,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	luminanceData.m_width = WINDOW_WIDTH;
 	luminanceData.m_height = WINDOW_HEIGHT;
-
-	PostEffect* luminanceSprite = nullptr;
-	luminanceSprite = new PostEffect();
-	luminanceSprite->Init(luminanceData);
-
-	//重み係数
-	const float gaussSigma = 8.0f;
 
 	//横ブラー用のスプライトを初期化
 	SpriteInitData xBlurSpriteInitData;
@@ -88,10 +86,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
 	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
-	PostEffect* xBlurSprite = nullptr;
-	xBlurSprite = new PostEffect();
-	xBlurSprite->Init(xBlurSpriteInitData);
-
 	//縦ブラー用のスプライトを初期化
 	SpriteInitData yBlurSpriteInitData;
 	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
@@ -104,10 +98,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
-
-	PostEffect* yBlurSprite = nullptr;
-	yBlurSprite = new PostEffect();
-	yBlurSprite->Init(yBlurSpriteInitData);
 
 	//縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
 	SpriteInitData spriteInitData;
@@ -122,6 +112,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteInitData.m_psEntryPoint = "PSmain";
 
 	spriteInitData.m_alphaBlendMode = AlphaBlendMode::ALPHA_BLENDMODE_ADD;
+#pragma endregion
+	/*----------宣言　ここまで----------*/
+
+
+	/*----------初期化　ここから----------*/
+#pragma region 初期化
+	PostEffect* luminanceSprite = nullptr;
+	luminanceSprite = new PostEffect();
+	luminanceSprite->Init(luminanceData);
+
+	PostEffect* xBlurSprite = nullptr;
+	xBlurSprite = new PostEffect();
+	xBlurSprite->Init(xBlurSpriteInitData);
+
+	PostEffect* yBlurSprite = nullptr;
+	yBlurSprite = new PostEffect();
+	yBlurSprite->Init(yBlurSpriteInitData);
 
 	PostEffect* copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = new PostEffect();
@@ -136,14 +143,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	GameScene* Gamescene = nullptr;
 	Gamescene = new GameScene();
 	Gamescene->Init(shadow->GetTexbuffer());
+#pragma endregion
+	/*----------初期化　ここまで----------*/
 
-
-	/*----------宣言　ここから----------*/
-
-
-
-	/*----------宣言　ここまで----------*/
-
+	//ゲームループ
 	while (Window::flag)
 	{
 		Window::Msg();

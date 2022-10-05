@@ -27,7 +27,7 @@ private:
 	int m_gameSceneType;
 	bool m_sceneChangeTri;
 
-	int m_moveTimer = 120;
+	int m_moveTimer = 120000;
 	bool m_moveTrigger = false;
 
 public:

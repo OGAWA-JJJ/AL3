@@ -307,6 +307,7 @@ void FbxObject3D::Update(bool isShadowCamera)
 		constMap1->diffuse = diffuse;
 		constMap1->specular = specular;
 		constMap1->alpha = alpha;
+		constMap1->color = m_color;
 		constBuffData1->Unmap(0, nullptr);
 	}
 

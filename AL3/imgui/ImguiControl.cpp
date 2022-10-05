@@ -24,9 +24,9 @@ float ImguiControl::Imgui_lightDir_z = 0.0f;
 //float ImguiControl::Imgui_swordRot_y = 300.0f;
 //float ImguiControl::Imgui_swordRot_z = 310.0f;
 
-bool ImguiControl::Imgui_targetDraw = false;
+bool ImguiControl::Imgui_isTargetDraw = false;
 bool ImguiControl::Imgui_isOBBDraw = true;
-bool ImguiControl::Imgui_playerDraw = true;
+bool ImguiControl::Imgui_isPlayerDraw = true;
 
 void ImguiControl::Update()
 {
@@ -55,7 +55,7 @@ void ImguiControl::Update()
 	//ImGui::Checkbox("ENEMY_MOVE(Click or X Button)", &Imgui_isTargetMove);
 	//ImGui::Checkbox("HITSTOP_MODE(LSTICK PUSH->REPLAY)", &Imgui_isHitStopAnimation);
 	ImGui::Checkbox("OBB_BOX_DRAW", &Imgui_isOBBDraw);
-	ImGui::Checkbox("PLAYER_DRAW", &Imgui_playerDraw);
+	ImGui::Checkbox("PLAYER_DRAW", &Imgui_isPlayerDraw);
 
 	//ImGui::SliderFloat("boxPos_x", &boxPos1_x, -100.0f, 100.0f);
 	//ImGui::SliderFloat("boxPos_y", &boxPos1_y, -100.0f, 100.0f);

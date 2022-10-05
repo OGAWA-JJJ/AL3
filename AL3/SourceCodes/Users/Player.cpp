@@ -812,6 +812,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	OtherUpdate();
 	CalcOBB();
 
+	//Šm”F—p
 	if (m_isAttack)
 	{
 		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -819,6 +820,14 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	else
 	{
 		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+	if (m_isInvincible)
+	{
+		fbxobj_rollingMiku->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+	else
+	{
+		fbxobj_rollingMiku->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
 	if (Input::isPadTrigger(XINPUT_GAMEPAD_LEFT_THUMB))
@@ -836,7 +845,7 @@ void Player::Draw()
 		return;
 	}
 
-	if (ImguiControl::Imgui_playerDraw)
+	if (ImguiControl::Imgui_isPlayerDraw)
 	{
 		if (m_animationType == STAND)
 		{
@@ -921,7 +930,7 @@ void Player::ShadowDraw()
 		return;
 	}
 
-	if (ImguiControl::Imgui_playerDraw)
+	if (ImguiControl::Imgui_isPlayerDraw)
 	{
 		if (m_animationType == STAND)
 		{

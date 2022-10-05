@@ -152,11 +152,7 @@ void GameScene::Draw()
 
 void GameScene::LuminanceDraw()
 {
-	if (m_gameSceneType == TITLE)
-	{
-
-	}
-	else if (m_gameSceneType == GAME)
+	if (m_gameSceneType == GAME)
 	{
 		m_player->LuminanceDraw();
 	}
@@ -164,11 +160,7 @@ void GameScene::LuminanceDraw()
 
 void GameScene::ShadowDraw()
 {
-	if (m_gameSceneType == TITLE)
-	{
-
-	}
-	else if (m_gameSceneType == GAME)
+	if (m_gameSceneType == GAME)
 	{
 		m_player->ShadowDraw();
 	}
@@ -231,6 +223,6 @@ void GameScene::EnemyUpdate()
 	}
 	else if (!m_enemy->IsAttack())
 	{
-		m_player->UnInvincible();
+		//m_player->UnInvincible();
 	}
 }

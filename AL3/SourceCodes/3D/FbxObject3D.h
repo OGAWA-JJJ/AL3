@@ -56,12 +56,13 @@ public:
 
 	struct ConstBufferData1
 	{
-		XMFLOAT3 ambient; // アンビエント係数
-		float pad1; // パディング
-		XMFLOAT3 diffuse; // ディフューズ係数
-		float pad2; // パディング
-		XMFLOAT3 specular; // スペキュラー係数
-		float alpha;	// アルファ
+		XMFLOAT3 ambient;	//アンビエント係数
+		float pad1;			//パディング
+		XMFLOAT3 diffuse;	//ディフューズ係数
+		float pad2;			//パディング
+		XMFLOAT3 specular;	//スペキュラー係数
+		float alpha;		//アルファ
+		XMFLOAT4 color;
 	};
 
 private:
@@ -133,6 +134,8 @@ protected:
 	std::vector<DirectX::XMMATRIX> matRots;
 	//回転行列
 	DirectX::XMMATRIX m_matRot = DirectX::XMMatrixIdentity();
+	//色
+	DirectX::XMFLOAT4 m_color = { 1.0f,1.0f,1.0f,1.0f };
 
 public:
 	//初期化
@@ -154,6 +157,7 @@ public:
 	void SetScale(const XMFLOAT3& scale) { this->scale = scale; }
 	void SetRotation(const XMFLOAT3& rotation) { this->rotation = rotation; }
 	void SetPosition(const XMFLOAT3& position) { this->position = position; }
+	void SetColor(const XMFLOAT4& color) { m_color = color; }
 	const XMFLOAT3& GetScale() { return scale; }
 	const XMFLOAT3& GetRotation() { return rotation; }
 	const XMFLOAT3& GetPosition() { return position; }

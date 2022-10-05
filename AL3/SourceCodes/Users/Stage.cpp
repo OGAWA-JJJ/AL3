@@ -24,7 +24,7 @@ void Stage::Init(ID3D12Resource* texbuff)
 {
 	obj_Stage->AddTexture(texbuff, ModelManager::model_stage->GetDescHeap());
 
-	obj_Stage->SetPosition(DirectX::XMFLOAT3(0.0f, -10.0f, 0.0f));
+	obj_Stage->SetPosition(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	obj_Stage->SetRotation(DirectX::XMFLOAT3(0, 90, 0));
 	obj_Stage->SetColor(DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f));
 
@@ -42,6 +42,6 @@ void Stage::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_Stage->Draw(PipelineManager::obj_receiveShadow);
-	obj_colosseum->Draw(PipelineManager::obj_normal);
+	//obj_colosseum->Draw(PipelineManager::obj_normal);
 	Object::PostDraw();
 }

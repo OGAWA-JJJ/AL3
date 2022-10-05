@@ -22,9 +22,9 @@ public:
 	//static float Imgui_swordRot_x;
 	//static float Imgui_swordRot_y;
 	//static float Imgui_swordRot_z;
-	static bool Imgui_targetDraw;
+	static bool Imgui_isTargetDraw;
 	static bool Imgui_isOBBDraw;
-	static bool Imgui_playerDraw;
+	static bool Imgui_isPlayerDraw;
 
 public:
 	//InguiControl();
