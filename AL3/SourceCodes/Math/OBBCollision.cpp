@@ -8,18 +8,18 @@ bool OBBCollision::CollisionOBBs(const OBB& obb1, const OBB& obb2)
 	DirectX::XMFLOAT3 obb2NormaVec[3];
 
 	DirectX::XMVECTOR x1 = { 1,0,0 };
-	x1 = DirectX::XMVector3Transform(x1, obb1.matRot);
+	x1 = DirectX::XMVector3Transform(x1, obb1.matrix);
 	DirectX::XMVECTOR y1 = { 0,1,0 };
-	y1 = DirectX::XMVector3Transform(y1, obb1.matRot);
+	y1 = DirectX::XMVector3Transform(y1, obb1.matrix);
 	DirectX::XMVECTOR z1 = { 0,0,1 };
-	z1 = DirectX::XMVector3Transform(z1, obb1.matRot);
+	z1 = DirectX::XMVector3Transform(z1, obb1.matrix);
 
 	DirectX::XMVECTOR x2 = { 1,0,0 };
-	x2 = DirectX::XMVector3Transform(x2, obb2.matRot);
+	x2 = DirectX::XMVector3Transform(x2, obb2.matrix);
 	DirectX::XMVECTOR y2 = { 0,1,0 };
-	y2 = DirectX::XMVector3Transform(y2, obb2.matRot);
+	y2 = DirectX::XMVector3Transform(y2, obb2.matrix);
 	DirectX::XMVECTOR z2 = { 0,0,1 };
-	z2 = DirectX::XMVector3Transform(z2, obb2.matRot);
+	z2 = DirectX::XMVector3Transform(z2, obb2.matrix);
 
 	DirectX::XMStoreFloat3(&obb1NormaVec[0], x1);
 	DirectX::XMStoreFloat3(&obb1NormaVec[1], y1);

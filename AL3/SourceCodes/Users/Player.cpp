@@ -252,7 +252,7 @@ void Player::Init()
 		fbxobj_StandMiku->GetPosition().y,
 		fbxobj_StandMiku->GetPosition().z));
 
-	m_cameraY = Camera::GetEye().y;
+	m_cameraY = 50.0f;
 
 	//Test
 	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
@@ -413,6 +413,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * C_MAX_CAMERA_MOVE_SPEED;
 					cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
 					m_cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
+					ImguiControl::Imgui_cameraY = eye.y;
 
 					//‹——£‚Æ·•ª
 					float diff = 0;
@@ -874,7 +875,10 @@ void Player::Draw()
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_Sword->Draw(PipelineManager::obj_normal);
+	if (ImguiControl::Imgui_isWeaponDraw)
+	{
+		obj_Sword->Draw(PipelineManager::obj_normal);
+	}
 	//obj_HitBox->Draw(PipelineManager::obj_normal);
 
 	if (ImguiControl::Imgui_isOBBDraw && m_animationType != DAMAGED)
@@ -883,7 +887,10 @@ void Player::Draw()
 		{
 			obj_Box[i]->Draw(PipelineManager::obj_normal);
 		}
-		obj_SwordBox->Draw(PipelineManager::obj_normal);
+		if (ImguiControl::Imgui_isWeaponDraw)
+		{
+			obj_SwordBox->Draw(PipelineManager::obj_normal);
+		}
 	}
 
 	Object::PostDraw();
@@ -959,7 +966,10 @@ void Player::ShadowDraw()
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_ShadowSword->Draw(PipelineManager::obj_shadow);
+	if (ImguiControl::Imgui_isWeaponDraw)
+	{
+		obj_ShadowSword->Draw(PipelineManager::obj_shadow);
+	}
 	Object::PostDraw();
 }
 
@@ -1147,7 +1157,7 @@ void Player::CalcOBB()
 			obj_SwordBox->GetMatWorld().r[3].m128_f32[2] };
 
 		swordOBB.pos = pos;
-		swordOBB.matRot = fbxobj_OneSwordAttack->GetMatrix();
+		swordOBB.matrix = fbxobj_OneSwordAttack->GetMatrix();
 		swordOBB.length = obj_SwordBox->GetScale();
 		m_obb = swordOBB;
 	}
@@ -1160,7 +1170,7 @@ void Player::CalcOBB()
 			bones[i].second.r[3].m128_f32[0],
 			bones[i].second.r[3].m128_f32[1],
 			bones[i].second.r[3].m128_f32[2]);
-		l_obb.matRot = matRot[i];
+		l_obb.matrix = matRot[i];
 		l_obb.length = obj_Box[i]->GetScale();
 		l_obbs.push_back(l_obb);
 	}

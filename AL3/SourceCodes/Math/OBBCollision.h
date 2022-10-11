@@ -3,9 +3,9 @@
 
 struct OBB
 {
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMMATRIX matRot;
-	DirectX::XMFLOAT3 length;
+	DirectX::XMFLOAT3 pos;		//中心座標
+	DirectX::XMMATRIX matrix;	//ワールド行列
+	DirectX::XMFLOAT3 length;	//スケール
 };
 
 class OBBCollision

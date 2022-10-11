@@ -309,7 +309,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			l_affine[i].second.r[3].m128_f32[0],
 			l_affine[i].second.r[3].m128_f32[1],
 			l_affine[i].second.r[3].m128_f32[2]);
-		l_obb.matRot = l_matRot[i];
+		l_obb.matrix = l_matRot[i];
 		l_obb.length = DirectX::XMFLOAT3(l_scale, l_scale, l_scale);
 
 		l_obbs.push_back(l_obb);
