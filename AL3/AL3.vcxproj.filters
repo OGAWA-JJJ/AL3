@@ -186,6 +186,9 @@
     <ClCompile Include="SourceCodes\Users\SpriteManager.cpp">
       <Filter>SourceCodes\Users</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\Users\ParticleManager.cpp">
+      <Filter>SourceCodes\Users</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -363,6 +366,9 @@
       <Filter>SourceCodes\Users</Filter>
     </ClInclude>
     <ClInclude Include="SourceCodes\Users\SpriteManager.h">
+      <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\ParticleManager.h">
       <Filter>SourceCodes\Users</Filter>
     </ClInclude>
   </ItemGroup>

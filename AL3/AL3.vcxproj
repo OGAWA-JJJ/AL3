@@ -203,6 +203,7 @@
     <ClCompile Include="SourceCodes\Users\Enemy.cpp" />
     <ClCompile Include="SourceCodes\Users\GameScene.cpp" />
     <ClCompile Include="SourceCodes\Users\ModelManager.cpp" />
+    <ClCompile Include="SourceCodes\Users\ParticleManager.cpp" />
     <ClCompile Include="SourceCodes\Users\PipelineManager.cpp" />
     <ClCompile Include="SourceCodes\Users\Player.cpp" />
     <ClCompile Include="SourceCodes\Users\Stage.cpp" />
@@ -264,6 +265,7 @@
     <ClInclude Include="SourceCodes\Users\Enemy.h" />
     <ClInclude Include="SourceCodes\Users\GameScene.h" />
     <ClInclude Include="SourceCodes\Users\ModelManager.h" />
+    <ClInclude Include="SourceCodes\Users\ParticleManager.h" />
     <ClInclude Include="SourceCodes\Users\PipelineManager.h" />
     <ClInclude Include="SourceCodes\Users\Player.h" />
     <ClInclude Include="SourceCodes\Users\Stage.h" />
