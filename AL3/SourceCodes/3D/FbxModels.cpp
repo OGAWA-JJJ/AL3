@@ -85,6 +85,15 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 	converter.SplitMeshesPerMaterial(fbxScene, true);
 	converter.Triangulate(fbxScene, true);
 
+
+
+	//debug
+	FbxSkin* fbxSkin =
+		static_cast<FbxSkin*>(fbxScene->GetSrcObject<FbxMesh>(0)->GetDeformer(0, FbxDeformer::eSkin));
+	int clusterCount = fbxSkin->GetClusterCount();
+
+
+
 	int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
 	for (int i = 0; i < mesh_num; i++)
 	{
@@ -99,12 +108,16 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	FbxNode* fbxNode = fbxScene->GetRootNode();
 
-	LoadNode(meshes[0], fbxNode);
-	//for (auto& m : meshes)
-	//{
-	//	//fbxNodeが悪いのかGetMesh()が悪いのか...
-	//	LoadNode(m, fbxNode);
-	//}
+	//LoadNode(meshes[0], fbxNode);
+	for (auto& m : meshes)
+	{
+		//fbxNodeが悪いのかGetMesh()が悪いのか...
+		LoadNode(m, fbxNode);
+	}
+	/*for (int i = 0; i < mesh_num; i++)
+	{
+		LoadNode(fbxScene->GetSrcObject<FbxMesh>(i), meshes[i], fbxNode);
+	}*/
 
 	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
 	for (int i = 0; i < texture_num; i++)
@@ -319,10 +332,13 @@ void FbxModels::CreateMesh(FbxMesh* fbx_mesh)
 {
 	FbxMeshes* mesh = new FbxMeshes;
 
-	LoadIndices(mesh, fbx_mesh);
+	//LoadIndices(mesh, fbx_mesh);
 	LoadVertices(mesh, fbx_mesh);
-	LoadNormals(mesh, fbx_mesh);
+	//LoadNormals(mesh, fbx_mesh);
+
+	//IndicesとUVも一括で行う(仮)
 	LoadUV(mesh, fbx_mesh);
+
 	LoadColors(mesh, fbx_mesh);
 	SetMaterialName(mesh, fbx_mesh);
 
@@ -343,7 +359,7 @@ void FbxModels::LoadIndices(FbxMeshes* mesh_data, FbxMesh* mesh)
 
 void FbxModels::LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh)
 {
-	FbxVector4* vertices = mesh->GetControlPoints();
+	/*FbxVector4* vertices = mesh->GetControlPoints();
 	int* indices = mesh->GetPolygonVertices();
 	int polygon_vertex_count = mesh->GetPolygonVertexCount();
 
@@ -355,6 +371,21 @@ void FbxModels::LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh)
 		vertex.pos.x = (float)-vertices[index][0];
 		vertex.pos.y = (float)vertices[index][1];
 		vertex.pos.z = (float)vertices[index][2];
+
+		mesh_data->AddVertex(vertex);
+	}*/
+
+	//以前のLoader
+	const int controlPointCount =
+		mesh->GetControlPointsCount();
+	FbxVector4* pCoord = mesh->GetControlPoints();
+	for (int i = 0; i < controlPointCount; i++)
+	{
+		FbxMeshes::VertexPosNormalUv vertex;
+
+		vertex.pos.x = (float)pCoord[i][0];
+		vertex.pos.y = (float)pCoord[i][1];
+		vertex.pos.z = (float)pCoord[i][2];
 
 		mesh_data->AddVertex(vertex);
 	}
@@ -375,7 +406,7 @@ void FbxModels::LoadNormals(FbxMeshes* mesh_data, FbxMesh* mesh)
 
 void FbxModels::LoadUV(FbxMeshes* mesh_data, FbxMesh* mesh)
 {
-	FbxStringList uvset_names;
+	/*FbxStringList uvset_names;
 	mesh->GetUVSetNames(uvset_names);
 
 	FbxArray<FbxVector2> uv_buffer;
@@ -387,6 +418,60 @@ void FbxModels::LoadUV(FbxMeshes* mesh_data, FbxMesh* mesh)
 
 		mesh_data->GetVertices()[i].uv.x = (float)uv[0];
 		mesh_data->GetVertices()[i].uv.y = (float)(1.0 - uv[1]);
+	}*/
+
+	//以前のLoader(インデックスとUV)
+	const int polygonCount = mesh->GetPolygonCount();
+	const int textureUVCount = mesh->GetTextureUVCount();
+
+	FbxStringList uvNames;
+	mesh->GetUVSetNames(uvNames);
+
+	for (int i = 0; i < polygonCount; i++)
+	{
+		const int polygonSize = mesh->GetPolygonSize(i);
+		assert(polygonSize <= 4);
+
+		for (int j = 0; j < polygonSize; j++)
+		{
+			int index = mesh->GetPolygonVertex(i, j);
+			assert(index >= 0);
+
+			FbxVector4 normal;
+			if (mesh->GetPolygonVertexNormal(i, j, normal))
+			{
+				mesh_data->GetVertices()[index].normal.x = (float)-normal[0];
+				mesh_data->GetVertices()[index].normal.y = (float)normal[1];
+				mesh_data->GetVertices()[index].normal.z = (float)normal[2];
+			}
+
+			if (textureUVCount > 0)
+			{
+				FbxVector2 uvs;
+				bool lUnmappedUV;
+
+				if (mesh->GetPolygonVertexUV(i, j, uvNames[0], uvs, lUnmappedUV))
+				{
+					mesh_data->GetVertices()[index].uv.x = (float)uvs[0];
+					mesh_data->GetVertices()[index].uv.y = (float)(1.0 - uvs[1]);
+				}
+			}
+
+			if (j < 3)
+			{
+				mesh_data->AddIndex(index);
+			}
+
+			else
+			{
+				int index2 = mesh_data->GetIndices()[mesh_data->GetIndices().size() - 1];
+				int index3 = index;
+				int index0 = mesh_data->GetIndices()[mesh_data->GetIndices().size() - 3];
+				mesh_data->AddIndex(index2);
+				mesh_data->AddIndex(index3);
+				mesh_data->AddIndex(index0);
+			}
+		}
 	}
 }
 
@@ -488,6 +573,7 @@ void FbxModels::LoadNode(FbxMeshes* mesh_data, FbxNode* fbxNode, FbxMeshes::Node
 			mesh_data->SetMeshNode(&node);
 			transform = node.globalTransform;
 			FbxMesh* fbx_mesh = fbxNode->GetMesh();
+			//FbxMesh* fbx_mesh = fbxScene->GetSrcObject<FbxMesh>(i);
 			LoadSkin(mesh_data, fbx_mesh);
 		}
 	}

@@ -289,7 +289,7 @@ void FbxObjects::Update(bool isShadowCamera)
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 
 	//一旦コメントアウト←FbxMeshesでUpdateすべき
-	/*for (int i = 0; i < bones.size(); i++) {
+	for (int i = 0; i < bones.size(); i++) {
 
 		DirectX::XMMATRIX matCurrentPose;
 
@@ -324,7 +324,7 @@ void FbxObjects::Update(bool isShadowCamera)
 	affineTrans.clear();
 	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
 	matRots.clear();
-	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));*/
+	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));
 }
 
 void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)

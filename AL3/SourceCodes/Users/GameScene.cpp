@@ -41,6 +41,7 @@ GameScene::GameScene()
 	l_obj0 = FbxObjects::Create(l_model0);
 
 	l_obj0->SetScale(XMFLOAT3(2.5, 2.5, 2.5));
+	l_obj0->PlayAnimation();
 }
 
 GameScene::~GameScene()

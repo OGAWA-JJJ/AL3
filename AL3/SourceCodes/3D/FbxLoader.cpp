@@ -169,7 +169,6 @@ void FbxLoader::ParseNodeRecursive(FbxModel* model, FbxNode* fbxNode, Node* pare
 }
 
 void FbxLoader::ParseMesh(FbxModel* model, FbxNode* fbxNode)
-
 {
 	//ノードのメッシュを取得
 	FbxMesh* fbxMesh = fbxNode->GetMesh();
