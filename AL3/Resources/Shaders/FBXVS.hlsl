@@ -55,7 +55,7 @@ SkinOutput ComputeSkin(VSInput input)
 
 VSOutput VSmain(VSInput input)
 {
-    //通常描画用
+    ////通常描画用
     //float4 wnormal = normalize(mul(world, float4(input.normal, 0)));
     //float4 wpos = mul(world, input.pos);
     
@@ -65,7 +65,7 @@ VSOutput VSmain(VSInput input)
     //output.uv = input.uv;
     //return output;
     
-    ////スキニング計算
+    //スキニング計算
     SkinOutput skinned = ComputeSkin(input);
     //法線にワールド行列によるスケーリング,回転を適用
     float4 wnormal = normalize(mul(world, float4(skinned.normal, 0)));

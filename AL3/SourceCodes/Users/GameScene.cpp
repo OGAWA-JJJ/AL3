@@ -37,10 +37,11 @@ GameScene::GameScene()
 	l_normal = FbxObjects::CreateGraphicsPipeline(initData);
 
 	//–¼‘O•ª‚©‚è‚É‚­‚¢
-	l_model0 = FbxModels::CreateFromFbx("StandMiku");
+	l_model0 = FbxModels::CreateFromFbx("RunMiku");
 	l_obj0 = FbxObjects::Create(l_model0);
 
-	l_obj0->SetScale(XMFLOAT3(2.5, 2.5, 2.5));
+	l_obj0->SetScale(XMFLOAT3(0.015, 0.015, 0.015));
+	l_obj0->SetRotation(XMFLOAT3(0, 150, 0));
 	l_obj0->PlayAnimation();
 }
 
@@ -84,16 +85,16 @@ void GameScene::Update()
 
 	XMFLOAT3 rot = l_obj0->GetRotation();
 	rot.y += 0.5f;
-	l_obj0->SetRotation(rot);
+	//l_obj0->SetRotation(rot);
 	l_obj0->Update();
 }
 
 void GameScene::Draw()
 {
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
+	//Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	//if (isHit) { GH1->Draw(); }
-	GH1->Draw();
-	Sprite::PostDraw();
+	//GH1->Draw();
+	//Sprite::PostDraw();
 
 	l_obj0->Draw(l_normal);
 }

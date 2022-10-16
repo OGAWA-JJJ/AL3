@@ -38,6 +38,24 @@ private:
 		DirectX::XMMATRIX bones[MAX_BONES];
 	};
 
+private:
+	struct Node {
+		const char* name;
+		Node* parent;
+		DirectX::XMFLOAT3 scale;
+		DirectX::XMFLOAT4 rotate;
+		DirectX::XMFLOAT3 translate;
+		DirectX::XMMATRIX local_transform;
+		DirectX::XMMATRIX world_transform;
+
+		std::vector<Node*>	children;
+	};
+	std::vector<Node> nodes;
+	int current_animation_index = 0;
+	float current_animation_seconds = 0.0f;
+	bool animation_loop_flag = true;
+	bool animation_end_flag = false;
+
 public:
 	static FbxObjects* Create(FbxModels* model = nullptr);
 
@@ -76,6 +94,31 @@ public:
 	void Update(bool isShadowCamera = false);
 	void Draw(const FbxPipelineSet& pipelineSet);
 	void PlayAnimation();
+
+private:
+	void UpdateAnimation();
+	void UpdateTransform();
+	void CalcNode()
+	{
+		const std::vector<FbxModels::Node>& l_nodes = model->GetNodes();
+		nodes.resize(l_nodes.size());
+		for (int node_index = 0; node_index < nodes.size(); ++node_index)
+		{
+			auto&& src = l_nodes.at(node_index);
+			auto&& dst = nodes.at(node_index);
+
+			dst.name = src.name.c_str();
+			dst.parent = src.parent_index >= 0 ? &nodes.at(src.parent_index) : nullptr;
+			dst.scale = src.scaling;
+			dst.rotate = src.rotation;
+			dst.translate = src.translation;
+
+			if (dst.parent != nullptr)
+			{
+				dst.parent->children.emplace_back(&dst);
+			}
+		}
+	}
 
 public:
 	void SetModel(FbxModels* model) { this->model = model; }

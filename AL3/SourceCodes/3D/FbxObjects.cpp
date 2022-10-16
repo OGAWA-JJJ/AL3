@@ -181,6 +181,7 @@ FbxObjects* FbxObjects::Create(FbxModels* model)
 	if (object == nullptr) { return nullptr; }
 	if (!object->Init()) { assert(0); }
 	if (model) { object->SetModel(model); }
+	object->CalcNode();
 
 	return object;
 }
@@ -280,51 +281,8 @@ void FbxObjects::Update(bool isShadowCamera)
 		constBufferDataB0->Unmap(0, nullptr);
 	}
 
-	std::vector<FbxMeshes::Bone>& bones = model->GetBones();
-	std::vector<std::pair<std::string, DirectX::XMMATRIX>> fbxData;
-
-	std::vector<DirectX::XMMATRIX> localMatRots;
-
-	ConstBufferDataSkin* constMapSkin = nullptr;
-	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
-
-	//一旦コメントアウト←FbxMeshesでUpdateすべき
-	for (int i = 0; i < bones.size(); i++) {
-
-		DirectX::XMMATRIX matCurrentPose;
-
-		FbxAMatrix fbxCurrentPose =
-			bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
-
-		FbxModels::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
-
-		DirectX::XMMATRIX inverse = DirectX::XMMatrixInverse(nullptr, model->GetModelTransform());
-		DirectX::XMMATRIX trans = model->GetModelTransform();
-		constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
-
-		fbxData.push_back(std::make_pair(bones[i].name, trans * matCurrentPose * matWorld));
-		FbxVector4 fbxMatRot =
-			bones[i].fbxCluster->GetLink()->EvaluateLocalRotation(currentTime);
-
-		DirectX::XMMATRIX matRot = DirectX::XMMatrixIdentity();
-		matRot *= DirectX::XMMatrixRotationZ(static_cast<float>(fbxMatRot.mData[0]) / 180.0f * 3.14f);
-		matRot *= DirectX::XMMatrixRotationX(static_cast<float>(fbxMatRot.mData[1]) / 180.0f * 3.14f);
-		matRot *= DirectX::XMMatrixRotationY(static_cast<float>(fbxMatRot.mData[2]) / 180.0f * 3.14f);
-		localMatRots.push_back(matRot);
-
-		if (bones[i].name.find("RightHand", 0) != std::string::npos)
-		{
-			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
-			FbxModels::ConvertMatrixFromFbx(&matrix, fbxMatrix);
-			matrix = trans * matrix * matWorld;
-		}
-	}
-	constBuffSkin->Unmap(0, nullptr);
-
-	affineTrans.clear();
-	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
-	matRots.clear();
-	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));
+	UpdateAnimation();
+	UpdateTransform();
 }
 
 void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
@@ -370,4 +328,122 @@ void FbxObjects::PlayAnimation()
 	currentTime = startTime;
 
 	isPlay = true;
+}
+
+void FbxObjects::UpdateAnimation()
+{
+	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
+	const FbxModels::Animation& animation = animations.at(current_animation_index);
+
+	const std::vector<FbxModels::Keyframe>& keyframes = animation.keyframes;
+	int keyCount = static_cast<int>(keyframes.size());
+	for (int keyIndex = 0; keyIndex < keyCount - 1; ++keyIndex)
+	{
+		const FbxModels::Keyframe& keyframe0 = keyframes.at(keyIndex);
+		const FbxModels::Keyframe& keyframe1 = keyframes.at(keyIndex + 1);
+		if (current_animation_seconds >= keyframe0.seconds &&
+			current_animation_seconds < keyframe1.seconds)
+		{
+
+			float rate = (current_animation_seconds - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
+
+			int nodeCount = static_cast<int>(nodes.size());
+			for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+			{
+
+				const FbxModels::NodeKeyData& key0 = keyframe0.nodeKeys.at(nodeIndex);
+				const FbxModels::NodeKeyData& key1 = keyframe1.nodeKeys.at(nodeIndex);
+
+				Node& node = nodes[nodeIndex];
+
+				DirectX::XMVECTOR Scale1 = DirectX::XMLoadFloat3(&key1.scale);
+				DirectX::XMVECTOR Rotate1 = DirectX::XMLoadFloat4(&key1.rotate);
+				DirectX::XMVECTOR Translate1 = DirectX::XMLoadFloat3(&key1.translate);
+
+				DirectX::XMVECTOR Scale0 = DirectX::XMLoadFloat3(&key0.scale);
+				DirectX::XMVECTOR Rotate0 = DirectX::XMLoadFloat4(&key0.rotate);
+				DirectX::XMVECTOR Translate0 = DirectX::XMLoadFloat3(&key0.translate);
+
+				DirectX::XMVECTOR Scale = DirectX::XMVectorLerp(Scale0, Scale1, rate);
+				DirectX::XMVECTOR Rotate = DirectX::XMQuaternionSlerp(Rotate0, Rotate1, rate);
+				DirectX::XMVECTOR Translate = DirectX::XMVectorLerp(Translate0, Translate1, rate);
+
+				DirectX::XMStoreFloat3(&node.scale, Scale);
+				DirectX::XMStoreFloat4(&node.rotate, Rotate);
+				DirectX::XMStoreFloat3(&node.translate, Translate);
+			}
+			break;
+		}
+	}
+
+	if (animation_end_flag == true)
+	{
+		animation_end_flag = false;
+		//current_animation_index = -1;
+		return;
+	}
+
+
+	//current_animation_seconds += elapsed_time;
+	current_animation_seconds += 0.01f;
+
+
+	if (current_animation_seconds >= animation.seconds_length)
+	{
+		if (animation_loop_flag == true)
+		{
+			current_animation_seconds -= animation.seconds_length;
+
+		}
+		else
+		{
+			animation_end_flag = true;
+		}
+	}
+}
+
+void FbxObjects::UpdateTransform()
+{
+	//UpdateTransform
+	DirectX::XMMATRIX node_transform = DirectX::XMMatrixIdentity();
+	for (Node& node : nodes)
+	{
+		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
+		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotate));
+		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translate.x, node.translate.y, node.translate.z);
+		DirectX::XMMATRIX local_transform = S * R * T;
+
+		DirectX::XMMATRIX parent_transform;
+		if (node.parent != nullptr)
+		{
+			parent_transform = node.parent->world_transform;
+		}
+		else
+		{
+			parent_transform = node_transform;
+		}
+
+		DirectX::XMMATRIX world_transform = local_transform * parent_transform;
+
+		node.local_transform = local_transform;
+		node.world_transform = world_transform;
+	}
+
+	HRESULT result;
+	ConstBufferDataSkin* constMapSkin = nullptr;
+	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
+	if (model->GetNodeIndices().size() > 0)
+	{
+		for (size_t i = 0; i < model->GetNodeIndices().size(); ++i)
+		{
+			DirectX::XMMATRIX worldTransform =
+				nodes.at(model->GetNodeIndices().at(i)).world_transform;
+			DirectX::XMMATRIX offsetTransform =
+				model->GetOffsetTransforms().at(i);
+			DirectX::XMMATRIX boneTransform =
+				offsetTransform * worldTransform;
+			constMapSkin->bones[i] = boneTransform;
+		}
+	}
+	constBuffSkin->Unmap(0, nullptr);
 }

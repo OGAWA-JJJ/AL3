@@ -7,23 +7,14 @@
 class FbxMeshes
 {
 public:
+	static const int MAX_BONE_INDICES = 4;
 	struct VertexPosNormalUv
 	{
-		DirectX::XMFLOAT3 pos;		//xyz座標
-		DirectX::XMFLOAT3 normal;	//法線ベクトル
-		DirectX::XMFLOAT2 uv;		//uv座標
-		DirectX::XMFLOAT4 color;	//送ってない
-	};
-
-	struct Node
-	{
-		std::string name;
-		DirectX::XMVECTOR scaling = { 1,1,1,0 };
-		DirectX::XMVECTOR rotation = { 0,0,0,0 };
-		DirectX::XMVECTOR translation = { 0,0,0,1 };
-		DirectX::XMMATRIX transform;
-		DirectX::XMMATRIX globalTransform;
-		Node* parent = nullptr;
+		DirectX::XMFLOAT3 pos;		//xyz座標		12
+		DirectX::XMFLOAT3 normal;	//法線ベクトル		12
+		DirectX::XMFLOAT2 uv;		//uv座標			8
+		UINT boneIndex[MAX_BONE_INDICES];	//		16
+		float boneWeight[MAX_BONE_INDICES];	//		16
 	};
 
 	struct Bone
@@ -32,13 +23,6 @@ public:
 		DirectX::XMMATRIX invInitialPose;
 		FbxCluster* fbxCluster;
 		Bone(const std::string& name) { this->name = name; }
-	};
-
-	static const int MAX_BONE_INDICES = 4;
-	struct Skin
-	{
-		UINT boneIndex[MAX_BONE_INDICES];
-		float boneWeight[MAX_BONE_INDICES];
 	};
 
 private:
@@ -55,10 +39,7 @@ private:
 	FbxMaterial* material = nullptr;
 	std::unordered_map<unsigned short, std::vector<unsigned short>> smoothData;
 
-	std::vector<Bone> bones;
-	std::vector<Node> nodes;
-	Node* meshNode = nullptr;
-	std::vector<Skin> skinVert;
+	//std::vector<Bone> bones;
 
 public:
 	static void StaticInit(ID3D12Device* dev);
@@ -83,11 +64,8 @@ public:
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBView() { return vbView; }
 	const D3D12_INDEX_BUFFER_VIEW& GetIBView() { return ibView; }
 	inline std::vector<VertexPosNormalUv>& GetVertices() { return vertices; }
-	inline const std::vector<unsigned short>& GetIndices() { return indices; }
+	inline std::vector<unsigned short>& GetIndices() { return indices; }
 
-	std::vector<Bone>& GetBones() { return bones; }
-	std::vector<Node>& GetNodes() { return nodes; }
-	std::vector<Skin>& GetSkins() { return skinVert; }
-	void SetMeshNode(Node* meshNode) { this->meshNode = meshNode; }
+	//std::vector<Bone>& GetBones() { return bones; }
 };
 
