@@ -212,6 +212,20 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 		l_num++;
 	}
 
+	int last_Index = skinVert.size() - l_counts;
+	l_num = meshes.size() - 1;
+	for (int index = 0; index < last_Index; index++)
+	{
+		for (int bone = 0; bone < MAX_BONE_INDICES; bone++)
+		{
+			meshes[l_num]->GetVertices()[index].boneIndex[bone] =
+				skinVert[l_counts].boneIndex[bone];
+			meshes[l_num]->GetVertices()[index].boneWeight[bone] =
+				skinVert[l_counts].boneWeight[bone];
+		}
+		l_counts++;
+	}
+
 	int material_num = fbxScene->GetSrcObjectCount<FbxSurfaceMaterial>();
 	for (int i = 0; i < material_num; i++)
 	{
@@ -937,7 +951,7 @@ void FbxModels::CheckBone()
 
 		std::vector<BoneInfluencesPerControlPoint> bone_influences;
 		FetchBoneInfluences(fbx_mesh, bone_influences);
-		FetchSkeleton(fbx_mesh);
+		//FetchSkeleton(fbx_mesh);
 		FetchAnimaton();
 
 		const int material_count = fbx_mesh->GetNode()->GetMaterialCount();
@@ -999,7 +1013,7 @@ void FbxModels::CheckBone()
 
 void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 {
-	const int deformer_count = fbx_mesh->GetDeformerCount(FbxDeformer::eSkin);
+	/*const int deformer_count = fbx_mesh->GetDeformerCount(FbxDeformer::eSkin);
 	for (int deformer_index = 0; deformer_index < deformer_count; deformer_index++) {
 		FbxSkin* skin = static_cast<FbxSkin*>(fbx_mesh->GetDeformer(deformer_index, FbxDeformer::eSkin));
 		const int cluster_count = skin->GetClusterCount();
@@ -1016,10 +1030,47 @@ void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 			FbxAMatrix cluster_global_init_position;
 			cluster->GetTransformLinkMatrix(cluster_global_init_position);
 
-			DirectX::XMMATRIX l_mat = DirectX::XMMatrixIdentity();;
+			DirectX::XMMATRIX l_mat = DirectX::XMMatrixIdentity();
 			ConvertMatrixFromFbx(&l_mat, cluster_global_init_position.Inverse() * reference_gloval_init_position);
 			offset_transforms.at(cluster_index) = l_mat;
 		}
+	}*/
+
+	//Test
+	std::vector<Bone>& bones = this->bones;
+	FbxSkin* fbxSkin =
+		static_cast<FbxSkin*>(fbx_mesh->GetDeformer(0, FbxDeformer::eSkin));
+	int clusterCount = fbxSkin->GetClusterCount();
+	bones.reserve(clusterCount);
+	node_indices.resize(clusterCount);
+	offset_transforms.resize(clusterCount);
+
+	for (int i = 0; i < clusterCount; i++)
+	{
+		FbxCluster* fbxCluster = fbxSkin->GetCluster(i);
+		node_indices.at(i) = FindNodeIndex(fbxCluster->GetLink()->GetUniqueID());
+
+		const char* boneName = fbxCluster->GetLink()->GetName();
+
+		bones.emplace_back(Bone(boneName));
+		Bone& bone = bones.back();
+
+		bone.fbxCluster = fbxCluster;
+
+		FbxAMatrix fbxMat;
+		fbxCluster->GetTransformLinkMatrix(fbxMat);
+
+		DirectX::XMMATRIX initialPose;
+		ConvertMatrixFromFbx(&initialPose, fbxMat);
+
+		bone.invInitialPose = DirectX::XMMatrixInverse(nullptr, initialPose);
+
+		FbxAMatrix reference_gloval_init_position;
+		fbxCluster->GetTransformMatrix(reference_gloval_init_position);
+
+		DirectX::XMMATRIX l_mat = DirectX::XMMatrixIdentity();
+		ConvertMatrixFromFbx(&l_mat, fbxMat.Inverse() * reference_gloval_init_position);
+		offset_transforms.at(i) = l_mat;
 	}
 }
 

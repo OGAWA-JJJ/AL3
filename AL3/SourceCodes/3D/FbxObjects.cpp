@@ -429,7 +429,7 @@ void FbxObjects::UpdateTransform()
 		node.world_transform = world_transform;
 	}
 
-	HRESULT result;
+	/*HRESULT result;
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	if (model->GetNodeIndices().size() > 0)
@@ -445,5 +445,58 @@ void FbxObjects::UpdateTransform()
 			constMapSkin->bones[i] = boneTransform;
 		}
 	}
+	constBuffSkin->Unmap(0, nullptr);*/
+
+	//Test
+	std::vector<FbxModels::Bone>& bones = model->GetBones();
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> fbxData;
+	std::vector<DirectX::XMMATRIX> localMatRots;
+
+	HRESULT result;
+	ConstBufferDataSkin* constMapSkin = nullptr;
+	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
+	for (int i = 0; i < bones.size(); i++)
+	{
+		DirectX::XMMATRIX matCurrentPose;
+
+		FbxAMatrix fbxCurrentPose =
+			bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
+
+		FbxModels::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
+
+		DirectX::XMMATRIX inverse = XMMatrixInverse(nullptr, nodes.at(model->GetNodeIndices().at(i)).world_transform);
+		DirectX::XMMATRIX trans = nodes.at(model->GetNodeIndices().at(i)).world_transform;
+		//constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
+
+		DirectX::XMMATRIX worldTransform =
+			nodes.at(model->GetNodeIndices().at(i)).world_transform;
+		DirectX::XMMATRIX offsetTransform =
+			model->GetOffsetTransforms().at(i);
+		DirectX::XMMATRIX boneTransform =
+			offsetTransform * worldTransform;
+		constMapSkin->bones[i] = boneTransform;
+
+		fbxData.push_back(std::make_pair(bones[i].name, trans * matCurrentPose * matWorld));
+		FbxVector4 fbxMatRot =
+			bones[i].fbxCluster->GetLink()->EvaluateLocalRotation(currentTime);
+
+		DirectX::XMMATRIX matRot = DirectX::XMMatrixIdentity();
+		matRot *= DirectX::XMMatrixRotationZ(static_cast<float>(fbxMatRot.mData[0]) / 180.0f * 3.14f);
+		matRot *= DirectX::XMMatrixRotationX(static_cast<float>(fbxMatRot.mData[1]) / 180.0f * 3.14f);
+		matRot *= DirectX::XMMatrixRotationY(static_cast<float>(fbxMatRot.mData[2]) / 180.0f * 3.14f);
+		localMatRots.push_back(matRot);
+
+		if (bones[i].name.find("RightHand", 0) != std::string::npos)
+		{
+			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
+			FbxModels::ConvertMatrixFromFbx(&matrix, fbxMatrix);
+			matrix = trans * matrix * matWorld;
+		}
+	}
 	constBuffSkin->Unmap(0, nullptr);
+
+	affineTrans.clear();
+	std::copy(fbxData.begin(), fbxData.end(), std::back_inserter(affineTrans));
+	matRots.clear();
+	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));
 }
