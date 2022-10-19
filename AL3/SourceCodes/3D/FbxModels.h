@@ -63,8 +63,8 @@ public:
 		FbxCluster* fbxCluster;
 		Bone(const std::string& name) { this->name = name; }
 	};
-	std::vector<Bone> bones;
-	std::vector<Bone>& GetBones() { return bones; }
+	//std::vector<Bone> bones;
+	//std::vector<Bone>& GetBones() { return bones; }
 	std::vector<DirectX::XMMATRIX> offset_transforms;
 	std::vector<uint32_t> node_indices;
 	std::vector<DirectX::XMMATRIX>& GetOffsetTransforms() { return offset_transforms; }
@@ -99,6 +99,7 @@ public:
 		std::string name;
 		float seconds_length;
 		float sampling_rate;
+		float add_time;
 		std::vector<Keyframe> keyframes;
 
 		template<class T>

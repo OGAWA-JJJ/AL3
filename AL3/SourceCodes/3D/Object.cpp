@@ -13,7 +13,7 @@
 
 ID3D12Device* Object::device = nullptr;
 ID3D12GraphicsCommandList* Object::cmdList = nullptr;
-ObjPipelineSet Object::pipelineSet;
+Object::ObjPipelineSet Object::pipelineSet;
 Light* Object::light = nullptr;
 
 void Object::StaticInit(ID3D12Device* device)
@@ -33,7 +33,7 @@ void Object::StaticInit(ID3D12Device* device)
 	Model::StaticInit(device);
 }
 
-ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
+Object::ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitData)
 {
 	HRESULT result = S_FALSE;
 	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob;	//頂点シェーダオブジェクト

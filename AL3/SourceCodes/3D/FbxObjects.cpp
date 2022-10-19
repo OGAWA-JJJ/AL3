@@ -208,7 +208,7 @@ bool FbxObjects::Init()
 		IID_PPV_ARGS(&constBuffSkin)
 	);
 
-	frameTime.SetTime(0, 0, 0, 1, 0, FbxTime::EMode::eFrames60);
+	//frameTime.SetTime(0, 0, 0, 1, 0, FbxTime::EMode::eFrames60);
 
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
@@ -223,13 +223,7 @@ bool FbxObjects::Init()
 
 void FbxObjects::Update(bool isShadowCamera)
 {
-	DirectX::XMMATRIX matScale, matRot, matTrans;
-
-	if (isPlay)
-	{
-		currentTime += frameTime;
-		if (currentTime > endTime) { currentTime = startTime; }
-	}
+	DirectX::XMMATRIX matRot, matScale, matTrans;
 
 	matScale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 	matRot = DirectX::XMMatrixIdentity();
@@ -313,25 +307,13 @@ void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
 
 void FbxObjects::PlayAnimation()
 {
-	FbxScene* fbxScene = model->GetFbxScene();
-
-	FbxAnimStack* animstack = fbxScene->GetSrcObject<FbxAnimStack>(0);
-
-	const char* animstackname = animstack->GetName();
-
-	FbxTakeInfo* takeinfo = fbxScene->GetTakeInfo(animstackname);
-
-	startTime = takeinfo->mLocalTimeSpan.GetStart();
-
-	endTime = takeinfo->mLocalTimeSpan.GetStop();
-
-	currentTime = startTime;
-
 	isPlay = true;
 }
 
 void FbxObjects::UpdateAnimation()
 {
+	if (!isPlay) { return; }
+
 	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
 	const FbxModels::Animation& animation = animations.at(current_animation_index);
 
@@ -350,7 +332,6 @@ void FbxObjects::UpdateAnimation()
 			int nodeCount = static_cast<int>(nodes.size());
 			for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			{
-
 				const FbxModels::NodeKeyData& key0 = keyframe0.nodeKeys.at(nodeIndex);
 				const FbxModels::NodeKeyData& key1 = keyframe1.nodeKeys.at(nodeIndex);
 
@@ -376,17 +357,7 @@ void FbxObjects::UpdateAnimation()
 		}
 	}
 
-	if (animation_end_flag == true)
-	{
-		animation_end_flag = false;
-		//current_animation_index = -1;
-		return;
-	}
-
-
-	//current_animation_seconds += elapsed_time;
-	current_animation_seconds += 0.01f;
-
+	current_animation_seconds += animation.add_time;
 
 	if (current_animation_seconds >= animation.seconds_length)
 	{
@@ -397,20 +368,25 @@ void FbxObjects::UpdateAnimation()
 		}
 		else
 		{
-			animation_end_flag = true;
+			isPlay = false;
 		}
 	}
 }
 
 void FbxObjects::UpdateTransform()
 {
-	//UpdateTransform
 	DirectX::XMMATRIX node_transform = DirectX::XMMatrixIdentity();
 	for (Node& node : nodes)
 	{
-		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
+		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(
+			node.scale.x,
+			node.scale.y,
+			node.scale.z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotate));
-		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.translate.x, node.translate.y, node.translate.z);
+		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(
+			node.translate.x,
+			node.translate.y,
+			node.translate.z);
 		DirectX::XMMATRIX local_transform = S * R * T;
 
 		DirectX::XMMATRIX parent_transform;
@@ -429,45 +405,14 @@ void FbxObjects::UpdateTransform()
 		node.world_transform = world_transform;
 	}
 
-	/*HRESULT result;
-	ConstBufferDataSkin* constMapSkin = nullptr;
-	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
-	if (model->GetNodeIndices().size() > 0)
-	{
-		for (size_t i = 0; i < model->GetNodeIndices().size(); ++i)
-		{
-			DirectX::XMMATRIX worldTransform =
-				nodes.at(model->GetNodeIndices().at(i)).world_transform;
-			DirectX::XMMATRIX offsetTransform =
-				model->GetOffsetTransforms().at(i);
-			DirectX::XMMATRIX boneTransform =
-				offsetTransform * worldTransform;
-			constMapSkin->bones[i] = boneTransform;
-		}
-	}
-	constBuffSkin->Unmap(0, nullptr);*/
-
-	//Test
-	std::vector<FbxModels::Bone>& bones = model->GetBones();
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> fbxData;
 	std::vector<DirectX::XMMATRIX> localMatRots;
 
 	HRESULT result;
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
-	for (int i = 0; i < bones.size(); i++)
+	for (int i = 0; i < model->GetNodeIndices().size(); i++)
 	{
-		DirectX::XMMATRIX matCurrentPose;
-
-		FbxAMatrix fbxCurrentPose =
-			bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
-
-		FbxModels::ConvertMatrixFromFbx(&matCurrentPose, fbxCurrentPose);
-
-		DirectX::XMMATRIX inverse = XMMatrixInverse(nullptr, nodes.at(model->GetNodeIndices().at(i)).world_transform);
-		DirectX::XMMATRIX trans = nodes.at(model->GetNodeIndices().at(i)).world_transform;
-		//constMapSkin->bones[i] = trans * bones[i].invInitialPose * matCurrentPose * inverse;
-
 		DirectX::XMMATRIX worldTransform =
 			nodes.at(model->GetNodeIndices().at(i)).world_transform;
 		DirectX::XMMATRIX offsetTransform =
@@ -476,21 +421,36 @@ void FbxObjects::UpdateTransform()
 			offsetTransform * worldTransform;
 		constMapSkin->bones[i] = boneTransform;
 
-		fbxData.push_back(std::make_pair(bones[i].name, trans * matCurrentPose * matWorld));
-		FbxVector4 fbxMatRot =
-			bones[i].fbxCluster->GetLink()->EvaluateLocalRotation(currentTime);
+		fbxData.push_back(std::make_pair(
+			nodes.at(model->GetNodeIndices().at(i)).name,
+			worldTransform * matWorld));
+		DirectX::XMFLOAT4 fbxMatRot = {};
+		fbxMatRot = nodes.at(model->GetNodeIndices().at(i)).rotate;
 
 		DirectX::XMMATRIX matRot = DirectX::XMMatrixIdentity();
-		matRot *= DirectX::XMMatrixRotationZ(static_cast<float>(fbxMatRot.mData[0]) / 180.0f * 3.14f);
-		matRot *= DirectX::XMMatrixRotationX(static_cast<float>(fbxMatRot.mData[1]) / 180.0f * 3.14f);
-		matRot *= DirectX::XMMatrixRotationY(static_cast<float>(fbxMatRot.mData[2]) / 180.0f * 3.14f);
+		matRot *= DirectX::XMMatrixRotationZ(fbxMatRot.z);
+		matRot *= DirectX::XMMatrixRotationX(fbxMatRot.x);
+		matRot *= DirectX::XMMatrixRotationY(fbxMatRot.y);
 		localMatRots.push_back(matRot);
 
-		if (bones[i].name.find("RightHand", 0) != std::string::npos)
+		std::string l_name = nodes.at(model->GetNodeIndices().at(i)).name;
+		if (l_name.find("RightHand", 0) != std::string::npos)
 		{
-			FbxAMatrix fbxMatrix = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
-			FbxModels::ConvertMatrixFromFbx(&matrix, fbxMatrix);
-			matrix = trans * matrix * matWorld;
+			DirectX::XMMATRIX l_matWorld = DirectX::XMMatrixIdentity();
+			DirectX::XMFLOAT3 l_scale = {};
+			l_scale.x = 1 / scale.x;
+			l_scale.y = 1 / scale.y;
+			l_scale.z = 1 / scale.z;
+			worldTransform.r[0].m128_f32[0] *= l_scale.x;
+			worldTransform.r[0].m128_f32[1] *= l_scale.x;
+			worldTransform.r[0].m128_f32[2] *= l_scale.x;
+			worldTransform.r[1].m128_f32[0] *= l_scale.y;
+			worldTransform.r[1].m128_f32[1] *= l_scale.y;
+			worldTransform.r[1].m128_f32[2] *= l_scale.y;
+			worldTransform.r[2].m128_f32[0] *= l_scale.z;
+			worldTransform.r[2].m128_f32[1] *= l_scale.z;
+			worldTransform.r[2].m128_f32[2] *= l_scale.z;
+			matrix = worldTransform * matWorld;
 		}
 	}
 	constBuffSkin->Unmap(0, nullptr);

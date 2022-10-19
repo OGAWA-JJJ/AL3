@@ -35,13 +35,24 @@ GameScene::GameScene()
 	initData.m_vsEntryPoint = "PSmain";
 	initData.m_vsEntryPoint = "VSmain";
 	l_normal = FbxObjects::CreateGraphicsPipeline(initData);
+	Object::ObjectInitData init;
+	init.m_vsEntryPoint = "VSmain";
+	init.m_psEntryPoint = "PSmain";
+	l_aaa = Object::CreateGraphicsPipeline(init);
 
 	//–¼‘O•ª‚©‚è‚É‚­‚¢
+	obj_model = Model::CreateFromObj("Sword");
+	obj_Sword = Object::Create(obj_model);
 	l_model0 = FbxModels::CreateFromFbx("RunMiku");
 	l_obj0 = FbxObjects::Create(l_model0);
 
-	l_obj0->SetScale(XMFLOAT3(0.015, 0.015, 0.015));
-	l_obj0->SetRotation(XMFLOAT3(0, 150, 0));
+	obj_Sword->SetScale(XMFLOAT3(1, 1, 1));
+	obj_Sword->SetRotation(XMFLOAT3(
+		310.0f,
+		300.0f,
+		310.0f));
+	l_obj0->SetScale(XMFLOAT3(0.01, 0.01, 0.01));
+	l_obj0->SetRotation(XMFLOAT3(0, 180, 0));
 	l_obj0->PlayAnimation();
 }
 
@@ -82,11 +93,14 @@ void GameScene::Update()
 		});
 	light->Update();
 	FbxObjects::SetLight(light);
+	Object::SetLight(light);
 
 	XMFLOAT3 rot = l_obj0->GetRotation();
 	rot.y += 0.5f;
 	//l_obj0->SetRotation(rot);
 	l_obj0->Update();
+	obj_Sword->MultiMatrix(l_obj0->GetMatrix());
+	obj_Sword->Update();
 }
 
 void GameScene::Draw()
@@ -95,6 +109,10 @@ void GameScene::Draw()
 	//if (isHit) { GH1->Draw(); }
 	//GH1->Draw();
 	//Sprite::PostDraw();
+
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+	obj_Sword->Draw(l_aaa);
+	Object::PostDraw();
 
 	l_obj0->Draw(l_normal);
 }

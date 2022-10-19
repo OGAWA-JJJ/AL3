@@ -110,7 +110,6 @@ FbxModels* FbxModels::CreateFromFbx(const std::string& modelname, bool smoothing
 //Load
 void FbxModels::Init(const std::string& modelname, bool smoothing)
 {
-	//Test-----
 	const std::string filename = modelname + ".fbx";
 	const std::string directoryPath = baseDirectory + modelname + "/";
 	const std::string path = directoryPath + filename;
@@ -232,8 +231,6 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 		LoadMaterial(directoryPath, filename, fbxScene->GetSrcObject<FbxSurfaceMaterial>(i));
 	}
 
-	//FbxNode* fbxNode = fbxScene->GetRootNode();
-
 	int texture_num = fbxScene->GetSrcObjectCount<FbxFileTexture>();
 	for (int i = 0; i < texture_num; i++)
 	{
@@ -245,21 +242,6 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 			int tex = texture->GetSrcObjectCount< FbxSurfaceMaterial>();
 		}
 	}
-
-	//for (auto& m : meshes)
-	//{
-	//	//1‚Â‚Ìƒ}ƒeƒŠƒAƒ‹‚µ‚©“ü‚Á‚Ä‚È‚¢
-	//	if (m->GetMaterial() == nullptr)
-	//	{
-	//		if (defaultMaterial == nullptr)
-	//		{
-	//			defaultMaterial = FbxMaterial::Create();
-	//			defaultMaterial->SetName("no material");
-	//			materials.emplace(defaultMaterial->GetName(), defaultMaterial);
-	//		}
-	//		m->SetMaterial(defaultMaterial);
-	//	}
-	//}
 
 	for (auto& m : meshes)
 	{
@@ -1013,35 +995,9 @@ void FbxModels::CheckBone()
 
 void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 {
-	/*const int deformer_count = fbx_mesh->GetDeformerCount(FbxDeformer::eSkin);
-	for (int deformer_index = 0; deformer_index < deformer_count; deformer_index++) {
-		FbxSkin* skin = static_cast<FbxSkin*>(fbx_mesh->GetDeformer(deformer_index, FbxDeformer::eSkin));
-		const int cluster_count = skin->GetClusterCount();
-		offset_transforms.resize(cluster_count);
-		node_indices.resize(cluster_count);
-
-		for (int cluster_index = 0; cluster_index < cluster_count; ++cluster_index) {
-			FbxCluster* cluster = skin->GetCluster(cluster_index);
-			node_indices.at(cluster_index) = FindNodeIndex(cluster->GetLink()->GetUniqueID());
-
-			FbxAMatrix reference_gloval_init_position;
-			cluster->GetTransformMatrix(reference_gloval_init_position);
-
-			FbxAMatrix cluster_global_init_position;
-			cluster->GetTransformLinkMatrix(cluster_global_init_position);
-
-			DirectX::XMMATRIX l_mat = DirectX::XMMatrixIdentity();
-			ConvertMatrixFromFbx(&l_mat, cluster_global_init_position.Inverse() * reference_gloval_init_position);
-			offset_transforms.at(cluster_index) = l_mat;
-		}
-	}*/
-
-	//Test
-	std::vector<Bone>& bones = this->bones;
 	FbxSkin* fbxSkin =
 		static_cast<FbxSkin*>(fbx_mesh->GetDeformer(0, FbxDeformer::eSkin));
 	int clusterCount = fbxSkin->GetClusterCount();
-	bones.reserve(clusterCount);
 	node_indices.resize(clusterCount);
 	offset_transforms.resize(clusterCount);
 
@@ -1052,18 +1008,11 @@ void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 
 		const char* boneName = fbxCluster->GetLink()->GetName();
 
-		bones.emplace_back(Bone(boneName));
-		Bone& bone = bones.back();
-
-		bone.fbxCluster = fbxCluster;
-
 		FbxAMatrix fbxMat;
 		fbxCluster->GetTransformLinkMatrix(fbxMat);
 
 		DirectX::XMMATRIX initialPose;
 		ConvertMatrixFromFbx(&initialPose, fbxMat);
-
-		bone.invInitialPose = DirectX::XMMatrixInverse(nullptr, initialPose);
 
 		FbxAMatrix reference_gloval_init_position;
 		fbxCluster->GetTransformMatrix(reference_gloval_init_position);
@@ -1104,6 +1053,8 @@ void FbxModels::FetchAnimaton()
 		float stop = stop_time.GetFrameCount() / animation_clip.sampling_rate;
 		float start = start_time.GetFrameCount() / animation_clip.sampling_rate;
 		animation_clip.seconds_length = stop - start;
+
+		animation_clip.add_time = stop / stop_time.GetFrameCount(FbxTime::EMode::eFrames60);
 
 		for (FbxTime time = start_time; time < stop_time; time += sampling_interval)
 		{

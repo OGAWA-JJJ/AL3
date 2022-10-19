@@ -2,7 +2,6 @@
 #include "../2D/Sprite.h"
 #include "../3D/Object.h"
 #include "../3D/Model.h"
-#include "../3D/Shape.h"
 #include "../XAudio2/Music.h"
 //#include "../3D/FbxObject3D.h"
 #include "../3D/FbxObjects.h"
@@ -26,10 +25,13 @@ private:
 
 	Light* light = nullptr;
 
+	Model* obj_model = nullptr;
+	Object* obj_Sword = nullptr;
 	FbxModels* l_model0 = nullptr;
 	FbxObjects* l_obj0 = nullptr;
 
 	FbxObjects::FbxPipelineSet l_normal = {};
+	Object::ObjPipelineSet l_aaa = {};
 
 public:
 	GameScene();

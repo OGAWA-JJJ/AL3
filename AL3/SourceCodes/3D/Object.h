@@ -9,25 +9,26 @@
 #include "Light.h"
 #include "../Math/CollisionInfo.h"
 
-struct ObjectInitData
-{
-	const char* m_vsEntryPoint = "VSmain";
-	const char* m_psEntryPoint = "PSmain";
-};
-
-//パイプラインセット
-struct ObjPipelineSet
-{
-	//ルートシグネチャ
-	ID3D12RootSignature* rootsignature;
-	//パイプラインステートオブジェクト
-	ID3D12PipelineState* pipelinestate;
-};
-
 class BaseCollider;
 
 class Object
 {
+public:
+	struct ObjectInitData
+	{
+		const char* m_vsEntryPoint = "VSmain";
+		const char* m_psEntryPoint = "PSmain";
+	};
+
+	//パイプラインセット
+	struct ObjPipelineSet
+	{
+		//ルートシグネチャ
+		ID3D12RootSignature* rootsignature;
+		//パイプラインステートオブジェクト
+		ID3D12PipelineState* pipelinestate;
+	};
+
 public:
 	//定数バッファ用データ構造体B0
 	struct ConstBufferDataB0

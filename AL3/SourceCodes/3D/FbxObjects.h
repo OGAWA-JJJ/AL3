@@ -52,9 +52,9 @@ private:
 	};
 	std::vector<Node> nodes;
 	int current_animation_index = 0;
+	int m_animationCount = 0;
 	float current_animation_seconds = 0.0f;
 	bool animation_loop_flag = true;
-	bool animation_end_flag = false;
 
 public:
 	static FbxObjects* Create(FbxModels* model = nullptr);
@@ -75,10 +75,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
-	FbxTime frameTime;
-	FbxTime startTime;
-	FbxTime endTime;
-	FbxTime currentTime;
+	//FbxTime frameTime;
+	//FbxTime startTime;
+	//FbxTime endTime;
+	//FbxTime currentTime;
 	bool isPlay = false;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
@@ -129,4 +129,5 @@ public:
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
+	DirectX::XMMATRIX GetMatrix() { return matrix; }	//ŽèŒÅ’è
 };
