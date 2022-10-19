@@ -177,8 +177,11 @@
     <ClCompile Include="SourceCodes\2D\Sprite.cpp" />
     <ClCompile Include="SourceCodes\2D\Texture.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxLoader.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxModel.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxModels.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxObject3D.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxObjects.cpp" />
     <ClCompile Include="SourceCodes\3D\Light.cpp" />
     <ClCompile Include="SourceCodes\3D\Material.cpp" />
     <ClCompile Include="SourceCodes\3D\Mesh.cpp" />
@@ -232,8 +235,11 @@
     <ClInclude Include="SourceCodes\2D\Sprite.h" />
     <ClInclude Include="SourceCodes\2D\Texture.h" />
     <ClInclude Include="SourceCodes\3D\FbxLoader.h" />
+    <ClInclude Include="SourceCodes\3D\FbxMeshes.h" />
     <ClInclude Include="SourceCodes\3D\FbxModel.h" />
+    <ClInclude Include="SourceCodes\3D\FbxModels.h" />
     <ClInclude Include="SourceCodes\3D\FbxObject3D.h" />
+    <ClInclude Include="SourceCodes\3D\FbxObjects.h" />
     <ClInclude Include="SourceCodes\3D\Light.h" />
     <ClInclude Include="SourceCodes\3D\Material.h" />
     <ClInclude Include="SourceCodes\3D\Mesh.h" />

@@ -189,6 +189,15 @@
     <ClCompile Include="SourceCodes\Users\ParticleManager.cpp">
       <Filter>SourceCodes\Users</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxModels.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxObjects.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -370,6 +379,15 @@
     </ClInclude>
     <ClInclude Include="SourceCodes\Users\ParticleManager.h">
       <Filter>SourceCodes\Users</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxMeshes.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxModels.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxObjects.h">
+      <Filter>SourceCodes\3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
