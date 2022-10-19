@@ -435,7 +435,7 @@ void FbxModels::CreateMesh(FbxMesh* fbx_mesh)
 	//Indices‚ÆNormals‚àˆêŠ‡‚Ås‚¤(‰¼)
 	LoadUV(mesh, fbx_mesh);
 
-	LoadColors(mesh, fbx_mesh);
+	//LoadColors(mesh, fbx_mesh);
 	SetMaterialName(mesh, fbx_mesh);
 
 	meshes.push_back(mesh);

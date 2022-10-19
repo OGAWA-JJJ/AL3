@@ -40,28 +40,29 @@ private:
 
 private:
 	struct Node {
-		const char* name;
-		Node* parent;
-		DirectX::XMFLOAT3 scale;
-		DirectX::XMFLOAT4 rotate;
-		DirectX::XMFLOAT3 translate;
-		DirectX::XMMATRIX local_transform;
-		DirectX::XMMATRIX world_transform;
+		const char* name = {};
+		Node* parent = {};
+		DirectX::XMFLOAT3 scale = {};
+		DirectX::XMFLOAT4 rotate = {};
+		DirectX::XMFLOAT3 translate = {};
+		DirectX::XMMATRIX local_transform = {};
+		DirectX::XMMATRIX world_transform = {};
 
 		std::vector<Node*>	children;
 	};
+
+private:
 	std::vector<Node> nodes;
+	bool animation_loop_flag = true;
 	int current_animation_index = 0;
 	int m_animationCount = 0;
 	float current_animation_seconds = 0.0f;
-	bool animation_loop_flag = true;
 
 public:
 	static FbxObjects* Create(FbxModels* model = nullptr);
 
 public:
 	static void StaticInit(ID3D12Device* dev, ID3D12GraphicsCommandList* cmdList);
-	//static void SetDevice(ID3D12Device* device) { FbxObjects::device = device; }
 	static FbxPipelineSet CreateGraphicsPipeline(const FbxInitData& fbxInitdata);
 	static void SetLight(Light* light) { FbxObjects::light = light; }
 
@@ -75,10 +76,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
-	//FbxTime frameTime;
-	//FbxTime startTime;
-	//FbxTime endTime;
-	//FbxTime currentTime;
 	bool isPlay = false;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
@@ -129,5 +126,17 @@ public:
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
-	DirectX::XMMATRIX GetMatrix() { return matrix; }	//ŽèŒÅ’è
+
+	const float GetAddTime(int animationIndex = 1) { return model->GetAnimations()[animationIndex].add_time; }
+	const float GetEndTime(int animationIndex = 1) { return model->GetAnimations()[animationIndex].seconds_length; }
+	const float GetNowTime(int animationIndex = 1) { return current_animation_seconds; }
+
+	void StopAnimation() { isPlay = false; }
+	void ResetAnimation() { current_animation_seconds = 0; }
+	void ReplayAnimation() { isPlay = true; }
+
+	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>
+		& GetAffineTrans() { return affineTrans; }
+	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
+	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//ŽèŒÅ’è
 };

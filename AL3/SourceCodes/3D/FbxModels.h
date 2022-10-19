@@ -3,8 +3,10 @@
 
 class FbxModels
 {
+private:
+	static const int MAX_BONE_INDICES = 4;
+
 public:
-	//Test
 	struct Node
 	{
 		uint64_t id = 0;
@@ -20,55 +22,6 @@ public:
 			archive(id, name, attribute, parent_index, scaling, rotation, translation);
 		}
 	};
-	std::vector<Node> nodes;
-	Node* meshNode = nullptr;
-	std::vector<Node>& GetNodes() { return nodes; }
-	void SetMeshNode(Node* meshNode) { this->meshNode = meshNode; }
-
-	static const int MAX_BONE_INDICES = 4;
-	struct Skin
-	{
-		UINT boneIndex[MAX_BONE_INDICES];
-		float boneWeight[MAX_BONE_INDICES];
-	};
-	std::vector<Skin> skinVert;
-	std::vector<Skin>& GetSkins() { return skinVert; }
-
-	void CheckBone();
-	uint64_t FindNodeIndex(uint64_t nodeId) const
-	{
-		int nodeCount = static_cast<int>(nodes.size());
-		for (int i = 0; i < nodeCount; ++i)
-		{
-			if (nodes[i].id == nodeId)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-	void FetchSkeleton(FbxMesh* fbx_mesh);
-
-	struct SubSet
-	{
-		uint32_t start_index = 0;
-		uint32_t index_count = 0;
-	};
-	std::vector<SubSet> subsets;
-
-	struct Bone
-	{
-		std::string name;
-		DirectX::XMMATRIX invInitialPose;
-		FbxCluster* fbxCluster;
-		Bone(const std::string& name) { this->name = name; }
-	};
-	//std::vector<Bone> bones;
-	//std::vector<Bone>& GetBones() { return bones; }
-	std::vector<DirectX::XMMATRIX> offset_transforms;
-	std::vector<uint32_t> node_indices;
-	std::vector<DirectX::XMMATRIX>& GetOffsetTransforms() { return offset_transforms; }
-	std::vector<uint32_t>& GetNodeIndices() { return node_indices; }
 
 	struct NodeKeyData
 	{
@@ -108,9 +61,52 @@ public:
 			archive(name, seconds_length, sampling_rate, keyframes);
 		}
 	};
+
+	struct SubSet
+	{
+		uint32_t start_index = 0;
+		uint32_t index_count = 0;
+	};
+
+	struct Skin
+	{
+		UINT boneIndex[MAX_BONE_INDICES];
+		float boneWeight[MAX_BONE_INDICES];
+	};
+
+private:
+	Node* meshNode = nullptr;
+	std::vector<Node> nodes;
+	std::vector<Skin> skinVert;		//1‚Â‚µ‚©‘Î‰ž‚µ‚Ä‚È‚¢
+	std::vector<SubSet> subsets;	//1‚Â‚µ‚©‘Î‰ž‚µ‚Ä‚È‚¢
+	std::vector<DirectX::XMMATRIX> offset_transforms;
+	std::vector<uint32_t> node_indices;
 	std::vector<Animation>	animation_clips;
+
+private:
+	void CheckBone();
+	void FetchSkeleton(FbxMesh* fbx_mesh);
 	void FetchAnimaton();
+	uint64_t FindNodeIndex(uint64_t nodeId) const
+	{
+		int nodeCount = static_cast<int>(nodes.size());
+		for (int i = 0; i < nodeCount; ++i)
+		{
+			if (nodes[i].id == nodeId)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+public:
+	std::vector<Node>& GetNodes() { return nodes; }
+	std::vector<Skin>& GetSkins() { return skinVert; }
+	std::vector<DirectX::XMMATRIX>& GetOffsetTransforms() { return offset_transforms; }
+	std::vector<uint32_t>& GetNodeIndices() { return node_indices; }
 	std::vector<Animation>& GetAnimations() { return animation_clips; }
+	void SetMeshNode(Node* meshNode) { this->meshNode = meshNode; }
 
 private:
 	static const std::string baseDirectory;

@@ -39,8 +39,6 @@ private:
 	FbxMaterial* material = nullptr;
 	std::unordered_map<unsigned short, std::vector<unsigned short>> smoothData;
 
-	//std::vector<Bone> bones;
-
 public:
 	static void StaticInit(ID3D12Device* dev);
 
@@ -65,7 +63,5 @@ public:
 	const D3D12_INDEX_BUFFER_VIEW& GetIBView() { return ibView; }
 	inline std::vector<VertexPosNormalUv>& GetVertices() { return vertices; }
 	inline std::vector<unsigned short>& GetIndices() { return indices; }
-
-	//std::vector<Bone>& GetBones() { return bones; }
 };
 

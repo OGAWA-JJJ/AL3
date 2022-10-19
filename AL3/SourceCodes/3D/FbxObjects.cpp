@@ -326,7 +326,6 @@ void FbxObjects::UpdateAnimation()
 		if (current_animation_seconds >= keyframe0.seconds &&
 			current_animation_seconds < keyframe1.seconds)
 		{
-
 			float rate = (current_animation_seconds - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
 			int nodeCount = static_cast<int>(nodes.size());
