@@ -1,6 +1,7 @@
 #include "Material.h"
 #include <DirectXTex.h>
 #include <cassert>
+#include <filesystem>
 
 ID3D12Device* Material::device = nullptr;
 
@@ -39,16 +40,24 @@ void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIP
 
 	//ファイルパスを結合
 	std::string filepath = directoryPath + textureFilename;
+	std::filesystem::path l_path(filepath);
+	l_path.replace_extension(".dds");
+	std::string str = l_path.string();
 	wchar_t wfilepath[128];
 
 	//ユニコード文字列に変換
-	MultiByteToWideChar(CP_ACP, 0, filepath.c_str(), -1, wfilepath, _countof(wfilepath));
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, wfilepath, _countof(wfilepath));
 
-	result = LoadFromWICFile(
-		wfilepath, DirectX::WIC_FLAGS_NONE,
+	result = LoadFromDDSFile(
+		wfilepath, DirectX::DDS_FLAGS_NONE,
 		&metadata, scratchImg);
-	if (FAILED(result)) {
-		assert(0);
+	if (FAILED(result))
+	{
+		MultiByteToWideChar(CP_ACP, 0, filepath.c_str(), -1, wfilepath, _countof(wfilepath));
+		result = LoadFromWICFile(
+			wfilepath, DirectX::WIC_FLAGS_NONE,
+			&metadata, scratchImg);
+		if (FAILED(result)) { assert(0); }
 	}
 
 	const DirectX::Image* img = scratchImg.GetImage(0, 0, 0); //生データ抽出

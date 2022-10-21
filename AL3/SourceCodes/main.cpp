@@ -50,6 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	FbxLoader::GetInstance()->Init(DirectXImportant::dev.Get());
 	FbxObject3D::SetDevice(DirectXImportant::dev.Get());
+	FbxObjects::StaticInit(DirectXImportant::dev.Get(), DirectXImportant::cmdList.Get());
 
 	//ƒ‚ƒfƒ‹‚Ìƒ[ƒh
 	ModelManager::Init();

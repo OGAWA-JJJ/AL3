@@ -1,4 +1,4 @@
-static const int MAX_BONES = 50;
+static const int MAX_BONES = 32;
 
 cbuffer cbuff0 : register(b0)
 {
@@ -9,10 +9,9 @@ cbuffer cbuff0 : register(b0)
 
 cbuffer cbuff1 : register(b1)
 {
-    float3 m_ambient : packoffset(c0); // アンビエント係数
-    float3 m_diffuse : packoffset(c1); // ディフューズ係数
-    float3 m_specular : packoffset(c2); // スペキュラー係数
-    float m_alpha : packoffset(c2.w); // アルファ
+    float3 m_ambient : packoffset(c0);
+    float3 m_diffuse : packoffset(c1);
+    float3 m_specular : packoffset(c2);
     float4 m_color : packoffset(c3);
 }
 
@@ -46,8 +45,8 @@ struct VSOutput
 
 struct PSOutput
 {
-    float4 svpos : SV_POSITION; //システム用頂点座標
+    float4 svpos : SV_POSITION; 
     float3 normal : NORMAL;
-    float2 uv : TEXCOORD; //uv値
+    float2 uv : TEXCOORD;
     float4 posInLVP : TEXCOORD1;
 };

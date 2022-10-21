@@ -4,8 +4,8 @@ ObjPipelineSet PipelineManager::obj_normal;
 ObjPipelineSet PipelineManager::obj_shadow;
 ObjPipelineSet PipelineManager::obj_receiveShadow;
 
-FbxPipelineSet PipelineManager::fbx_normal;
-FbxPipelineSet PipelineManager::fbx_shadow;
+FbxObjects::FbxPipelineSet PipelineManager::fbx_normal;
+FbxObjects::FbxPipelineSet PipelineManager::fbx_shadow;
 
 void PipelineManager::Init()
 {
@@ -24,13 +24,13 @@ void PipelineManager::Init()
 	receiveInit.m_vsEntryPoint = "VSShadowMain";
 	obj_receiveShadow = Object::CreateGraphicsPipeline(receiveInit);
 
-	FbxInitData fbxNormalInit;
+	FbxObjects::FbxInitData fbxNormalInit;
 	fbxNormalInit.m_vsEntryPoint = "PSmain";
 	fbxNormalInit.m_vsEntryPoint = "VSmain";
-	fbx_normal = FbxObject3D::CreateGraphicsPipeline(fbxNormalInit);
+	fbx_normal = FbxObjects::CreateGraphicsPipeline(fbxNormalInit);
 
-	FbxInitData fbxShadowInit;
+	FbxObjects::FbxInitData fbxShadowInit;
 	fbxShadowInit.m_psEntryPoint = "PSBlack";
 	fbxShadowInit.m_vsEntryPoint = "VSShadowMain";
-	fbx_shadow = FbxObject3D::CreateGraphicsPipeline(fbxShadowInit);
+	fbx_shadow = FbxObjects::CreateGraphicsPipeline(fbxShadowInit);
 }

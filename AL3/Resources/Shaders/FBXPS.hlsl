@@ -11,11 +11,10 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //return float4(1, 0, 0, 1);
     
     //テクスチャマッピング
-    float4 texcolor = { 0.5, 0.5, 1, 1 };
-    //float4 texcolor = tex.Sample(smp, input.uv);
+    float4 texcolor = tex.Sample(smp, input.uv);
     
     //シェーディングによる色
-    float4 shadecolor;
+    float4 shadecolor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     //光沢度
     const float shininess = 4.0f;
     //頂点から視点への方向ベクトル
@@ -25,7 +24,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //反射光ベクトル
     float3 reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
     //環境反射光
-    float3 ambient = { 1, 1, 1 }; /*m_ambient*/
+    float3 ambient = m_ambient;
     //拡散反射光
     float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //鏡面反射光
@@ -33,13 +32,9 @@ float4 PSmain(VSOutput input) : SV_TARGET
 	
     //加算
     shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
-    shadecolor.a = m_alpha;
-    
-    //return float4(1, 0, 0, 1);
     
     //シェーディングによる色で描画
-    //return texcolor;
-    return shadecolor * texcolor * m_color;
+    return shadecolor * texcolor;
 }
 
 float4 PSBlack() : SV_TARGET

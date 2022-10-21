@@ -4,6 +4,7 @@
 #include "../XAudio2/Music.h"
 #include "../3D/FbxObject3D.h"
 #include "../Math/OBBCollision.h"
+#include "../3D/FbxObjects.h"
 
 class Player
 {
@@ -81,23 +82,23 @@ private:	//オブジェクト(Draw用)
 	Object* obj_SwordBox = nullptr;
 	Object* obj_HitBox = nullptr;
 
-	FbxObject3D* fbxobj_StandMiku = nullptr;
-	FbxObject3D* fbxobj_SlowRunMiku = nullptr;
-	FbxObject3D* fbxobj_FastRunMiku = nullptr;
-	FbxObject3D* fbxobj_StandShadowMiku = nullptr;
-	FbxObject3D* fbxobj_SlowRunShadowMiku = nullptr;
-	FbxObject3D* fbxobj_FastRunShadowMiku = nullptr;
+	FbxObjects* fbxobj_StandMiku = nullptr;
+	FbxObjects* fbxobj_SlowRunMiku = nullptr;
+	FbxObjects* fbxobj_FastRunMiku = nullptr;
+	FbxObjects* fbxobj_StandShadowMiku = nullptr;
+	FbxObjects* fbxobj_SlowRunShadowMiku = nullptr;
+	FbxObjects* fbxobj_FastRunShadowMiku = nullptr;
 
-	FbxObject3D* fbxobj_OneSwordAttack = nullptr;
-	FbxObject3D* fbxobj_OneSwordAttackShadow = nullptr;
+	FbxObjects* fbxobj_OneSwordAttack = nullptr;
+	FbxObjects* fbxobj_OneSwordAttackShadow = nullptr;
 
-	FbxObject3D* fbxobj_dieMiku = nullptr;
-	FbxObject3D* fbxobj_impactMiku = nullptr;
-	FbxObject3D* fbxobj_rollingMiku = nullptr;
+	FbxObjects* fbxobj_dieMiku = nullptr;
+	FbxObjects* fbxobj_impactMiku = nullptr;
+	FbxObjects* fbxobj_rollingMiku = nullptr;
 
-	FbxObject3D* fbxobj_dieShadowMiku = nullptr;
-	FbxObject3D* fbxobj_impactShadowMiku = nullptr;
-	FbxObject3D* fbxobj_rollingShadowMiku = nullptr;
+	FbxObjects* fbxobj_dieShadowMiku = nullptr;
+	FbxObjects* fbxobj_impactShadowMiku = nullptr;
+	FbxObjects* fbxobj_rollingShadowMiku = nullptr;
 	//std::weak_ptr<FbxObject> fbxobj_StandMiku;
 	//std::weak_ptr<FbxObject> fbxobj_SlowRunMiku;
 	//std::weak_ptr<FbxObject> fbxobj_FastRunMiku;

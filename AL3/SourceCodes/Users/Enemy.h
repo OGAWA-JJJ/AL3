@@ -1,5 +1,6 @@
 #pragma once
 #include "../3D/FbxObject3D.h"
+#include "../3D/FbxObjects.h"
 #include "../3D/Object.h"
 #include "../Math/OBBCollision.h"
 
@@ -49,11 +50,11 @@ private:	//変数(ステータス関係)
 private:	//オブジェクト(Draw用)
 	Object* obj_Box[37] = { nullptr };
 
-	FbxObject3D* fbxobj_idleCreature = nullptr;
-	FbxObject3D* fbxobj_runCreature = nullptr;
-	FbxObject3D* fbxobj_kickCreature = nullptr;
-	FbxObject3D* fbxobj_punchCreature = nullptr;
-	FbxObject3D* fbxobj_dieCreature = nullptr;
+	FbxObjects* fbxobj_idleCreature = nullptr;
+	FbxObjects* fbxobj_runCreature = nullptr;
+	FbxObjects* fbxobj_kickCreature = nullptr;
+	FbxObjects* fbxobj_punchCreature = nullptr;
+	FbxObjects* fbxobj_dieCreature = nullptr;
 
 public:
 	Enemy();

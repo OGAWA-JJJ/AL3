@@ -1,6 +1,7 @@
 #pragma once
 #include "../3D/Model.h"
 #include "../3D/FbxModel.h"
+#include "../3D/FbxModels.h"
 
 class ModelManager
 {
@@ -8,20 +9,20 @@ public:	//Player
 	static Model* model_sword;
 	static Model* model_box;
 
-	static FbxModel* fbxmodel_standMiku;
-	static FbxModel* fbxmodel_slowRunMiku;
-	static FbxModel* fbxmodel_fastRunMiku;
-	static FbxModel* fbxmodel_oneSwrordAttack;
-	static FbxModel* fbxmodel_dieMiku;
-	static FbxModel* fbxmodel_impactMiku;
-	static FbxModel* fbxmodel_rollingMiku;
+	static FbxModels* fbxmodel_standMiku;
+	static FbxModels* fbxmodel_slowRunMiku;
+	static FbxModels* fbxmodel_fastRunMiku;
+	static FbxModels* fbxmodel_oneSwrordAttack;
+	static FbxModels* fbxmodel_dieMiku;
+	static FbxModels* fbxmodel_impactMiku;
+	static FbxModels* fbxmodel_rollingMiku;
 
 public:	//Enemy
-	static FbxModel* fbxmodel_idleCreature;
-	static FbxModel* fbxmodel_runCreature;
-	static FbxModel* fbxmodel_kickCreature;
-	static FbxModel* fbxmodel_punchCreature;
-	static FbxModel* fbxmodel_dieCreature;
+	static FbxModels* fbxmodel_idleCreature;
+	static FbxModels* fbxmodel_runCreature;
+	static FbxModels* fbxmodel_kickCreature;
+	static FbxModels* fbxmodel_punchCreature;
+	static FbxModels* fbxmodel_dieCreature;
 
 public:	//Stage
 	static Model* model_stage;

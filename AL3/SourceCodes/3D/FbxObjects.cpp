@@ -1,6 +1,7 @@
 #include "FbxObjects.h"
 #include "../DirectX/Camera.h"
 #include "../../imgui/ImguiControl.h"
+#include "../DirectX/ConstantBuffer.h"
 #include <d3dcompiler.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
@@ -142,7 +143,6 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 	CD3DX12_ROOT_PARAMETER rootparams[5] = {};
 
 	//どこで何使ってるか書け
-
 	//ワールド行列
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	//マテリアルのテクスチャ
@@ -208,8 +208,6 @@ bool FbxObjects::Init()
 		IID_PPV_ARGS(&constBuffSkin)
 	);
 
-	//frameTime.SetTime(0, 0, 0, 1, 0, FbxTime::EMode::eFrames60);
-
 	ConstBufferDataSkin* constMapSkin = nullptr;
 	result = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
 	for (int i = 0; i < MAX_BONES; i++)
@@ -241,7 +239,7 @@ void FbxObjects::Update(bool isShadowCamera)
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 	const DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
 
-	DirectX::XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
+	DirectX::XMMATRIX lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//影用
@@ -357,12 +355,14 @@ void FbxObjects::UpdateAnimation()
 	}
 
 	current_animation_seconds += animation.add_time;
+	m_isAnimationEndTrigger = false;
 
 	if (current_animation_seconds >= animation.seconds_length)
 	{
+		m_isAnimationEndTrigger = true;
 		if (animation_loop_flag == true)
 		{
-			current_animation_seconds -= animation.seconds_length;
+			current_animation_seconds = 0;
 
 		}
 		else

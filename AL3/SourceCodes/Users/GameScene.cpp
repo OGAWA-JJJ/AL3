@@ -97,6 +97,7 @@ void GameScene::Update()
 		//Lightî•ñ‚ðXV
 		Object::SetLight(light);
 		FbxObject3D::SetLight(light);
+		FbxObjects::SetLight(light);
 
 		//“G‹N“®
 		if (m_moveTimer > 0) { m_moveTimer--; }

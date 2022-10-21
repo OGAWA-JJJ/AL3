@@ -265,7 +265,7 @@ void FbxObject3D::Update(bool isShadowCamera)
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 	const XMFLOAT3& cameraPos = Camera::GetEye();
 
-	XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
+	XMMATRIX lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//‰e—p

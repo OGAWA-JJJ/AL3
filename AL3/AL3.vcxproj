@@ -125,6 +125,7 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)DirectXTex</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,6 +145,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)DirectXTex</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -177,6 +179,7 @@
     <ClCompile Include="SourceCodes\2D\Sprite.cpp" />
     <ClCompile Include="SourceCodes\2D\Texture.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxLoader.cpp" />
+    <ClCompile Include="SourceCodes\3D\FbxMaterial.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxModel.cpp" />
     <ClCompile Include="SourceCodes\3D\FbxModels.cpp" />
@@ -235,6 +238,7 @@
     <ClInclude Include="SourceCodes\2D\Sprite.h" />
     <ClInclude Include="SourceCodes\2D\Texture.h" />
     <ClInclude Include="SourceCodes\3D\FbxLoader.h" />
+    <ClInclude Include="SourceCodes\3D\FbxMaterial.h" />
     <ClInclude Include="SourceCodes\3D\FbxMeshes.h" />
     <ClInclude Include="SourceCodes\3D\FbxModel.h" />
     <ClInclude Include="SourceCodes\3D\FbxModels.h" />

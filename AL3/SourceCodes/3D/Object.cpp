@@ -307,10 +307,10 @@ void Object::Update(bool isShadowCamera)
 		matWorld *= parent->matWorld;
 	}
 
-	const DirectX::XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	const DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
+	const DirectX::XMMATRIX matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
+	const DirectX::XMFLOAT3 cameraPos = Camera::GetEye();
 
-	DirectX::XMMATRIX& lightMatViewProjection = Camera::ViewMatrix();
+	DirectX::XMMATRIX lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//‰e—p

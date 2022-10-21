@@ -5,20 +5,20 @@
 Model* ModelManager::model_sword = nullptr;
 Model* ModelManager::model_box = nullptr;
 
-FbxModel* ModelManager::fbxmodel_standMiku = nullptr;
-FbxModel* ModelManager::fbxmodel_slowRunMiku = nullptr;
-FbxModel* ModelManager::fbxmodel_fastRunMiku = nullptr;
-FbxModel* ModelManager::fbxmodel_oneSwrordAttack = nullptr;
-FbxModel* ModelManager::fbxmodel_dieMiku = nullptr;
-FbxModel* ModelManager::fbxmodel_impactMiku = nullptr;
-FbxModel* ModelManager::fbxmodel_rollingMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_standMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_slowRunMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_fastRunMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_oneSwrordAttack = nullptr;
+FbxModels* ModelManager::fbxmodel_dieMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_impactMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_rollingMiku = nullptr;
 
 //Enemy
-FbxModel* ModelManager::fbxmodel_idleCreature = nullptr;
-FbxModel* ModelManager::fbxmodel_runCreature = nullptr;
-FbxModel* ModelManager::fbxmodel_kickCreature = nullptr;
-FbxModel* ModelManager::fbxmodel_punchCreature = nullptr;
-FbxModel* ModelManager::fbxmodel_dieCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_idleCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_runCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_kickCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_punchCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_dieCreature = nullptr;
 
 //Stage
 Model* ModelManager::model_stage = nullptr;
@@ -55,20 +55,20 @@ void ModelManager::Init()
 	//Player
 	model_sword = Model::CreateFromObj("Sword");
 	model_box = Model::CreateFromObj("TestBox");
-	fbxmodel_standMiku = FbxLoader::GetInstance()->LoadModelFromFile("StandMiku");
-	fbxmodel_slowRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("SlowRunMiku");
-	fbxmodel_fastRunMiku = FbxLoader::GetInstance()->LoadModelFromFile("RunMiku");
-	fbxmodel_oneSwrordAttack = FbxLoader::GetInstance()->LoadModelFromFile("OneSwordAttack");
-	fbxmodel_dieMiku = FbxLoader::GetInstance()->LoadModelFromFile("DyingMiku");
-	fbxmodel_impactMiku = FbxLoader::GetInstance()->LoadModelFromFile("ImpactMiku");
-	fbxmodel_rollingMiku = FbxLoader::GetInstance()->LoadModelFromFile("RollingMiku");
+	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku");
+	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku");
+	fbxmodel_fastRunMiku = FbxModels::CreateFromFbx("RunMiku");
+	fbxmodel_oneSwrordAttack = FbxModels::CreateFromFbx("OneSwordAttack");
+	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku");
+	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku");
+	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku");
 
 	//Enemy
-	fbxmodel_idleCreature = FbxLoader::GetInstance()->LoadModelFromFile("IdleCreature");
-	fbxmodel_runCreature = FbxLoader::GetInstance()->LoadModelFromFile("RunCreature");
-	fbxmodel_kickCreature = FbxLoader::GetInstance()->LoadModelFromFile("KickingCreature");
-	fbxmodel_punchCreature = FbxLoader::GetInstance()->LoadModelFromFile("PunchingCreature");
-	fbxmodel_dieCreature = FbxLoader::GetInstance()->LoadModelFromFile("DyingCreature");
+	fbxmodel_idleCreature = FbxModels::CreateFromFbx("IdleCreature");
+	fbxmodel_runCreature = FbxModels::CreateFromFbx("RunCreature");
+	fbxmodel_kickCreature = FbxModels::CreateFromFbx("KickingCreature");
+	fbxmodel_punchCreature = FbxModels::CreateFromFbx("PunchingCreature");
+	fbxmodel_dieCreature = FbxModels::CreateFromFbx("DyingCreature");
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");

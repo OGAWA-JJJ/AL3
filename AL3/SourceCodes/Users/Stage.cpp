@@ -35,7 +35,7 @@ void Stage::Update()
 {
 	obj_Stage->Update();
 
-	obj_colosseum->Update();
+	//obj_colosseum->Update();
 }
 
 void Stage::Draw()

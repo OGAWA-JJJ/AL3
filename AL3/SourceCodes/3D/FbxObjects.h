@@ -31,6 +31,7 @@ private:
 		DirectX::XMMATRIX viewproj;
 		DirectX::XMMATRIX world;
 		DirectX::XMFLOAT3 cameraPos;
+		float pad;
 	};
 
 	struct ConstBufferDataSkin
@@ -77,6 +78,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
 	bool isPlay = false;
+	bool m_isAnimationEndTrigger = false;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
@@ -85,6 +87,13 @@ private:
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
 	//ボーン全部の回転行列
 	std::vector<DirectX::XMMATRIX> matRots;
+
+private:
+	DirectX::XMFLOAT3 ambient = { 0.8f, 0.8f, 0.8f };
+	DirectX::XMFLOAT3 diffuse = { 0.8f, 0.8f, 0.8f };
+	DirectX::XMFLOAT3 specular = { 0.8f, 0.8f, 0.8f };
+	float alpha = 1.0f;
+	DirectX::XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 public:
 	bool Init();
@@ -127,9 +136,9 @@ public:
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
 
-	const float GetAddTime(int animationIndex = 1) { return model->GetAnimations()[animationIndex].add_time; }
-	const float GetEndTime(int animationIndex = 1) { return model->GetAnimations()[animationIndex].seconds_length; }
-	const float GetNowTime(int animationIndex = 1) { return current_animation_seconds; }
+	const float GetAddTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].add_time; }
+	const float GetEndTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].seconds_length; }
+	const float GetNowTime(int animationIndex = 0) { return current_animation_seconds; }
 
 	void StopAnimation() { isPlay = false; }
 	void ResetAnimation() { current_animation_seconds = 0; }
@@ -139,4 +148,6 @@ public:
 		& GetAffineTrans() { return affineTrans; }
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//手固定
+
+	const bool IsAnimationEnd() { return m_isAnimationEndTrigger; }
 };

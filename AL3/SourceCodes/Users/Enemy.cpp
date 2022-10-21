@@ -9,6 +9,7 @@
 
 Enemy::Enemy()
 {
+#pragma region Init
 	m_pos = { 0,0,0 };
 	m_animationTimer = 0;
 	m_animationType = STAND;
@@ -21,6 +22,7 @@ Enemy::Enemy()
 	m_isCalcEnd = false;
 
 	m_hp = C_MAX_HP;
+#pragma endregion
 
 #pragma region ModelCreate
 	for (int i = 0; i < 37; i++)
@@ -28,29 +30,19 @@ Enemy::Enemy()
 		obj_Box[i] = Object::Create(ModelManager::model_box);
 	}
 
-	fbxobj_idleCreature = new FbxObject3D();
-	fbxobj_idleCreature->Init();
-	fbxobj_idleCreature->SetModel(ModelManager::fbxmodel_idleCreature);
+	fbxobj_idleCreature = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
 	fbxobj_idleCreature->PlayAnimation();
 
-	fbxobj_runCreature = new FbxObject3D();
-	fbxobj_runCreature->Init();
-	fbxobj_runCreature->SetModel(ModelManager::fbxmodel_runCreature);
+	fbxobj_runCreature = FbxObjects::Create(ModelManager::fbxmodel_runCreature);
 	fbxobj_runCreature->PlayAnimation();
 
-	fbxobj_kickCreature = new FbxObject3D();
-	fbxobj_kickCreature->Init();
-	fbxobj_kickCreature->SetModel(ModelManager::fbxmodel_kickCreature);
+	fbxobj_kickCreature = FbxObjects::Create(ModelManager::fbxmodel_kickCreature);
 	fbxobj_kickCreature->PlayAnimation();
 
-	fbxobj_punchCreature = new FbxObject3D();
-	fbxobj_punchCreature->Init();
-	fbxobj_punchCreature->SetModel(ModelManager::fbxmodel_punchCreature);
+	fbxobj_punchCreature = FbxObjects::Create(ModelManager::fbxmodel_punchCreature);
 	fbxobj_punchCreature->PlayAnimation();
 
-	fbxobj_dieCreature = new FbxObject3D();
-	fbxobj_dieCreature->Init();
-	fbxobj_dieCreature->SetModel(ModelManager::fbxmodel_dieCreature);
+	fbxobj_dieCreature = FbxObjects::Create(ModelManager::fbxmodel_dieCreature);
 	fbxobj_dieCreature->PlayAnimation();
 #pragma endregion
 
@@ -103,7 +95,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 {
 	if (IsDead())
 	{
-		if (fbxobj_dieCreature->GetNowTime() == fbxobj_dieCreature->GetEndTime())
+		if (fbxobj_dieCreature->IsAnimationEnd())
 		{
 			fbxobj_dieCreature->StopAnimation();
 		}
@@ -186,7 +178,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_isCalc = true;
 
 					//確認用
-					fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+					//fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 				}
 			}
 			else
@@ -202,7 +194,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_isCalcEnd = true;
 
 					//確認用
-					fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+					//fbxobj_kickCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 				}
 			}
 		}
@@ -214,7 +206,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		l_affine = fbxobj_kickCreature->GetAffineTrans();
 		l_matRot = fbxobj_kickCreature->GetMatRots();
 
-		if (fbxobj_kickCreature->GetNowTime() == fbxobj_kickCreature->GetEndTime())
+		if (fbxobj_kickCreature->IsAnimationEnd())
 		{
 			fbxobj_runCreature->SetPosition(m_pos);
 			fbxobj_runCreature->Update();
@@ -251,7 +243,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_isCalc = true;
 
 					//確認用
-					fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+					//fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 				}
 			}
 			else
@@ -267,7 +259,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_isCalcEnd = true;
 
 					//確認用
-					fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+					//fbxobj_punchCreature->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 				}
 			}
 		}
@@ -279,7 +271,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		l_affine = fbxobj_punchCreature->GetAffineTrans();
 		l_matRot = fbxobj_punchCreature->GetMatRots();
 
-		if (fbxobj_punchCreature->GetNowTime() == fbxobj_punchCreature->GetEndTime())
+		if (fbxobj_punchCreature->IsAnimationEnd())
 		{
 			fbxobj_runCreature->SetPosition(m_pos);
 			fbxobj_runCreature->Update();
@@ -321,21 +313,21 @@ void Enemy::Draw()
 {
 	if (IsDead())
 	{
-		fbxobj_dieCreature->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		fbxobj_dieCreature->Draw(PipelineManager::fbx_normal);
 		return;
 	}
 
 	if (m_animationType == STAND)
 	{
-		fbxobj_idleCreature->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		fbxobj_idleCreature->Draw(PipelineManager::fbx_normal);
 	}
 	else if (m_animationType == RUN)
 	{
-		fbxobj_runCreature->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		fbxobj_runCreature->Draw(PipelineManager::fbx_normal);
 	}
 	else if (m_animationType == KICK)
 	{
-		fbxobj_kickCreature->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		fbxobj_kickCreature->Draw(PipelineManager::fbx_normal);
 		if (m_endKick)
 		{
 			m_animationType = RUN;
@@ -344,7 +336,7 @@ void Enemy::Draw()
 	}
 	else if (m_animationType == PUNCH)
 	{
-		fbxobj_punchCreature->Draw(DirectXImportant::cmdList.Get(), PipelineManager::fbx_normal);
+		fbxobj_punchCreature->Draw(PipelineManager::fbx_normal);
 		if (m_endPunch)
 		{
 			m_animationType = RUN;

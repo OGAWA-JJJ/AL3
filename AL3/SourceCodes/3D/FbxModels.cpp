@@ -6,6 +6,7 @@
 #include <xlocbuf>
 #include <codecvt> 
 #include <DirectXTex.h>
+#include <filesystem>
 
 #include "../Input/Input.h"
 
@@ -318,17 +319,10 @@ void FbxModels::LoadMaterial(const std::string& directoryPath, const std::string
 		}
 	}
 
-	FbxDouble3 color = colors[(int)MaterialOrder::Ambient];
-	FbxDouble factor = factors[(int)MaterialOrder::Ambient];
-	entry_material.ambient = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
-
-	color = colors[(int)MaterialOrder::Diffuse];
-	factor = factors[(int)MaterialOrder::Diffuse];
-	entry_material.diffuse = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
-
-	color = colors[(int)MaterialOrder::Specular];
-	factor = factors[(int)MaterialOrder::Specular];
-	entry_material.specular = DirectX::XMFLOAT3((float)color[0], (float)color[1], (float)color[2]);
+	entry_material.ambient = l_material->ambient;
+	entry_material.diffuse = l_material->diffuse;
+	entry_material.specular = l_material->specular;
+	entry_material.color = l_material->color;
 
 	l_material->SetMaterial(entry_material);
 
@@ -849,7 +843,6 @@ void FbxModels::LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh)
 std::string FbxModels::LoadName(FbxFileTexture* texture)
 {
 	//テクスチャを読み込んで各meshのtextureFileNameに持たせる
-
 	std::string str;
 	if (texture == nullptr) { return str; }
 
@@ -865,6 +858,9 @@ std::string FbxModels::LoadName(FbxFileTexture* texture)
 	Split('/', buffer, split_list);
 
 	str = buffer;
+	std::filesystem::path l_path(str);
+	l_path.replace_extension(".dds");
+	str = l_path.string();
 
 	return str;
 }
