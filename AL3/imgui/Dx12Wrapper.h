@@ -11,6 +11,7 @@ private:
 
 public:
 	Dx12Wrapper();
+	~Dx12Wrapper();
 	static void ImguiInit();
 	static void WindowsInit(HWND hwnd);
 	static void DirectXInit();

@@ -145,7 +145,7 @@ public:
 	void ReplayAnimation() { isPlay = true; }
 
 	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>
-		& GetAffineTrans() { return affineTrans; }
+		& GetAffineTrans() { return affineTrans; }	//スケール行列が入っている為、OBB描画に問題
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//手固定
 

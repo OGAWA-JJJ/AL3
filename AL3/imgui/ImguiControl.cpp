@@ -12,6 +12,7 @@ float ImguiControl::Imgui_lightDir_z = 0.0f;
 
 bool ImguiControl::Imgui_isOBBDraw = true;
 bool ImguiControl::Imgui_isPlayerDraw = true;
+bool ImguiControl::Imgui_isEnemyDraw = true;
 bool ImguiControl::Imgui_isWeaponDraw = true;
 bool ImguiControl::Imgui_isSponzaDraw = true;
 
@@ -39,6 +40,7 @@ void ImguiControl::Update()
 	ImGui::TextColored(ImVec4(1.0f, 0.3f, 1.0f, 1.0f), "isDraw");
 	ImGui::Checkbox("OBB_BOX_DRAW", &Imgui_isOBBDraw);
 	ImGui::Checkbox("PLAYER_DRAW", &Imgui_isPlayerDraw);
+	ImGui::Checkbox("ENEMY_DRAW", &Imgui_isEnemyDraw);
 	ImGui::Checkbox("WEAPON_DRAW", &Imgui_isWeaponDraw);
 	ImGui::Checkbox("SPONZA_DRAW", &Imgui_isSponzaDraw);
 

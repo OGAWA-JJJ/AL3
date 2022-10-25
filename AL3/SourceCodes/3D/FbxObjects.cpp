@@ -420,6 +420,20 @@ void FbxObjects::UpdateTransform()
 			offsetTransform * worldTransform;
 		constMapSkin->bones[i] = boneTransform;
 
+		DirectX::XMFLOAT3 l_scale = {};
+		l_scale.x = 1 / scale.x;
+		l_scale.y = 1 / scale.y;
+		l_scale.z = 1 / scale.z;
+		worldTransform.r[0].m128_f32[0] *= l_scale.x;
+		worldTransform.r[0].m128_f32[1] *= l_scale.x;
+		worldTransform.r[0].m128_f32[2] *= l_scale.x;
+		worldTransform.r[1].m128_f32[0] *= l_scale.y;
+		worldTransform.r[1].m128_f32[1] *= l_scale.y;
+		worldTransform.r[1].m128_f32[2] *= l_scale.y;
+		worldTransform.r[2].m128_f32[0] *= l_scale.z;
+		worldTransform.r[2].m128_f32[1] *= l_scale.z;
+		worldTransform.r[2].m128_f32[2] *= l_scale.z;
+
 		fbxData.push_back(std::make_pair(
 			nodes.at(model->GetNodeIndices().at(i)).name,
 			worldTransform * matWorld));
@@ -435,20 +449,6 @@ void FbxObjects::UpdateTransform()
 		std::string l_name = nodes.at(model->GetNodeIndices().at(i)).name;
 		if (l_name.find("RightHand", 0) != std::string::npos)
 		{
-			DirectX::XMMATRIX l_matWorld = DirectX::XMMatrixIdentity();
-			DirectX::XMFLOAT3 l_scale = {};
-			l_scale.x = 1 / scale.x;
-			l_scale.y = 1 / scale.y;
-			l_scale.z = 1 / scale.z;
-			worldTransform.r[0].m128_f32[0] *= l_scale.x;
-			worldTransform.r[0].m128_f32[1] *= l_scale.x;
-			worldTransform.r[0].m128_f32[2] *= l_scale.x;
-			worldTransform.r[1].m128_f32[0] *= l_scale.y;
-			worldTransform.r[1].m128_f32[1] *= l_scale.y;
-			worldTransform.r[1].m128_f32[2] *= l_scale.y;
-			worldTransform.r[2].m128_f32[0] *= l_scale.z;
-			worldTransform.r[2].m128_f32[1] *= l_scale.z;
-			worldTransform.r[2].m128_f32[2] *= l_scale.z;
 			matrix = worldTransform * matWorld;
 		}
 	}

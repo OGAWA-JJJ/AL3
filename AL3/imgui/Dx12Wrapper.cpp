@@ -9,6 +9,12 @@ Dx12Wrapper::Dx12Wrapper()
 {
 }
 
+Dx12Wrapper::~Dx12Wrapper()
+{
+	ImGui_ImplWin32_Shutdown();
+	ImGui_ImplDX12_Shutdown();
+}
+
 void Dx12Wrapper::ImguiInit()
 {
 	_heapForImgui = CreateDescriptorHeapForImgui();

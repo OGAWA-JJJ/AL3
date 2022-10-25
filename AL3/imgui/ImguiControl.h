@@ -14,6 +14,7 @@ public:
 
 	static bool Imgui_isOBBDraw;
 	static bool Imgui_isPlayerDraw;
+	static bool Imgui_isEnemyDraw;
 	static bool Imgui_isWeaponDraw;
 	static bool Imgui_isSponzaDraw;
 

@@ -138,7 +138,7 @@ public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const OBB& GetSwordOBB() { return m_obb; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	const int& GetPower() { return m_power; }
+	const int GetPower() { return m_power; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
 	const inline float GetMpRate() { return static_cast<float>(m_mp) / static_cast<float>(C_MAX_MP); }
 	const inline float GetStaminaRate() { return static_cast<float>(m_stamina) / static_cast<float>(C_MAX_STAMINA); }

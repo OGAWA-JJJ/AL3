@@ -43,7 +43,6 @@ Player::Player()
 	for (int i = 0; i < 28; i++)
 	{
 		obj_Box[i] = Object::Create(ModelManager::model_box);
-		obj_Box[i]->SetScale(DirectX::XMFLOAT3(100, 100, 100));
 	}
 	obj_SwordBox = Object::Create(ModelManager::model_box);
 	obj_HitBox = Object::Create(ModelManager::model_box);
@@ -848,7 +847,7 @@ void Player::Draw()
 		{
 			obj_Box[i]->Draw(PipelineManager::obj_normal);
 		}
-		if (ImguiControl::Imgui_isWeaponDraw)
+		if (m_isAttack)
 		{
 			obj_SwordBox->Draw(PipelineManager::obj_normal);
 		}
@@ -1130,7 +1129,7 @@ void Player::CalcOBB()
 			bones[i].second.r[3].m128_f32[1],
 			bones[i].second.r[3].m128_f32[2]);
 		l_obb.matrix = matRot[i];
-		l_obb.length = DirectX::XMFLOAT3(3, 3, 3);
+		l_obb.length = obj_Box[i]->GetScale();
 		l_obbs.push_back(l_obb);
 	}
 	m_obbs = l_obbs;

@@ -104,21 +104,21 @@ public:
 	~Enemy();
 
 	void Init();
-	void Update(DirectX::XMFLOAT3 playerPos);
+	void Update(DirectX::XMFLOAT3& playerPos);
 	void Draw();
 
 private:
 	void CalcOBB();
 	void JudgAnimationType(float dist);
 	void CalcAngleDiff(DirectX::XMFLOAT3& pPos);
-	void CalcNearAngle(DirectX::XMFLOAT3 pPos, float myAngleY);	//çUåÇèIóπéûÇ…ã≤Çﬁ
+	void CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY);	//çUåÇèIóπéûÇ…ã≤Çﬁ
 	void CalcAttackCollisionTimer(const float startFrame, const float endFrame);
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	const int& GetBoneCount() { return m_boneCount; }
-	const int& GetPower() { return C_MAX_POWER; }
+	const int GetBoneCount() { return m_boneCount; }
+	const int GetPower() { return C_MAX_POWER; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
 	const bool IsInvincible() { return m_isInvincible; }
 	const bool IsAttack() { return m_isAttack; }
