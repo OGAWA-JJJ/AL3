@@ -201,7 +201,7 @@ void GameScene::PlayerUpdate()
 void GameScene::EnemyUpdate()
 {
 	//“G‚ÌUŒ‚Žž”»’è
-	if (m_enemy->IsAttack() && m_enemy->GetIsCalc())
+	if (m_enemy->IsAttack() && m_enemy->IsCalc())
 	{
 		if (!m_player->IsInvincible())
 		{

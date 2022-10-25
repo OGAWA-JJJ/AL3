@@ -20,6 +20,14 @@ FbxModels* ModelManager::fbxmodel_kickCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_punchCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_dieCreature = nullptr;
 
+FbxModels* ModelManager::fbxmodel_RTurnCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_LTurnCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_RBackCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_LBackCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_explosionCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_riseCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_swingDownCreature = nullptr;
+
 //Stage
 Model* ModelManager::model_stage = nullptr;
 Model* ModelManager::model_sponza = nullptr;
@@ -44,6 +52,14 @@ ModelManager::~ModelManager()
 	delete fbxmodel_kickCreature;
 	delete fbxmodel_punchCreature;
 	delete fbxmodel_dieCreature;
+
+	delete fbxmodel_RTurnCreature;
+	delete fbxmodel_LTurnCreature;
+	delete fbxmodel_RBackCreature;
+	delete fbxmodel_LBackCreature;
+	delete fbxmodel_explosionCreature;
+	delete fbxmodel_riseCreature;
+	delete fbxmodel_swingDownCreature;
 
 	//Stage
 	delete model_stage;
@@ -70,7 +86,15 @@ void ModelManager::Init()
 	fbxmodel_punchCreature = FbxModels::CreateFromFbx("PunchingCreature");
 	fbxmodel_dieCreature = FbxModels::CreateFromFbx("DyingCreature");
 
+	fbxmodel_RTurnCreature = FbxModels::CreateFromFbx("RTurnCreature");
+	fbxmodel_LTurnCreature = FbxModels::CreateFromFbx("LTurnCreature");
+	fbxmodel_RBackCreature = FbxModels::CreateFromFbx("RBackAttackCreature");
+	fbxmodel_LBackCreature = FbxModels::CreateFromFbx("LBackAttackCreature");
+	fbxmodel_explosionCreature = FbxModels::CreateFromFbx("ExplosionCreature");
+	fbxmodel_riseCreature = FbxModels::CreateFromFbx("RiseCreature");
+	fbxmodel_swingDownCreature = FbxModels::CreateFromFbx("SwingDownCreature");
+
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
-	model_sponza = Model::CreateFromObj("yuka");
+	model_sponza = Model::CreateFromObj("sponza");
 }

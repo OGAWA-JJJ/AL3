@@ -12,26 +12,15 @@ public:
 	static float Imgui_lightDir_y;
 	static float Imgui_lightDir_z;
 
-	///static float swordPos_x;
-	///static float swordPos_y;
-	///static float swordPos_z;
-	//static float Imgui_ground_y;
-	//static float Imgui_swordPos_x;
-	//static float Imgui_swordPos_y;
-	//static float Imgui_swordPos_z;
-	//static float Imgui_swordRot_x;
-	//static float Imgui_swordRot_y;
-	//static float Imgui_swordRot_z;
-	//static bool Imgui_isTargetDraw;
-
 	static bool Imgui_isOBBDraw;
 	static bool Imgui_isPlayerDraw;
 	static bool Imgui_isWeaponDraw;
+	static bool Imgui_isSponzaDraw;
 
-	static float Imgui_cameraY;
+	static char* Imgui_AniType;
 
 public:
-	//InguiControl();
+	ImguiControl() {};
 	static void Update();
 };
 

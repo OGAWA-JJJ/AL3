@@ -43,6 +43,7 @@ Player::Player()
 	for (int i = 0; i < 28; i++)
 	{
 		obj_Box[i] = Object::Create(ModelManager::model_box);
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(100, 100, 100));
 	}
 	obj_SwordBox = Object::Create(ModelManager::model_box);
 	obj_HitBox = Object::Create(ModelManager::model_box);
@@ -178,7 +179,7 @@ Player::~Player()
 {
 	delete obj_Sword;
 	delete obj_ShadowSword;
-	delete obj_Box[28];
+	delete obj_Box;
 	delete obj_SwordBox;
 	delete obj_HitBox;
 
@@ -242,7 +243,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 {
 	if (IsDead())
 	{
-		if (fbxobj_dieMiku->GetNowTime() == fbxobj_dieMiku->GetEndTime())
+		if (fbxobj_dieMiku->IsAnimationEnd())
 		{
 			fbxobj_dieMiku->StopAnimation();
 			fbxobj_dieShadowMiku->StopAnimation();
@@ -389,7 +390,6 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * C_MAX_CAMERA_MOVE_SPEED;
 					cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
 					m_cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
-					ImguiControl::Imgui_cameraY = eye.y;
 
 					//‹——£‚Æ·•ª
 					float diff = 0;
@@ -798,20 +798,6 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	{
 		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
-	if (m_isInvincible)
-	{
-		//fbxobj_rollingMiku->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
-	}
-	else
-	{
-		//fbxobj_rollingMiku->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	}
-
-	if (Input::isPadTrigger(XINPUT_GAMEPAD_LEFT_THUMB))
-	{
-		fbxobj_OneSwordAttack->ResetAnimation();
-		m_animationType = STAND;
-	}
 }
 
 void Player::Draw()
@@ -1119,7 +1105,6 @@ void Player::CalcOBB()
 	));
 
 	obj_SwordBox->Update();
-	//obj_HitBox->Update();
 
 	OBB swordOBB;
 	//UŒ‚Žž‚Ì“–‚½‚è”»’è(OBB)©ŒvŽZ‚µ‚Ä‚é‚¾‚¯
@@ -1145,7 +1130,7 @@ void Player::CalcOBB()
 			bones[i].second.r[3].m128_f32[1],
 			bones[i].second.r[3].m128_f32[2]);
 		l_obb.matrix = matRot[i];
-		l_obb.length = obj_Box[i]->GetScale();
+		l_obb.length = DirectX::XMFLOAT3(3, 3, 3);
 		l_obbs.push_back(l_obb);
 	}
 	m_obbs = l_obbs;
@@ -1267,6 +1252,7 @@ void Player::OtherUpdate()
 		{
 			fbxobj_impactMiku->ResetAnimation();
 			fbxobj_impactShadowMiku->ResetAnimation();
+			m_isInvincible = false;
 			m_animationType = STAND;
 		}
 	}

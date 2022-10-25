@@ -18,7 +18,19 @@ private:
 private:	//自機のパターン
 	enum AnimationType
 	{
-		STAND, SLOWRUN, RUN, ATTACK, DAMAGED, ROLLING
+		STAND,		//待機
+		SLOWRUN,	//低速移動(未使用)
+		RUN,		//移動(スタミナ未使用 ← 違和感)
+		ATTACK,		//攻撃(連撃非対応 ← やれ)
+		DAMAGED,	//被弾
+		ROLLING,	//回避
+
+		//新規
+		//連撃
+		//アイテム使用
+		//武器切り替え
+		//戦技
+		//バックステップ
 	};
 
 public:		//定数

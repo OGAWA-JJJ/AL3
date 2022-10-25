@@ -38,17 +38,12 @@ float4 PSmain(VSOutput input) : SV_TARGET
 
 float4 PSShadowMain(PSOutput input) : SV_TARGET
 {
-    //float4 texcolor = shadow.Sample(smp, input.uv);
-    //return texcolor;
-    
-    float4x4 light = lightViewProj;
+    //float4x4 light = lightViewProj;
     float4 texcolor = tex.Sample(smp, input.uv);
     
     float2 shadowMapUV = input.posInLVP.xy / input.posInLVP.w;
     shadowMapUV *= float2(0.5f, -0.5f);
     shadowMapUV += 0.5f;
-    
-    //return float4(shadowMapUV, 1, 1);
     
     //float zInLVP = input.posInLVP.z / input.posInLVP.w;
     
@@ -58,10 +53,16 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     if (shadowMapUV.x > 0.0f && shadowMapUV.x < 1.0f
         && shadowMapUV.y > 0.0f && shadowMapUV.y < 1.0f)
     {
+        //float zInShadowMap = shadow.Sample(smp, shadowMapUV).r;
+        //if (zInLVP > zInShadowMap)
+        //{
+        //    shadowMap = shadow.Sample(smp, shadowMapUV);
+        //}
+        
         shadowMap = shadow.Sample(smp, shadowMapUV);
-        //shadowMap = float3(1, 1, 0);
+        //texcolor.xyz *= shadowMap.xyz;
     }
-
+    
     texcolor.xyz *= shadowMap.xyz;
     
     return texcolor * color;
@@ -69,5 +70,6 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
 
 float4 PSBlack() : SV_TARGET
 {
+    //return float4(input.svpos.z, input.svpos.z, input.svpos.z, 1.0f);
     return float4(0.5f, 0.5f, 0.5f, 1.0f);
 }

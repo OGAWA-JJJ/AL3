@@ -24,6 +24,14 @@ public:	//Enemy
 	static FbxModels* fbxmodel_punchCreature;
 	static FbxModels* fbxmodel_dieCreature;
 
+	static FbxModels* fbxmodel_RTurnCreature;
+	static FbxModels* fbxmodel_LTurnCreature;
+	static FbxModels* fbxmodel_RBackCreature;
+	static FbxModels* fbxmodel_LBackCreature;
+	static FbxModels* fbxmodel_explosionCreature;
+	static FbxModels* fbxmodel_riseCreature;
+	static FbxModels* fbxmodel_swingDownCreature;
+
 public:	//Stage
 	static Model* model_stage;
 	static Model* model_sponza;
