@@ -55,11 +55,11 @@ GameScene::GameScene()
 		310.0f));
 
 	l_obj0->SetScale(XMFLOAT3(0.01, 0.01, 0.01));
-	l_obj0->SetRotation(XMFLOAT3(0, 180, 0));
+	l_obj0->SetRotation(XMFLOAT3(0, 150, 0));
 	l_obj0->PlayAnimation();
 
 	l_obj1->SetScale(XMFLOAT3(0.01, 0.01, 0.01));
-	l_obj1->SetRotation(XMFLOAT3(0, 180, 0));
+	l_obj1->SetRotation(XMFLOAT3(0, 150, 0));
 	l_obj1->PlayAnimation();
 }
 
@@ -109,9 +109,6 @@ void GameScene::Update()
 	FbxObjects::SetLight(light);
 	Object::SetLight(light);
 
-	XMFLOAT3 rot = l_obj0->GetRotation();
-	rot.y += 0.5f;
-
 	bool l_isFastRun = isFastRun;
 	isFastRun = ImguiControl::Imgui_isFastRun;
 	if (l_isFastRun != isFastRun)
@@ -127,36 +124,35 @@ void GameScene::Update()
 		}
 	}
 
-	float addTimer = 0.015f;
+	float addTimer = 0.02f;
 	if (isFastRun)
 	{
+		l_obj0->BlendAnimation(l_obj1, OgaJEase::easeOutCubic(rate));
+		l_obj0->Update();
 		if (rate < 1.0f)
 		{
 			l_obj1->Update();
-			rate += addTimer;
-			if (rate > 1.0f)
-			{
-				rate = 1.0f;
-			}
 		}
-		l_obj0->BlendAnimation(l_obj1, OgaJEase::easeOutCubic(rate));
-		l_obj0->Update();
 		obj_Sword->MultiMatrix(l_obj0->GetMatrix());
 	}
 	else
 	{
+		l_obj1->BlendAnimation(l_obj0, OgaJEase::easeOutCubic(rate));
+		l_obj1->Update();
 		if (rate < 1.0f)
 		{
 			l_obj0->Update();
-			rate += addTimer;
-			if (rate > 1.0f)
-			{
-				rate = 1.0f;
-			}
 		}
-		l_obj1->Update();
-		l_obj1->BlendAnimation(l_obj0, OgaJEase::easeOutCubic(rate));
 		obj_Sword->MultiMatrix(l_obj1->GetMatrix());
+	}
+
+	if (rate < 1.0f)
+	{
+		rate += addTimer;
+	}
+	if (rate > 1.0f)
+	{
+		rate = 1.0f;
 	}
 
 	obj_Sword->Update();

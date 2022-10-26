@@ -54,6 +54,7 @@ private:
 	static int height;
 
 public:
+	~ImguiControl() {};
 	static UINT64 LoadTexture(const wchar_t* filename);
 
 	static void SetDescHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descHeap) { l_descHeap = descHeap; }

@@ -317,44 +317,44 @@ void FbxObjects::UpdateAnimation()
 	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
 	const FbxModels::Animation& animation = animations.at(current_animation_index);
 
-	const std::vector<FbxModels::Keyframe>& keyframes = animation.keyframes;
-	int keyCount = static_cast<int>(keyframes.size());
-	for (int keyIndex = 0; keyIndex < keyCount - 1; ++keyIndex)
-	{
-		const FbxModels::Keyframe& keyframe0 = keyframes.at(keyIndex);
-		const FbxModels::Keyframe& keyframe1 = keyframes.at(keyIndex + 1);
-		if (current_animation_seconds >= keyframe0.seconds &&
-			current_animation_seconds < keyframe1.seconds)
-		{
-			float rate = (current_animation_seconds - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
+	//const std::vector<FbxModels::Keyframe>& keyframes = animation.keyframes;
+	//int keyCount = static_cast<int>(keyframes.size());
+	//for (int keyIndex = 0; keyIndex < keyCount - 1; ++keyIndex)
+	//{
+	//	const FbxModels::Keyframe& keyframe0 = keyframes.at(keyIndex);
+	//	const FbxModels::Keyframe& keyframe1 = keyframes.at(keyIndex + 1);
+	//	if (current_animation_seconds >= keyframe0.seconds &&
+	//		current_animation_seconds < keyframe1.seconds)
+	//	{
+	//		float rate = (current_animation_seconds - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
-			int nodeCount = static_cast<int>(nodes.size());
-			for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-			{
-				const FbxModels::NodeKeyData& key0 = keyframe0.nodeKeys.at(nodeIndex);
-				const FbxModels::NodeKeyData& key1 = keyframe1.nodeKeys.at(nodeIndex);
+	//		int nodeCount = static_cast<int>(nodes.size());
+	//		for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+	//		{
+	//			const FbxModels::NodeKeyData& key0 = keyframe0.nodeKeys.at(nodeIndex);
+	//			const FbxModels::NodeKeyData& key1 = keyframe1.nodeKeys.at(nodeIndex);
 
-				Node& node = nodes[nodeIndex];
+	//			//Node& node = nodes[nodeIndex];
 
-				DirectX::XMVECTOR Scale1 = DirectX::XMLoadFloat3(&key1.scale);
-				DirectX::XMVECTOR Rotate1 = DirectX::XMLoadFloat4(&key1.rotate);
-				DirectX::XMVECTOR Translate1 = DirectX::XMLoadFloat3(&key1.translate);
+	//			DirectX::XMVECTOR Scale1 = DirectX::XMLoadFloat3(&key1.scale);
+	//			DirectX::XMVECTOR Rotate1 = DirectX::XMLoadFloat4(&key1.rotate);
+	//			DirectX::XMVECTOR Translate1 = DirectX::XMLoadFloat3(&key1.translate);
 
-				DirectX::XMVECTOR Scale0 = DirectX::XMLoadFloat3(&key0.scale);
-				DirectX::XMVECTOR Rotate0 = DirectX::XMLoadFloat4(&key0.rotate);
-				DirectX::XMVECTOR Translate0 = DirectX::XMLoadFloat3(&key0.translate);
+	//			DirectX::XMVECTOR Scale0 = DirectX::XMLoadFloat3(&key0.scale);
+	//			DirectX::XMVECTOR Rotate0 = DirectX::XMLoadFloat4(&key0.rotate);
+	//			DirectX::XMVECTOR Translate0 = DirectX::XMLoadFloat3(&key0.translate);
 
-				DirectX::XMVECTOR Scale = DirectX::XMVectorLerp(Scale0, Scale1, rate);
-				DirectX::XMVECTOR Rotate = DirectX::XMQuaternionSlerp(Rotate0, Rotate1, rate);
-				DirectX::XMVECTOR Translate = DirectX::XMVectorLerp(Translate0, Translate1, rate);
+	//			DirectX::XMVECTOR Scale = DirectX::XMVectorLerp(Scale0, Scale1, rate);
+	//			DirectX::XMVECTOR Rotate = DirectX::XMQuaternionSlerp(Rotate0, Rotate1, rate);
+	//			DirectX::XMVECTOR Translate = DirectX::XMVectorLerp(Translate0, Translate1, rate);
 
-				//DirectX::XMStoreFloat3(&node.scale, Scale);
-				//DirectX::XMStoreFloat4(&node.rotate, Rotate);
-				//DirectX::XMStoreFloat3(&node.translate, Translate);
-			}
-			break;
-		}
-	}
+	//			//DirectX::XMStoreFloat3(&node.scale, Scale);
+	//			//DirectX::XMStoreFloat4(&node.rotate, Rotate);
+	//			//DirectX::XMStoreFloat3(&node.translate, Translate);
+	//		}
+	//		break;
+	//	}
+	//}
 
 	current_animation_seconds += animation.add_time;
 
@@ -362,7 +362,8 @@ void FbxObjects::UpdateAnimation()
 	{
 		if (animation_loop_flag == true)
 		{
-			current_animation_seconds = 0;
+			//current_animation_seconds = 0;
+			current_animation_seconds -= animation.seconds_length;
 
 		}
 		else
@@ -519,6 +520,7 @@ void FbxObjects::BlendAnimation(FbxObjects* start, float rate)
 				startRotates.push_back(DirectX::XMQuaternionSlerp(Rotate0, Rotate1, rate));
 				startTranslates.push_back(DirectX::XMVectorLerp(Translate0, Translate1, rate));
 			}
+			break;
 		}
 	}
 
@@ -560,6 +562,7 @@ void FbxObjects::BlendAnimation(FbxObjects* start, float rate)
 				endRotates.push_back(DirectX::XMQuaternionSlerp(Rotate0, Rotate1, rate));
 				endTranslates.push_back(DirectX::XMVectorLerp(Translate0, Translate1, rate));
 			}
+			break;
 		}
 	}
 
