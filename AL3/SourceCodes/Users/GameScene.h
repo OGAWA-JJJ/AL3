@@ -27,11 +27,18 @@ private:
 
 	Model* obj_model = nullptr;
 	Object* obj_Sword = nullptr;
+
 	FbxModels* l_model0 = nullptr;
 	FbxObjects* l_obj0 = nullptr;
 
+	FbxModels* l_model1 = nullptr;
+	FbxObjects* l_obj1 = nullptr;
+
 	FbxObjects::FbxPipelineSet l_normal = {};
 	Object::ObjPipelineSet l_aaa = {};
+
+	bool isFastRun = true;
+	float rate = 0.0f;
 
 public:
 	GameScene();

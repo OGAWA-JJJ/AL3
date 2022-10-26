@@ -139,4 +139,5 @@ public:
 		& GetAffineTrans() { return affineTrans; }
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//ŽèŒÅ’è
+	void BlendAnimation(FbxObjects* start, float rate);
 };

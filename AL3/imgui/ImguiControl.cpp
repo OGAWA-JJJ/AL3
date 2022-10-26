@@ -36,6 +36,8 @@ bool ImguiControl::Imgui_isGaussian = false;
 bool ImguiControl::Imgui_isBloom = true;
 bool ImguiControl::Imgui_isShadowMap = true;
 
+bool ImguiControl::Imgui_isFastRun = true;
+
 int ImguiControl::texnum = 1;
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> ImguiControl::l_descHeap;
 UINT64 ImguiControl::address;
@@ -140,7 +142,7 @@ void ImguiControl::Update()
 		ImGui::Spacing();
 	}
 
-
+	ImGui::Checkbox("IsFastRun", &Imgui_isFastRun);
 	ImGui::Text("GPU handle = %p", address);
 	ImGui::DragInt("width", &width);
 	ImGui::DragInt("height", &height);

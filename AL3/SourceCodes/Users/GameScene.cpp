@@ -45,20 +45,34 @@ GameScene::GameScene()
 	obj_Sword = Object::Create(obj_model);
 	l_model0 = FbxModels::CreateFromFbx("RunMiku");
 	l_obj0 = FbxObjects::Create(l_model0);
+	l_model1 = FbxModels::CreateFromFbx("SlowRunMiku");
+	l_obj1 = FbxObjects::Create(l_model1);
 
 	obj_Sword->SetScale(XMFLOAT3(1, 1, 1));
 	obj_Sword->SetRotation(XMFLOAT3(
 		310.0f,
 		300.0f,
 		310.0f));
+
 	l_obj0->SetScale(XMFLOAT3(0.01, 0.01, 0.01));
 	l_obj0->SetRotation(XMFLOAT3(0, 180, 0));
 	l_obj0->PlayAnimation();
+
+	l_obj1->SetScale(XMFLOAT3(0.01, 0.01, 0.01));
+	l_obj1->SetRotation(XMFLOAT3(0, 180, 0));
+	l_obj1->PlayAnimation();
 }
 
 GameScene::~GameScene()
 {
 	delete GH1;
+	delete light;
+	delete obj_model;
+	delete obj_Sword;
+	delete l_model0;
+	delete l_obj0;
+	delete l_model1;
+	delete l_obj1;
 }
 
 void GameScene::Init(ID3D12Resource* texbuff)
@@ -97,9 +111,54 @@ void GameScene::Update()
 
 	XMFLOAT3 rot = l_obj0->GetRotation();
 	rot.y += 0.5f;
-	//l_obj0->SetRotation(rot);
-	l_obj0->Update();
-	obj_Sword->MultiMatrix(l_obj0->GetMatrix());
+
+	bool l_isFastRun = isFastRun;
+	isFastRun = ImguiControl::Imgui_isFastRun;
+	if (l_isFastRun != isFastRun)
+	{
+		rate = 0.0f;
+		if (isFastRun)
+		{
+			l_obj0->ResetAnimation();
+		}
+		else
+		{
+			l_obj1->ResetAnimation();
+		}
+	}
+
+	float addTimer = 0.015f;
+	if (isFastRun)
+	{
+		if (rate < 1.0f)
+		{
+			l_obj1->Update();
+			rate += addTimer;
+			if (rate > 1.0f)
+			{
+				rate = 1.0f;
+			}
+		}
+		l_obj0->BlendAnimation(l_obj1, OgaJEase::easeOutCubic(rate));
+		l_obj0->Update();
+		obj_Sword->MultiMatrix(l_obj0->GetMatrix());
+	}
+	else
+	{
+		if (rate < 1.0f)
+		{
+			l_obj0->Update();
+			rate += addTimer;
+			if (rate > 1.0f)
+			{
+				rate = 1.0f;
+			}
+		}
+		l_obj1->Update();
+		l_obj1->BlendAnimation(l_obj0, OgaJEase::easeOutCubic(rate));
+		obj_Sword->MultiMatrix(l_obj1->GetMatrix());
+	}
+
 	obj_Sword->Update();
 }
 
@@ -114,7 +173,14 @@ void GameScene::Draw()
 	obj_Sword->Draw(l_aaa);
 	Object::PostDraw();
 
-	l_obj0->Draw(l_normal);
+	if (isFastRun)
+	{
+		l_obj0->Draw(l_normal);
+	}
+	else
+	{
+		l_obj1->Draw(l_normal);
+	}
 }
 
 void GameScene::LuminanceDraw()

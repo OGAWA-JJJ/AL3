@@ -40,6 +40,8 @@ public:
 	static bool Imgui_isBloom;
 	static bool Imgui_isShadowMap;
 
+	static bool Imgui_isFastRun;
+
 public:
 	static const int MAX_TEX_NUM = 10;
 
