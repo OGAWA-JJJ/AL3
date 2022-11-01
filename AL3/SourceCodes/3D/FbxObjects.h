@@ -77,8 +77,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
-	bool isPlay = false;
+	bool m_isPlay = false;
 	bool m_isAnimationEndTrigger = false;
+	bool m_isBlend = false;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
@@ -104,6 +105,7 @@ public:
 private:
 	void UpdateAnimation();
 	void UpdateTransform();
+
 	void CalcNode()
 	{
 		const std::vector<FbxModels::Node>& l_nodes = model->GetNodes();
@@ -126,12 +128,20 @@ private:
 		}
 	}
 
-public:
+public:	//Setter
 	void SetModel(FbxModels* model) { this->model = model; }
 
 	void SetScale(const DirectX::XMFLOAT3& scale) { this->scale = scale; }
 	void SetRotation(const DirectX::XMFLOAT3& rotation) { this->rotation = rotation; }
 	void SetPosition(const DirectX::XMFLOAT3& position) { this->position = position; }
+
+	void BlendAnimation(FbxObjects* startObject, float rate, bool isBlend = true);
+
+	void StopAnimation() { m_isPlay = false; }
+	void ResetAnimation() { current_animation_seconds = 0; }
+	void ReplayAnimation() { m_isPlay = true; }
+
+public:	//Getter
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
@@ -139,10 +149,6 @@ public:
 	const float GetAddTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].add_time; }
 	const float GetEndTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].seconds_length; }
 	const float GetNowTime(int animationIndex = 0) { return current_animation_seconds; }
-
-	void StopAnimation() { isPlay = false; }
-	void ResetAnimation() { current_animation_seconds = 0; }
-	void ReplayAnimation() { isPlay = true; }
 
 	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>
 		& GetAffineTrans() { return affineTrans; }	//スケール行列が入っている為、OBB描画に問題

@@ -19,6 +19,8 @@ Enemy::Enemy()
 	m_turnStartAngle = 0.0f;
 	m_turnEndAngle = 0.0f;
 	m_dist = 0.0f;
+	m_blendTimer = 0.0f;
+	m_easeBlendTimer = 0.0f;
 	m_isInvincible = false;
 	m_isAttack = false;
 	m_isAttackTrigger = false;
@@ -40,6 +42,8 @@ Enemy::Enemy()
 
 	fbxobj_idleCreature = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
 	fbxobj_idleCreature->PlayAnimation();
+
+	fbxobj_currentCreature = fbxobj_idleCreature;
 
 	fbxobj_runCreature = FbxObjects::Create(ModelManager::fbxmodel_runCreature);
 	fbxobj_runCreature->PlayAnimation();
@@ -167,7 +171,7 @@ void Enemy::Init()
 	m_pos = DirectX::XMFLOAT3(0.0f, 0.0f, -300.0f);
 }
 
-void Enemy::Update(DirectX::XMFLOAT3& playerPos)
+void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 {
 	if (IsDead())
 	{
@@ -214,6 +218,44 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> l_affine;
 	std::vector<DirectX::XMMATRIX> l_matRot;
 
+	//BindAnimation
+	if (fbxobj_oldCreature != nullptr && m_isChange)
+	{
+		fbxobj_currentCreature->BlendAnimation(fbxobj_oldCreature, m_easeBlendTimer, m_isChange);
+	}
+	else
+	{
+		fbxobj_currentCreature->BlendAnimation(fbxobj_oldCreature, m_easeBlendTimer, false);
+	}
+
+	//過去のデータを保存
+	if (!m_isChange)
+	{
+		fbxobj_oldCreature = fbxobj_currentCreature;
+	}
+
+	//補間計算
+	else
+	{
+		if (m_blendTimer < 1.0f)
+		{
+			m_blendTimer += C_MAX_BLEND_TIMER;
+			m_easeBlendTimer = OgaJEase::easeOutCubic(m_blendTimer);
+			//fbxobj_oldCreature->Update();
+			if (m_blendTimer > 1.0f)
+			{
+				m_blendTimer = 1.0f;
+				m_isChange = false;
+				fbxobj_oldCreature = fbxobj_currentCreature;
+			}
+		}
+		if (m_blendTimer > 1.0f)
+		{
+			m_isChange = false;
+			fbxobj_oldCreature = fbxobj_currentCreature;
+		}
+	}
+
 	//FbxUpdate
 	if (m_animationType == STAND)
 	{
@@ -222,7 +264,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 		fbxobj_idleCreature->Update();
 		l_affine = fbxobj_idleCreature->GetAffineTrans();
 		l_matRot = fbxobj_idleCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "STAND";
+		fbxobj_currentCreature = fbxobj_idleCreature;
 	}
 	else if (m_animationType == RUN)
 	{
@@ -232,7 +276,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 		fbxobj_runCreature->Update();
 		l_affine = fbxobj_runCreature->GetAffineTrans();
 		l_matRot = fbxobj_runCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "RUN";
+		fbxobj_currentCreature = fbxobj_runCreature;
 	}
 	else if (m_animationType == KICK)
 	{
@@ -246,7 +292,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 		fbxobj_kickCreature->Update();
 		l_affine = fbxobj_kickCreature->GetAffineTrans();
 		l_matRot = fbxobj_kickCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "KICK";
+		fbxobj_currentCreature = fbxobj_kickCreature;
 
 		if (fbxobj_kickCreature->IsAnimationEnd())
 		{
@@ -270,7 +318,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 		fbxobj_punchCreature->Update();
 		l_affine = fbxobj_punchCreature->GetAffineTrans();
 		l_matRot = fbxobj_punchCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "PUNCH";
+		fbxobj_currentCreature = fbxobj_punchCreature;
 
 		if (fbxobj_punchCreature->IsAnimationEnd())
 		{
@@ -286,13 +336,17 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 	{
 		l_affine = fbxobj_RTurnCreature->GetAffineTrans();
 		l_matRot = fbxobj_RTurnCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "R_TURN";
+		fbxobj_currentCreature = fbxobj_RTurnCreature;
 	}
 	else if (m_animationType == L_TURN)
 	{
 		l_affine = fbxobj_LTurnCreature->GetAffineTrans();
 		l_matRot = fbxobj_LTurnCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "L_TURN";
+		fbxobj_currentCreature = fbxobj_LTurnCreature;
 	}
 	else if (m_animationType == R_BACK)
 	{
@@ -303,7 +357,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 
 		l_affine = fbxobj_RBackCreature->GetAffineTrans();
 		l_matRot = fbxobj_RBackCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "R_BACK";
+		fbxobj_currentCreature = fbxobj_RBackCreature;
 	}
 	else if (m_animationType == L_BACK)
 	{
@@ -314,7 +370,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 
 		l_affine = fbxobj_LBackCreature->GetAffineTrans();
 		l_matRot = fbxobj_LBackCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "L_BACK";
+		fbxobj_currentCreature = fbxobj_LBackCreature;
 	}
 	else if (m_animationType == EXPLOSION)
 	{
@@ -324,7 +382,9 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 
 		l_affine = fbxobj_explosionCreature->GetAffineTrans();
 		l_matRot = fbxobj_explosionCreature->GetMatRots();
+
 		ImguiControl::Imgui_AniType = "EXPLOSION";
+		fbxobj_currentCreature = fbxobj_explosionCreature;
 
 		if (fbxobj_explosionCreature->IsAnimationEnd())
 		{
@@ -337,10 +397,16 @@ void Enemy::Update(DirectX::XMFLOAT3& playerPos)
 		}
 	}
 
-	m_boneCount = l_affine.size();
+	//切り替わったら
+	if (!m_isChange && fbxobj_oldCreature != fbxobj_currentCreature)
+	{
+		m_blendTimer = 0.0f;
+		m_isChange = true;
+	}
 
 	//箱サイズ
 	std::vector<OBB> l_obbs;
+	m_boneCount = l_affine.size();
 	for (int i = 0; i < m_boneCount; i++)
 	{
 		//obj_Box[i]->SetScale(DirectX::XMFLOAT3(l_scale, l_scale, l_scale));
@@ -434,7 +500,7 @@ void Enemy::CalcOBB()
 
 void Enemy::JudgAnimationType(float dist)
 {
-	int l_div = 2;
+	int l_div = 200;
 	int l_rand = std::rand();
 	if (m_isTurn)
 	{

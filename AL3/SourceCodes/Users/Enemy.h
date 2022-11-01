@@ -47,6 +47,7 @@ private:	//定数
 	const float C_MAX_DIST = 35.0f;
 	const float C_MAX_TURN_RAD = 15.0f;
 	const float C_MAX_BACK_RAD = 150.0f;
+	const float C_MAX_BLEND_TIMER = 0.001f;
 
 private:	//定数(ステータス関係)
 	const int C_MAX_POWER = 100;
@@ -65,6 +66,8 @@ private:
 	float m_turnStartAngle;
 	float m_turnEndAngle;
 	float m_dist;
+	float m_blendTimer;
+	float m_easeBlendTimer;
 	bool m_isInvincible;
 	bool m_isAttack;
 	bool m_isAttackTrigger;
@@ -75,6 +78,8 @@ private:
 	bool m_isBackAttackLottery;
 	bool m_isBackAttack;
 
+	bool m_isChange = false;
+
 	//仮
 	bool m_endKick = false;
 	bool m_endPunch = false;
@@ -84,6 +89,9 @@ private:	//変数(ステータス関係)
 
 private:	//オブジェクト(Draw用)
 	Object* obj_Box[37] = { nullptr };
+
+	FbxObjects* fbxobj_oldCreature = nullptr;
+	FbxObjects* fbxobj_currentCreature = nullptr;
 
 	FbxObjects* fbxobj_idleCreature = nullptr;
 	FbxObjects* fbxobj_runCreature = nullptr;
@@ -104,7 +112,7 @@ public:
 	~Enemy();
 
 	void Init();
-	void Update(DirectX::XMFLOAT3& playerPos);
+	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
 
 private:

@@ -369,7 +369,13 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					}
 
 					//ã≠êßà⁄çs
-					else { if (m_animationType != ATTACK) { m_animationType = STAND; } }
+					else
+					{
+						if (m_animationType != ATTACK)
+						{
+							m_animationType = STAND;
+						}
+					}
 				}
 
 				//ÉJÉÅÉâ
