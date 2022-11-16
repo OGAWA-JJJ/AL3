@@ -129,10 +129,15 @@ private:
 	DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity();
 
 	std::vector<std::string> names;
+	std::string key;
+
+private:
+	static std::unordered_map<std::string, FbxModels*> models;
 
 public:
 	static void StaticInit(ID3D12Device* device);
-	static FbxModels* CreateFromFbx(const std::string& modelname, bool smoothing = false);
+	static FbxModels* CreateFromFbx(const std::string& modelname, const std::string& key = "", bool smoothing = false);
+	static void ReleaseModels() { models.clear(); }
 
 public:
 	static void ConvertMatrixFromFbx(DirectX::XMMATRIX* dst, const FbxAMatrix& src)
@@ -150,7 +155,7 @@ public:
 	FbxModels();
 	~FbxModels();
 
-	void Init(const std::string& modelname, bool smoothing);
+	void Init(const std::string& modelname, const std::string& key = "", bool smoothing = false);
 	void Draw(ID3D12GraphicsCommandList* cmdList);
 
 private:
@@ -160,6 +165,7 @@ private:
 	void LoadTextures();
 
 	void CreateMesh(FbxMesh* fbx_mesh);
+	void FindKeyCreateMesh(FbxMesh* fbx_mesh, int mesh_num);
 	void LoadIndices(FbxMeshes* mesh_data, FbxMesh* mesh);
 	void LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh);
 	void LoadNormals(FbxMeshes* mesh_data, FbxMesh* mesh);

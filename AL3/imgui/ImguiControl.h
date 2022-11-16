@@ -2,7 +2,7 @@
 
 class ImguiControl
 {
-public:
+public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_fov;
 	static float Imgui_far_z;
 	static float Imgui_lightColor_r;
@@ -18,7 +18,17 @@ public:
 	static bool Imgui_isWeaponDraw;
 	static bool Imgui_isSponzaDraw;
 
-	static char* Imgui_AniType;
+	static float Imgui_cameraDist;
+
+	static float Imgui_enemyBlendTimer;
+	static float Imgui_enemyCurrentAniTimer;
+	static float Imgui_enemyOldAniTimer;
+	static char* Imgui_enemyAniType;
+
+	static float Imgui_playerBlendTimer;
+	static float Imgui_playerCurrentAniTimer;
+	static float Imgui_playerOldAniTimer;
+	static char* Imgui_playerAniType;
 
 public:
 	ImguiControl() {};

@@ -6,13 +6,18 @@
 
 class Enemy
 {
-private:	//モーション
+	//モーション→メリハリあると良くなりそう。ヒットストップとか。
+	//バレットタイムとか。(色んな角度からアニメーション複数回再生的な)
+
+private:
 	enum AnimationType
 	{
 		STAND,		//待機
 		RUN,		//移動
 		KICK,		//蹴り攻撃
 		PUNCH,		//殴り攻撃
+
+		DIE,
 
 		//追加
 		R_TURN,		//右振り向き
@@ -47,27 +52,36 @@ private:	//定数
 	const float C_MAX_DIST = 35.0f;
 	const float C_MAX_TURN_RAD = 15.0f;
 	const float C_MAX_BACK_RAD = 150.0f;
-	const float C_MAX_BLEND_TIMER = 0.001f;
+	const float C_MAX_BLEND_TIMER = 0.02f;
 
 private:	//定数(ステータス関係)
 	const int C_MAX_POWER = 100;
 	const int C_MAX_HP = 1000;
+
+	const int C_RISE_TIMER = 110;
+	const int C_SWING_DOWN_TIMER = 30;
+	const float C_MAX_RISE_HEIGHT = 100.0f;
 	const float C_MAX_MOVE_SPEED = 2.0f;		//移動速度
 	const float C_MAX_TURN_TIMER = 0.01f;		//振り向きイージング
+	const float C_MAX_RISE_TIMER = 0.01f;		//上昇イージング
+	const float C_MAX_SWING_DOWN_TIMER = 0.02f;	//振り下ろしイージング
 
 private:
 	std::vector<OBB> m_obbs;
 	DirectX::XMFLOAT3 m_pos;
+	DirectX::XMFLOAT3 m_swingDownStartPos;
+	DirectX::XMFLOAT3 m_swingDownEndPos;
 	int m_animationTimer;
 	int m_animationType;
+	int m_oldAnimationType;
 	int m_boneCount;
 	float m_deg;
-	float m_turnEaseTimer;
+	float m_easeTimer;
 	float m_turnStartAngle;
 	float m_turnEndAngle;
 	float m_dist;
 	float m_blendTimer;
-	float m_easeBlendTimer;
+	float m_riseStartY;
 	bool m_isInvincible;
 	bool m_isAttack;
 	bool m_isAttackTrigger;
@@ -77,12 +91,9 @@ private:
 	bool m_turnVec;
 	bool m_isBackAttackLottery;
 	bool m_isBackAttack;
-
-	bool m_isChange = false;
-
-	//仮
-	bool m_endKick = false;
-	bool m_endPunch = false;
+	bool m_isRise;
+	bool m_isSwing;
+	bool m_isChange;
 
 private:	//変数(ステータス関係)
 	int m_hp;
@@ -90,22 +101,7 @@ private:	//変数(ステータス関係)
 private:	//オブジェクト(Draw用)
 	Object* obj_Box[37] = { nullptr };
 
-	FbxObjects* fbxobj_oldCreature = nullptr;
-	FbxObjects* fbxobj_currentCreature = nullptr;
-
-	FbxObjects* fbxobj_idleCreature = nullptr;
-	FbxObjects* fbxobj_runCreature = nullptr;
-	FbxObjects* fbxobj_kickCreature = nullptr;
-	FbxObjects* fbxobj_punchCreature = nullptr;
-	FbxObjects* fbxobj_dieCreature = nullptr;
-
-	FbxObjects* fbxobj_RTurnCreature = nullptr;
-	FbxObjects* fbxobj_LTurnCreature = nullptr;
-	FbxObjects* fbxobj_RBackCreature = nullptr;
-	FbxObjects* fbxobj_LBackCreature = nullptr;
-	FbxObjects* fbxobj_explosionCreature = nullptr;
-	FbxObjects* fbxobj_riseCreature = nullptr;
-	FbxObjects* fbxobj_swingDownCreature = nullptr;
+	FbxObjects* fbxobj_creature[12] = { nullptr };
 
 public:
 	Enemy();
@@ -121,6 +117,8 @@ private:
 	void CalcAngleDiff(DirectX::XMFLOAT3& pPos);
 	void CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY);	//攻撃終了時に挟む
 	void CalcAttackCollisionTimer(const float startFrame, const float endFrame);
+	void CalcRise(DirectX::XMFLOAT3& pPos);
+	void CalcSwingDown(DirectX::XMFLOAT3& pPos);
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
@@ -142,4 +140,3 @@ public:	//呼ぶやつ
 	bool IsDead();
 	bool IsFighting();
 };
-

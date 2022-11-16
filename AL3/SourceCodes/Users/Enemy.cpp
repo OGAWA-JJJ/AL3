@@ -11,16 +11,19 @@ Enemy::Enemy()
 {
 #pragma region Init
 	m_pos = { 0,0,0 };
+	m_swingDownStartPos = { 0,0,0 };
+	m_swingDownEndPos = { 0,0,0 };
 	m_animationTimer = 0;
 	m_animationType = STAND;
+	m_oldAnimationType = m_animationType;
 	m_boneCount = 0;
 	m_deg = 180.0f;
-	m_turnEaseTimer = 0.0f;
+	m_easeTimer = 0.0f;
 	m_turnStartAngle = 0.0f;
 	m_turnEndAngle = 0.0f;
 	m_dist = 0.0f;
 	m_blendTimer = 0.0f;
-	m_easeBlendTimer = 0.0f;
+	m_riseStartY = 0;
 	m_isInvincible = false;
 	m_isAttack = false;
 	m_isAttackTrigger = false;
@@ -30,7 +33,12 @@ Enemy::Enemy()
 	m_turnVec = false;
 	m_isBackAttackLottery = false;
 	m_isBackAttack = false;
+	m_isRise = false;
+	m_isSwing = false;
+	m_isChange = false;
+#pragma endregion
 
+#pragma region StatusInit
 	m_hp = C_MAX_HP;
 #pragma endregion
 
@@ -40,104 +48,102 @@ Enemy::Enemy()
 		obj_Box[i] = Object::Create(ModelManager::model_box);
 	}
 
-	fbxobj_idleCreature = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
-	fbxobj_idleCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::STAND] = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
+	fbxobj_creature[AnimationType::STAND]->PlayAnimation();
 
-	fbxobj_currentCreature = fbxobj_idleCreature;
+	fbxobj_creature[AnimationType::RUN] = FbxObjects::Create(ModelManager::fbxmodel_runCreature);
+	fbxobj_creature[AnimationType::RUN]->PlayAnimation();
 
-	fbxobj_runCreature = FbxObjects::Create(ModelManager::fbxmodel_runCreature);
-	fbxobj_runCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::KICK] = FbxObjects::Create(ModelManager::fbxmodel_kickCreature);
+	fbxobj_creature[AnimationType::KICK]->PlayAnimation();
 
-	fbxobj_kickCreature = FbxObjects::Create(ModelManager::fbxmodel_kickCreature);
-	fbxobj_kickCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::PUNCH] = FbxObjects::Create(ModelManager::fbxmodel_punchCreature);
+	fbxobj_creature[AnimationType::PUNCH]->PlayAnimation();
 
-	fbxobj_punchCreature = FbxObjects::Create(ModelManager::fbxmodel_punchCreature);
-	fbxobj_punchCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::DIE] = FbxObjects::Create(ModelManager::fbxmodel_dieCreature);
+	fbxobj_creature[AnimationType::DIE]->PlayAnimation();
 
-	fbxobj_dieCreature = FbxObjects::Create(ModelManager::fbxmodel_dieCreature);
-	fbxobj_dieCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::R_TURN] = FbxObjects::Create(ModelManager::fbxmodel_RTurnCreature);
+	fbxobj_creature[AnimationType::R_TURN]->PlayAnimation();
 
-	fbxobj_RTurnCreature = FbxObjects::Create(ModelManager::fbxmodel_RTurnCreature);
-	fbxobj_RTurnCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::L_TURN] = FbxObjects::Create(ModelManager::fbxmodel_LTurnCreature);
+	fbxobj_creature[AnimationType::L_TURN]->PlayAnimation();
 
-	fbxobj_LTurnCreature = FbxObjects::Create(ModelManager::fbxmodel_LTurnCreature);
-	fbxobj_LTurnCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::R_BACK] = FbxObjects::Create(ModelManager::fbxmodel_RBackCreature);
+	fbxobj_creature[AnimationType::R_BACK]->PlayAnimation();
 
-	fbxobj_RBackCreature = FbxObjects::Create(ModelManager::fbxmodel_RBackCreature);
-	fbxobj_RBackCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::L_BACK] = FbxObjects::Create(ModelManager::fbxmodel_LBackCreature);
+	fbxobj_creature[AnimationType::L_BACK]->PlayAnimation();
 
-	fbxobj_LBackCreature = FbxObjects::Create(ModelManager::fbxmodel_LBackCreature);
-	fbxobj_LBackCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::EXPLOSION] = FbxObjects::Create(ModelManager::fbxmodel_explosionCreature);
+	fbxobj_creature[AnimationType::EXPLOSION]->PlayAnimation();
 
-	fbxobj_explosionCreature = FbxObjects::Create(ModelManager::fbxmodel_explosionCreature);
-	fbxobj_explosionCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::RISE] = FbxObjects::Create(ModelManager::fbxmodel_riseCreature);
+	fbxobj_creature[AnimationType::RISE]->PlayAnimation();
 
-	fbxobj_riseCreature = FbxObjects::Create(ModelManager::fbxmodel_riseCreature);
-	fbxobj_riseCreature->PlayAnimation();
-
-	fbxobj_swingDownCreature = FbxObjects::Create(ModelManager::fbxmodel_swingDownCreature);
-	fbxobj_swingDownCreature->PlayAnimation();
+	fbxobj_creature[AnimationType::SWING_DOWN] = FbxObjects::Create(ModelManager::fbxmodel_swingDownCreature);
+	fbxobj_creature[AnimationType::SWING_DOWN]->PlayAnimation();
 #pragma endregion
 
 #pragma region ModelInit
 	const float Creature_Scale = 0.4f;
 
-	fbxobj_idleCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::STAND]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_runCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::RUN]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_kickCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::KICK]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_punchCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::PUNCH]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_dieCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::DIE]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_RTurnCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::R_TURN]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_LTurnCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::L_TURN]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_RBackCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::R_BACK]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_LBackCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::L_BACK]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_explosionCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::EXPLOSION]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_riseCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::RISE]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
 
-	fbxobj_swingDownCreature->SetScale(DirectX::XMFLOAT3(
+	fbxobj_creature[AnimationType::SWING_DOWN]->SetScale(DirectX::XMFLOAT3(
 		Creature_Scale,
 		Creature_Scale,
 		Creature_Scale));
@@ -148,26 +154,14 @@ Enemy::~Enemy()
 {
 	delete obj_Box;
 
-	delete fbxobj_idleCreature;
-	delete	fbxobj_runCreature;
-	delete	fbxobj_kickCreature;
-	delete	fbxobj_punchCreature;
-	delete	fbxobj_dieCreature;
-
-	delete	fbxobj_RTurnCreature;
-	delete	fbxobj_LTurnCreature;
-	delete	fbxobj_RBackCreature;
-	delete	fbxobj_LBackCreature;
-	delete	fbxobj_explosionCreature;
-	delete	fbxobj_riseCreature;
-	delete	fbxobj_swingDownCreature;
+	for (int i = 0; i < 12; i++)
+	{
+		delete fbxobj_creature[i];
+	}
 }
 
 void Enemy::Init()
 {
-	//obj_Lich->SetPosition(XMFLOAT3(0.0f, 35.0f, -400.0f));
-	//obj_Lich->SetRotation(XMFLOAT3(0, -100, 0));
-
 	m_pos = DirectX::XMFLOAT3(0.0f, 0.0f, -300.0f);
 }
 
@@ -175,14 +169,14 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 {
 	if (IsDead())
 	{
-		if (fbxobj_dieCreature->IsAnimationEnd())
+		if (fbxobj_creature[AnimationType::DIE]->IsAnimationEnd())
 		{
-			fbxobj_dieCreature->StopAnimation();
+			fbxobj_creature[AnimationType::DIE]->StopAnimation();
 		}
 
-		fbxobj_dieCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_dieCreature->SetPosition(m_pos);
-		fbxobj_dieCreature->Update();
+		fbxobj_creature[AnimationType::DIE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::DIE]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::DIE]->Update();
 		return;
 	}
 
@@ -191,7 +185,8 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		//非攻撃中かつ振り向き中じゃない
 		if (!m_isAttack)
 		{
-			float l_dist = OgaJHelper::CalcDist(m_pos, playerPos);
+			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+			float l_dist = OgaJHelper::CalcDist(l_pos, playerPos);
 			if (!m_isTurn)
 			{
 				//完全追従←ゆっくり振り向け(定数足す)
@@ -214,24 +209,13 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		CalcAngleDiff(playerPos);
 	}
 
-	//ボーン用配列
-	std::vector<std::pair<std::string, DirectX::XMMATRIX>> l_affine;
-	std::vector<DirectX::XMMATRIX> l_matRot;
-
-	//BindAnimation
-	if (fbxobj_oldCreature != nullptr && m_isChange)
+	//切り替わったら
+	if (!m_isChange &&
+		fbxobj_creature[m_animationType] != fbxobj_creature[m_oldAnimationType])
 	{
-		fbxobj_currentCreature->BlendAnimation(fbxobj_oldCreature, m_easeBlendTimer, m_isChange);
-	}
-	else
-	{
-		fbxobj_currentCreature->BlendAnimation(fbxobj_oldCreature, m_easeBlendTimer, false);
-	}
-
-	//過去のデータを保存
-	if (!m_isChange)
-	{
-		fbxobj_oldCreature = fbxobj_currentCreature;
+		m_blendTimer = 0.0f;
+		m_isChange = true;
+		fbxobj_creature[m_animationType]->ResetAnimation();
 	}
 
 	//補間計算
@@ -240,45 +224,43 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		if (m_blendTimer < 1.0f)
 		{
 			m_blendTimer += C_MAX_BLEND_TIMER;
-			m_easeBlendTimer = OgaJEase::easeOutCubic(m_blendTimer);
-			//fbxobj_oldCreature->Update();
+			//fbxobj_creature[m_oldAnimationType]->Update();
 			if (m_blendTimer > 1.0f)
 			{
 				m_blendTimer = 1.0f;
 				m_isChange = false;
-				fbxobj_oldCreature = fbxobj_currentCreature;
+				m_oldAnimationType = m_animationType;
 			}
 		}
-		if (m_blendTimer > 1.0f)
+		else
 		{
 			m_isChange = false;
-			fbxobj_oldCreature = fbxobj_currentCreature;
+			m_oldAnimationType = m_animationType;
 		}
 	}
+	ImguiControl::Imgui_enemyBlendTimer = m_blendTimer;
+
+	//BindAnimation
+	fbxobj_creature[m_animationType]->
+		BlendAnimation(fbxobj_creature[m_oldAnimationType], OgaJEase::easeOutCubic(m_blendTimer), true);
 
 	//FbxUpdate
 	if (m_animationType == STAND)
 	{
-		fbxobj_idleCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_idleCreature->SetPosition(m_pos);
-		fbxobj_idleCreature->Update();
-		l_affine = fbxobj_idleCreature->GetAffineTrans();
-		l_matRot = fbxobj_idleCreature->GetMatRots();
+		fbxobj_creature[AnimationType::STAND]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::STAND]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::STAND]->Update();
 
-		ImguiControl::Imgui_AniType = "STAND";
-		fbxobj_currentCreature = fbxobj_idleCreature;
+		ImguiControl::Imgui_enemyAniType = "STAND";
 	}
 	else if (m_animationType == RUN)
 	{
 		m_isAttack = false;
-		fbxobj_runCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_runCreature->SetPosition(m_pos);
-		fbxobj_runCreature->Update();
-		l_affine = fbxobj_runCreature->GetAffineTrans();
-		l_matRot = fbxobj_runCreature->GetMatRots();
+		fbxobj_creature[AnimationType::RUN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::RUN]->Update();
 
-		ImguiControl::Imgui_AniType = "RUN";
-		fbxobj_currentCreature = fbxobj_runCreature;
+		ImguiControl::Imgui_enemyAniType = "RUN";
 	}
 	else if (m_animationType == KICK)
 	{
@@ -287,23 +269,20 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			CalcAttackCollisionTimer(C_KICK_COLLISION_TIMER, C_KICK_COLLISION_ENDTIMER);
 		}
 
-		fbxobj_kickCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_kickCreature->SetPosition(m_pos);
-		fbxobj_kickCreature->Update();
-		l_affine = fbxobj_kickCreature->GetAffineTrans();
-		l_matRot = fbxobj_kickCreature->GetMatRots();
+		fbxobj_creature[AnimationType::KICK]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::KICK]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::KICK]->Update();
 
-		ImguiControl::Imgui_AniType = "KICK";
-		fbxobj_currentCreature = fbxobj_kickCreature;
+		ImguiControl::Imgui_enemyAniType = "KICK";
 
-		if (fbxobj_kickCreature->IsAnimationEnd())
+		if (fbxobj_creature[AnimationType::KICK]->IsAnimationEnd())
 		{
-			fbxobj_runCreature->SetPosition(m_pos);
-			fbxobj_runCreature->Update();
+			fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::RUN]->Update();
 
 			m_isAttack = false;
 
-			CalcNearAngle(playerPos, fbxobj_kickCreature->GetRotation().y);
+			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::KICK]->GetRotation().y);
 		}
 	}
 	else if (m_animationType == PUNCH)
@@ -313,40 +292,29 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			CalcAttackCollisionTimer(C_PUNCH_COLLISION_TIMER, C_PUNCH_COLLISION_ENDTIMER);
 		}
 
-		fbxobj_punchCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_punchCreature->SetPosition(m_pos);
-		fbxobj_punchCreature->Update();
-		l_affine = fbxobj_punchCreature->GetAffineTrans();
-		l_matRot = fbxobj_punchCreature->GetMatRots();
+		fbxobj_creature[AnimationType::PUNCH]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::PUNCH]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::PUNCH]->Update();
 
-		ImguiControl::Imgui_AniType = "PUNCH";
-		fbxobj_currentCreature = fbxobj_punchCreature;
+		ImguiControl::Imgui_enemyAniType = "PUNCH";
 
-		if (fbxobj_punchCreature->IsAnimationEnd())
+		if (fbxobj_creature[AnimationType::PUNCH]->IsAnimationEnd())
 		{
-			fbxobj_runCreature->SetPosition(m_pos);
-			fbxobj_runCreature->Update();
+			fbxobj_creature[AnimationType::PUNCH]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::PUNCH]->Update();
 
 			m_isAttack = false;
 
-			CalcNearAngle(playerPos, fbxobj_punchCreature->GetRotation().y);
+			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::PUNCH]->GetRotation().y);
 		}
 	}
 	else if (m_animationType == R_TURN)
 	{
-		l_affine = fbxobj_RTurnCreature->GetAffineTrans();
-		l_matRot = fbxobj_RTurnCreature->GetMatRots();
-
-		ImguiControl::Imgui_AniType = "R_TURN";
-		fbxobj_currentCreature = fbxobj_RTurnCreature;
+		ImguiControl::Imgui_enemyAniType = "R_TURN";
 	}
 	else if (m_animationType == L_TURN)
 	{
-		l_affine = fbxobj_LTurnCreature->GetAffineTrans();
-		l_matRot = fbxobj_LTurnCreature->GetMatRots();
-
-		ImguiControl::Imgui_AniType = "L_TURN";
-		fbxobj_currentCreature = fbxobj_LTurnCreature;
+		ImguiControl::Imgui_enemyAniType = "L_TURN";
 	}
 	else if (m_animationType == R_BACK)
 	{
@@ -355,11 +323,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
 		}
 
-		l_affine = fbxobj_RBackCreature->GetAffineTrans();
-		l_matRot = fbxobj_RBackCreature->GetMatRots();
-
-		ImguiControl::Imgui_AniType = "R_BACK";
-		fbxobj_currentCreature = fbxobj_RBackCreature;
+		ImguiControl::Imgui_enemyAniType = "R_BACK";
 	}
 	else if (m_animationType == L_BACK)
 	{
@@ -368,48 +332,51 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
 		}
 
-		l_affine = fbxobj_LBackCreature->GetAffineTrans();
-		l_matRot = fbxobj_LBackCreature->GetMatRots();
-
-		ImguiControl::Imgui_AniType = "L_BACK";
-		fbxobj_currentCreature = fbxobj_LBackCreature;
+		ImguiControl::Imgui_enemyAniType = "L_BACK";
 	}
 	else if (m_animationType == EXPLOSION)
 	{
-		fbxobj_explosionCreature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_explosionCreature->SetPosition(m_pos);
-		fbxobj_explosionCreature->Update();
+		fbxobj_creature[AnimationType::EXPLOSION]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::EXPLOSION]->Update();
 
-		l_affine = fbxobj_explosionCreature->GetAffineTrans();
-		l_matRot = fbxobj_explosionCreature->GetMatRots();
+		ImguiControl::Imgui_enemyAniType = "EXPLOSION";
 
-		ImguiControl::Imgui_AniType = "EXPLOSION";
-		fbxobj_currentCreature = fbxobj_explosionCreature;
-
-		if (fbxobj_explosionCreature->IsAnimationEnd())
+		if (fbxobj_creature[AnimationType::EXPLOSION]->IsAnimationEnd())
 		{
-			fbxobj_runCreature->SetPosition(m_pos);
-			fbxobj_runCreature->Update();
+			fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::EXPLOSION]->Update();
 
 			m_isAttack = false;
 
-			CalcNearAngle(playerPos, fbxobj_explosionCreature->GetRotation().y);
+			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::EXPLOSION]->GetRotation().y);
 		}
 	}
-
-	//切り替わったら
-	if (!m_isChange && fbxobj_oldCreature != fbxobj_currentCreature)
+	else if (m_animationType == RISE)
 	{
-		m_blendTimer = 0.0f;
-		m_isChange = true;
+		CalcRise(playerPos);
+		ImguiControl::Imgui_enemyAniType = "RISE";
+	}
+	else if (m_animationType == SWING_DOWN)
+	{
+		CalcSwingDown(playerPos);
+		ImguiControl::Imgui_enemyAniType = "SWING_DOWN";
 	}
 
-	//箱サイズ
+	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature[m_animationType]->GetNowTime();
+	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature[m_oldAnimationType]->GetNowTime();
+
+	//OBB計算
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> l_affine =
+		fbxobj_creature[m_animationType]->GetAffineTrans();
+	std::vector<DirectX::XMMATRIX> l_matRot =
+		fbxobj_creature[m_animationType]->GetMatRots();
+
 	std::vector<OBB> l_obbs;
 	m_boneCount = l_affine.size();
 	for (int i = 0; i < m_boneCount; i++)
 	{
-		//obj_Box[i]->SetScale(DirectX::XMFLOAT3(l_scale, l_scale, l_scale));
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(4, 4, 4));
 		obj_Box[i]->MultiMatrix(l_affine[i].second);
 		obj_Box[i]->Update();
 
@@ -430,56 +397,13 @@ void Enemy::Draw()
 {
 	if (IsDead())
 	{
-		fbxobj_dieCreature->Draw(PipelineManager::fbx_normal);
+		fbxobj_creature[AnimationType::DIE]->Draw(PipelineManager::fbx_normal);
 		return;
 	}
 
 	if (ImguiControl::Imgui_isEnemyDraw)
 	{
-		if (m_animationType == STAND)
-		{
-			fbxobj_idleCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == RUN)
-		{
-			fbxobj_runCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == KICK)
-		{
-			fbxobj_kickCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == PUNCH)
-		{
-			fbxobj_punchCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == R_TURN)
-		{
-			fbxobj_RTurnCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == L_TURN)
-		{
-			fbxobj_LTurnCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == R_BACK)
-		{
-			fbxobj_RBackCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == L_BACK)
-		{
-			fbxobj_LBackCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == EXPLOSION)
-		{
-			fbxobj_explosionCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == RISE)
-		{
-			fbxobj_riseCreature->Draw(PipelineManager::fbx_normal);
-		}
-		else if (m_animationType == SWING_DOWN)
-		{
-			fbxobj_swingDownCreature->Draw(PipelineManager::fbx_normal);
-		}
+		fbxobj_creature[m_animationType]->Draw(PipelineManager::fbx_normal);
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
@@ -516,12 +440,12 @@ void Enemy::JudgAnimationType(float dist)
 			if (m_turnVec == RIGHT)
 			{
 				m_animationType = R_BACK;
-				fbxobj_RBackCreature->SetPosition(m_pos);
+				fbxobj_creature[AnimationType::R_BACK]->SetPosition(m_pos);
 			}
 			else
 			{
 				m_animationType = L_BACK;
-				fbxobj_LBackCreature->SetPosition(m_pos);
+				fbxobj_creature[AnimationType::L_BACK]->SetPosition(m_pos);
 			}
 
 			m_isAttack = true;
@@ -548,10 +472,23 @@ void Enemy::JudgAnimationType(float dist)
 	}
 	else if (dist > C_MAX_DIST)
 	{
-		return;
+		//return;
+		m_animationType = RUN;
 	}
 	else
 	{
+		//ここの管理方法を考える
+		/*m_riseStartY = 0.0f;
+		m_isAttack = true;
+		m_animationType = RISE;
+		fbxobj_creature[AnimationType::RISE]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::RISE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::SWING_DOWN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+
+		fbxobj_creature[AnimationType::RISE]->ResetAnimation();
+		fbxobj_creature[AnimationType::SWING_DOWN]->ResetAnimation();
+		return;*/
+
 		m_isAttack = true;
 		m_isCalc = false;
 		m_isCalcEnd = false;
@@ -561,18 +498,18 @@ void Enemy::JudgAnimationType(float dist)
 			dist < C_MAX_DIST)
 		{
 			m_animationType = EXPLOSION;
-			fbxobj_explosionCreature->ResetAnimation();
+			//fbxobj_explosionCreature->ResetAnimation();
 		}
 
 		else if (l_rand % 2 == 0)
 		{
 			m_animationType = KICK;
-			fbxobj_kickCreature->ResetAnimation();
+			//fbxobj_kickCreature->ResetAnimation();
 		}
 		else
 		{
 			m_animationType = PUNCH;
-			fbxobj_punchCreature->ResetAnimation();
+			//fbxobj_punchCreature->ResetAnimation();
 		}
 	}
 }
@@ -584,54 +521,42 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 		float l_rotY = 0.0f;
 		if (m_turnVec == RIGHT)
 		{
-			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_turnEaseTimer) + m_turnStartAngle;
-			fbxobj_RTurnCreature->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-			fbxobj_RTurnCreature->Update();
+			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+			fbxobj_creature[AnimationType::R_TURN]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
+			fbxobj_creature[AnimationType::R_TURN]->Update();
 		}
 		else
 		{
-			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_turnEaseTimer) + m_turnStartAngle;
-			fbxobj_LTurnCreature->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-			fbxobj_LTurnCreature->Update();
+			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+			fbxobj_creature[AnimationType::L_TURN]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
+			fbxobj_creature[AnimationType::L_TURN]->Update();
 		}
 
-		if (m_turnEaseTimer < 1.0f)
+		if (m_easeTimer < 1.0f)
 		{
-			m_turnEaseTimer += C_MAX_TURN_TIMER;
+			m_easeTimer += C_MAX_TURN_TIMER;
 		}
 		else
 		{
 			m_deg = l_rotY - 180.0f;
 			if (m_turnVec == RIGHT)
 			{
-				if (fbxobj_RTurnCreature->IsAnimationEnd())
+				if (fbxobj_creature[AnimationType::R_TURN]->IsAnimationEnd())
 				{
-					fbxobj_RTurnCreature->ResetAnimation();
-					m_turnEaseTimer = 0.0f;
+					//fbxobj_RTurnCreature->ResetAnimation();
+					m_easeTimer = 0.0f;
 					m_isTurn = false;
-
-					if (OgaJHelper::CalcDist(m_pos, pPos) >= C_MAX_DIST)
-					{
-						fbxobj_runCreature->SetPosition(m_pos);
-						fbxobj_runCreature->Update();
-						m_animationType = RUN;
-					}
+					JudgAnimationType(OgaJHelper::CalcDist(m_pos, pPos));
 				}
 			}
 			else
 			{
-				if (fbxobj_LTurnCreature->IsAnimationEnd())
+				if (fbxobj_creature[AnimationType::L_TURN]->IsAnimationEnd())
 				{
-					fbxobj_LTurnCreature->ResetAnimation();
-					m_turnEaseTimer = 0.0f;
+					//fbxobj_LTurnCreature->ResetAnimation();
+					m_easeTimer = 0.0f;
 					m_isTurn = false;
-
-					if (OgaJHelper::CalcDist(m_pos, pPos) >= C_MAX_DIST)
-					{
-						fbxobj_runCreature->SetPosition(m_pos);
-						fbxobj_runCreature->Update();
-						m_animationType = RUN;
-					}
+					JudgAnimationType(OgaJHelper::CalcDist(m_pos, pPos));
 				}
 			}
 		}
@@ -640,74 +565,60 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 	{
 		if (m_turnVec == RIGHT)
 		{
-			if (m_turnEaseTimer < 1.0f)
+			if (m_easeTimer < 1.0f)
 			{
 				float l_rotY = (m_turnEndAngle - m_turnStartAngle) *
-					OgaJEase::easeOutSine(m_turnEaseTimer) + m_turnStartAngle;
-				fbxobj_RBackCreature->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-				m_turnEaseTimer += C_MAX_TURN_TIMER;
+					OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+				fbxobj_creature[AnimationType::R_BACK]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
+				m_easeTimer += C_MAX_TURN_TIMER;
 			}
 
-			fbxobj_RBackCreature->Update();
+			fbxobj_creature[AnimationType::R_BACK]->Update();
 		}
 		else
 		{
-			if (m_turnEaseTimer < 1.0f)
+			if (m_easeTimer < 1.0f)
 			{
 				float l_rotY = (m_turnEndAngle - m_turnStartAngle) *
-					OgaJEase::easeOutSine(m_turnEaseTimer) + m_turnStartAngle;
-				fbxobj_LBackCreature->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-				m_turnEaseTimer += C_MAX_TURN_TIMER;
+					OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+				fbxobj_creature[AnimationType::L_BACK]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
+				m_easeTimer += C_MAX_TURN_TIMER;
 			}
 
-			fbxobj_LBackCreature->Update();
+			fbxobj_creature[AnimationType::L_BACK]->Update();
 		}
 
-		if (m_turnEaseTimer >= 1.0f)
+		if (m_easeTimer >= 1.0f)
 		{
 			m_deg = m_turnEndAngle - 180.0f;
 			if (m_turnVec == RIGHT)
 			{
-				if (fbxobj_RBackCreature->IsAnimationEnd())
+				if (fbxobj_creature[AnimationType::R_BACK]->IsAnimationEnd())
 				{
-					fbxobj_RBackCreature->ResetAnimation();
-					m_turnEaseTimer = 0.0f;
+					//fbxobj_creature[AnimationType::R_BACK]->ResetAnimation();
+					m_easeTimer = 0.0f;
 					m_isBackAttack = false;
 					m_isAttack = false;
 
-					CalcNearAngle(pPos, fbxobj_RBackCreature->GetRotation().y);
+					CalcNearAngle(pPos, fbxobj_creature[AnimationType::R_BACK]->GetRotation().y);
 					m_isBackAttackLottery = false;
 					float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
 					JudgAnimationType(l_dist);
-
-					if (l_dist > C_MAX_DIST)
-					{
-						fbxobj_runCreature->SetPosition(m_pos);
-						fbxobj_runCreature->Update();
-						m_animationType = RUN;
-					}
 				}
 			}
 			else
 			{
-				if (fbxobj_LBackCreature->IsAnimationEnd())
+				if (fbxobj_creature[AnimationType::L_BACK]->IsAnimationEnd())
 				{
-					fbxobj_LBackCreature->ResetAnimation();
-					m_turnEaseTimer = 0.0f;
+					//fbxobj_LBackCreature->ResetAnimation();
+					m_easeTimer = 0.0f;
 					m_isBackAttack = false;
 					m_isAttack = false;
 
-					CalcNearAngle(pPos, fbxobj_LBackCreature->GetRotation().y);
+					CalcNearAngle(pPos, fbxobj_creature[AnimationType::L_BACK]->GetRotation().y);
 					m_isBackAttackLottery = false;
 					float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
 					JudgAnimationType(l_dist);
-
-					if (l_dist > C_MAX_DIST)
-					{
-						fbxobj_runCreature->SetPosition(m_pos);
-						fbxobj_runCreature->Update();
-						m_animationType = RUN;
-					}
 				}
 			}
 		}
@@ -758,16 +669,16 @@ void Enemy::CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY)
 		if (l_nearSub < 0)
 		{
 			m_turnVec = TurnVec::RIGHT;
-			fbxobj_RTurnCreature->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
-			fbxobj_RTurnCreature->SetPosition(m_pos);
-			fbxobj_RTurnCreature->Update();
+			fbxobj_creature[AnimationType::R_TURN]->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
+			fbxobj_creature[AnimationType::R_TURN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::R_TURN]->Update();
 		}
 		else
 		{
 			m_turnVec = TurnVec::LEFT;
-			fbxobj_LTurnCreature->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
-			fbxobj_LTurnCreature->SetPosition(m_pos);
-			fbxobj_LTurnCreature->Update();
+			fbxobj_creature[AnimationType::L_TURN]->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
+			fbxobj_creature[AnimationType::L_TURN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::L_TURN]->Update();
 		}
 	}
 	else
@@ -819,6 +730,81 @@ void Enemy::CalcAttackCollisionTimer(const float startFrame, const float endFram
 			m_isCalc = false;
 			m_isCalcEnd = true;
 		}
+	}
+}
+
+void Enemy::CalcRise(DirectX::XMFLOAT3& pPos)
+{
+	if (m_animationTimer < C_RISE_TIMER)
+	{
+		m_animationTimer++;
+	}
+	else
+	{
+		m_pos.y = ((m_riseStartY + C_MAX_RISE_HEIGHT) - m_riseStartY) * OgaJEase::easeOutCubic(m_easeTimer) + m_riseStartY;
+		if (m_easeTimer < 1.0f)
+		{
+			m_easeTimer += C_MAX_RISE_TIMER;
+			if (m_easeTimer > 1.0f)
+			{
+				m_easeTimer = 1.0f;
+			}
+		}
+		else
+		{
+			m_animationTimer = 0;
+			m_easeTimer = 0.0f;
+			m_swingDownStartPos = m_pos;
+			m_swingDownEndPos = pPos;
+			m_animationType = AnimationType::SWING_DOWN;
+			fbxobj_creature[AnimationType::SWING_DOWN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::SWING_DOWN]->StopAnimation();
+			fbxobj_creature[AnimationType::SWING_DOWN]->Update();
+		}
+		fbxobj_creature[AnimationType::RISE]->SetPosition(m_pos);
+	}
+	fbxobj_creature[AnimationType::RISE]->Update();
+}
+
+void Enemy::CalcSwingDown(DirectX::XMFLOAT3& pPos)
+{
+	bool isUpdate = true;
+	if (m_animationTimer < C_SWING_DOWN_TIMER)
+	{
+		m_animationTimer++;
+	}
+	else
+	{
+		m_pos = OgaJEase::easeInCircXMFLOAT3(m_swingDownStartPos, m_swingDownEndPos, m_easeTimer);
+		if (m_easeTimer < 1.0f)
+		{
+			m_easeTimer += C_MAX_SWING_DOWN_TIMER;
+			if (m_easeTimer > 1.0f)
+			{
+				m_easeTimer = 1.0f;
+			}
+		}
+		else
+		{
+			fbxobj_creature[AnimationType::SWING_DOWN]->ReplayAnimation();
+			if (fbxobj_creature[AnimationType::SWING_DOWN]->IsAnimationEnd())
+			{
+				isUpdate = false;
+				m_animationTimer = 0;
+				m_easeTimer = 0.0f;
+				float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
+				JudgAnimationType(l_dist);
+				fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
+				fbxobj_creature[AnimationType::RUN]->Update();
+				fbxobj_creature[AnimationType::SWING_DOWN]->SetMaxAnimation();
+				m_isAttack = false;
+			}
+		}
+		fbxobj_creature[AnimationType::SWING_DOWN]->SetPosition(m_pos);
+	}
+	if (isUpdate)
+	{
+		fbxobj_creature[AnimationType::SWING_DOWN]->Update();
 	}
 }
 

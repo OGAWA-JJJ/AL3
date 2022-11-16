@@ -310,6 +310,7 @@ void FbxObjects::PlayAnimation()
 
 void FbxObjects::UpdateAnimation()
 {
+	m_isAnimationEndTrigger = false;
 	if (!m_isPlay) { return; }
 
 	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
@@ -358,7 +359,6 @@ void FbxObjects::UpdateAnimation()
 	}
 
 	current_animation_seconds += animation.add_time;
-	m_isAnimationEndTrigger = false;
 
 	if (current_animation_seconds >= animation.seconds_length)
 	{
@@ -532,6 +532,16 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 			break;
 		}
 	}
+	if (!isStartCalc)
+	{
+		int nodeCount = static_cast<int>(startObject->nodes.size());
+		for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+		{
+			startScales.push_back(DirectX::XMLoadFloat3(&startObject->nodes[nodeIndex].scale));
+			startRotates.push_back(DirectX::XMLoadFloat4(&startObject->nodes[nodeIndex].rotate));
+			startTranslates.push_back(DirectX::XMLoadFloat3(&startObject->nodes[nodeIndex].translate));
+		}
+	}
 
 	//ïœêî
 	std::vector<DirectX::XMVECTOR> endScales;
@@ -576,24 +586,43 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 			break;
 		}
 	}
-
-	//ï‚ä‘
-	if (isStartCalc && isEndCalc)
+	if (!isEndCalc)
 	{
-		int nodeCount = startScales.size();
+		int nodeCount = static_cast<int>(nodes.size());
 		for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 		{
-			DirectX::XMVECTOR Scale =
-				DirectX::XMVectorLerp(startScales[nodeIndex], endScales[nodeIndex], rate);
-			DirectX::XMVECTOR Rotate =
-				DirectX::XMQuaternionSlerp(startRotates[nodeIndex], endRotates[nodeIndex], rate);
-			DirectX::XMVECTOR Translate =
-				DirectX::XMVectorLerp(startTranslates[nodeIndex], endTranslates[nodeIndex], rate);
-
-			Node& node = nodes[nodeIndex];
-			DirectX::XMStoreFloat3(&node.scale, Scale);
-			DirectX::XMStoreFloat4(&node.rotate, Rotate);
-			DirectX::XMStoreFloat3(&node.translate, Translate);
+			endScales.push_back(DirectX::XMLoadFloat3(&nodes[nodeIndex].scale));
+			endRotates.push_back(DirectX::XMLoadFloat4(&nodes[nodeIndex].rotate));
+			endTranslates.push_back(DirectX::XMLoadFloat3(&nodes[nodeIndex].translate));
 		}
 	}
+
+	//ï‚ä‘
+	int nodeCount = startScales.size();
+	for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
+	{
+		DirectX::XMVECTOR Scale =
+			DirectX::XMVectorLerp(startScales[nodeIndex], endScales[nodeIndex], rate);
+		DirectX::XMVECTOR Rotate =
+			DirectX::XMQuaternionSlerp(startRotates[nodeIndex], endRotates[nodeIndex], rate);
+		DirectX::XMVECTOR Translate =
+			DirectX::XMVectorLerp(startTranslates[nodeIndex], endTranslates[nodeIndex], rate);
+
+		Node& node = nodes[nodeIndex];
+		DirectX::XMStoreFloat3(&node.scale, Scale);
+		DirectX::XMStoreFloat4(&node.rotate, Rotate);
+		DirectX::XMStoreFloat3(&node.translate, Translate);
+	}
+}
+
+void FbxObjects::SetMaxAnimation()
+{
+	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
+	const FbxModels::Animation& animation = animations.at(current_animation_index);
+	const std::vector<FbxModels::Keyframe>& keyframes = animation.keyframes;
+
+	const int endKeyCount = static_cast<int>(keyframes.size());
+	const FbxModels::Keyframe& keyframe = keyframes.at(endKeyCount - 3);
+
+	current_animation_seconds = keyframe.seconds;
 }

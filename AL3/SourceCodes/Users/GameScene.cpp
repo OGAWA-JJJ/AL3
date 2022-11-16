@@ -47,9 +47,9 @@ void GameScene::Init(ID3D12Resource* texbuff)
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
 	Camera::SetEye(DirectX::XMFLOAT3(
-		m_player->GetPos().x + enemyToPlayer.x * m_player->C_MAX_DISTANCE,
+		m_player->GetPos().x + enemyToPlayer.x * m_player->GetCameraDist(),
 		50.0f,
-		m_player->GetPos().z + enemyToPlayer.z * m_player->C_MAX_DISTANCE));
+		m_player->GetPos().z + enemyToPlayer.z * m_player->GetCameraDist()));
 
 	DirectX::XMFLOAT3 hoge = Camera::GetEye();
 }
@@ -107,6 +107,9 @@ void GameScene::Update()
 			m_moveTrigger = true;
 		}
 
+		PlayerUpdate();
+		EnemyUpdate();
+
 		m_player->Update(m_enemy->GetPos());
 		m_enemy->Update(m_player->GetPos());
 		m_stage->Update();
@@ -121,9 +124,6 @@ void GameScene::Update()
 			m_player->GetStaminaRate(),
 			false
 		);
-
-		PlayerUpdate();
-		EnemyUpdate();
 	}
 }
 

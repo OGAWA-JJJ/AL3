@@ -14,6 +14,8 @@ const std::string FbxModels::baseDirectory = "Resources/";
 ID3D12Device* FbxModels::device = nullptr;
 UINT FbxModels::descriptorHandleIncrementSize = 0;
 
+std::unordered_map<std::string, FbxModels*> FbxModels::models;
+
 inline DirectX::XMFLOAT3 ToXMFLOAT3(const FbxDouble3& fbxdouble3)
 {
 	DirectX::XMFLOAT3 xmfloat3{};
@@ -99,17 +101,21 @@ void FbxModels::StaticInit(ID3D12Device* dev)
 	FbxMeshes::StaticInit(dev);
 }
 
-FbxModels* FbxModels::CreateFromFbx(const std::string& modelname, bool smoothing)
+FbxModels* FbxModels::CreateFromFbx(const std::string& modelname, const std::string& key, bool smoothing)
 {
 	FbxModels* instance = new FbxModels();
 	//std::shared_ptr<Model> instance = std::make_shared<Model>();
-	instance->Init(modelname, smoothing);
+	instance->Init(modelname, key, smoothing);
+	if (key.size() > 0)
+	{
+		models.emplace(key, instance);
+	}
 
 	return instance;
 }
 
 //Load
-void FbxModels::Init(const std::string& modelname, bool smoothing)
+void FbxModels::Init(const std::string& modelname, const std::string& key, bool smoothing)
 {
 	const std::string filename = modelname + ".fbx";
 	const std::string directoryPath = baseDirectory + modelname + "/";
@@ -187,18 +193,56 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 		FetchSkeleton(fbx_mesh);
 	}
 
-	int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
-	for (int i = 0; i < mesh_num; i++)
+	//見つかった場合
+	bool isFind = false;
+	if (models.find(key) != models.end())
 	{
-		CreateMesh(fbxScene->GetSrcObject<FbxMesh>(i));
+		this->key = key;
+		isFind = true;
 	}
 
-	int l_num = 0;
-	int l_counts = 0;
-	for (int size = 1; size < subsets.size(); size++)
+	if (!isFind)
 	{
-		int max_Index = subsets[size].start_index - l_counts;
-		for (int index = 0; index < max_Index; index++)
+		int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
+		for (int i = 0; i < mesh_num; i++)
+		{
+			CreateMesh(fbxScene->GetSrcObject<FbxMesh>(i));
+		}
+	}
+	else
+	{
+		int mesh_num = fbxScene->GetSrcObjectCount<FbxMesh>();
+		for (int i = 0; i < mesh_num; i++)
+		{
+			FindKeyCreateMesh(fbxScene->GetSrcObject<FbxMesh>(i), i);
+		}
+	}
+
+	//ボーン代入処理
+	if (!isFind)
+	{
+		int l_num = 0;
+		int l_counts = 0;
+		for (int size = 1; size < subsets.size(); size++)
+		{
+			int max_Index = subsets[size].start_index - l_counts;
+			for (int index = 0; index < max_Index; index++)
+			{
+				for (int bone = 0; bone < MAX_BONE_INDICES; bone++)
+				{
+					meshes[l_num]->GetVertices()[index].boneIndex[bone] =
+						skinVert[l_counts].boneIndex[bone];
+					meshes[l_num]->GetVertices()[index].boneWeight[bone] =
+						skinVert[l_counts].boneWeight[bone];
+				}
+				l_counts++;
+			}
+			l_num++;
+		}
+
+		int last_Index = skinVert.size() - l_counts;
+		l_num = meshes.size() - 1;
+		for (int index = 0; index < last_Index; index++)
 		{
 			for (int bone = 0; bone < MAX_BONE_INDICES; bone++)
 			{
@@ -209,21 +253,6 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 			}
 			l_counts++;
 		}
-		l_num++;
-	}
-
-	int last_Index = skinVert.size() - l_counts;
-	l_num = meshes.size() - 1;
-	for (int index = 0; index < last_Index; index++)
-	{
-		for (int bone = 0; bone < MAX_BONE_INDICES; bone++)
-		{
-			meshes[l_num]->GetVertices()[index].boneIndex[bone] =
-				skinVert[l_counts].boneIndex[bone];
-			meshes[l_num]->GetVertices()[index].boneWeight[bone] =
-				skinVert[l_counts].boneWeight[bone];
-		}
-		l_counts++;
 	}
 
 	int material_num = fbxScene->GetSrcObjectCount<FbxSurfaceMaterial>();
@@ -422,14 +451,22 @@ void FbxModels::LoadTextures()
 void FbxModels::CreateMesh(FbxMesh* fbx_mesh)
 {
 	FbxMeshes* mesh = new FbxMeshes;
-	//LoadIndices(mesh, fbx_mesh);
 	LoadVertices(mesh, fbx_mesh);
 	LoadNormals(mesh, fbx_mesh);
+	LoadUV(mesh, fbx_mesh);			//Indices込み
 
-	//IndicesとNormalsも一括で行う(仮)
-	LoadUV(mesh, fbx_mesh);
+	SetMaterialName(mesh, fbx_mesh);
 
-	//LoadColors(mesh, fbx_mesh);
+	meshes.push_back(mesh);
+}
+
+void FbxModels::FindKeyCreateMesh(FbxMesh* fbx_mesh, int mesh_num)
+{
+	FbxMeshes* mesh = new FbxMeshes;
+
+	mesh->SetVertices(models.at(key)->GetMeshes()[mesh_num]->GetVertices());
+	mesh->SetIndices(models.at(key)->GetMeshes()[mesh_num]->GetIndices());
+
 	SetMaterialName(mesh, fbx_mesh);
 
 	meshes.push_back(mesh);
@@ -449,37 +486,6 @@ void FbxModels::LoadIndices(FbxMeshes* mesh_data, FbxMesh* mesh)
 
 void FbxModels::LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh)
 {
-	/*FbxVector4* vertices = mesh->GetControlPoints();
-	int* indices = mesh->GetPolygonVertices();
-	int polygon_vertex_count = mesh->GetPolygonVertexCount();
-
-	for (int i = 0; i < polygon_vertex_count; i++)
-	{
-		FbxMeshes::VertexPosNormalUv vertex;
-		int index = indices[i];
-
-		vertex.pos.x = (float)-vertices[index][0];
-		vertex.pos.y = (float)vertices[index][1];
-		vertex.pos.z = (float)vertices[index][2];
-
-		mesh_data->AddVertex(vertex);
-	}*/
-
-	////以前のLoader
-	//const int controlPointCount =
-	//	mesh->GetControlPointsCount();
-	//FbxVector4* pCoord = mesh->GetControlPoints();
-	//for (int i = 0; i < controlPointCount; i++)
-	//{
-	//	FbxMeshes::VertexPosNormalUv vertex;
-
-	//	vertex.pos.x = (float)pCoord[i][0];
-	//	vertex.pos.y = (float)pCoord[i][1];
-	//	vertex.pos.z = (float)pCoord[i][2];
-
-	//	mesh_data->AddVertex(vertex);
-	//}
-
 	//New
 	const int polygonCount = mesh->GetPolygonCount();
 	const FbxVector4* controlPoints = mesh->GetControlPoints();
@@ -492,7 +498,6 @@ void FbxModels::LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh)
 		const int material_index =
 			materialCount > 0 ?
 			mesh->GetElementMaterial()->GetIndexArray().GetAt(polygonIndex) : 0;
-		//const uint32_t offset = subsets[material_index].start_index + subsets[material_index].index_count;
 
 		for (int positionInPolygon = 0; positionInPolygon < 3; ++positionInPolygon)
 		{

@@ -417,7 +417,7 @@ void Object::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
 		&srvDesc,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			modelDescHeap->GetCPUDescriptorHandleForHeapStart(),
-			0,
+			50,
 			device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 		));
 }

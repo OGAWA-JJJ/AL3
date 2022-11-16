@@ -100,7 +100,7 @@ public:
 	bool Init();
 	void Update(bool isShadowCamera = false);
 	void Draw(const FbxPipelineSet& pipelineSet);
-	void PlayAnimation();
+	void PlayAnimation(); //RePlayAnimationと同じ
 
 private:
 	void UpdateAnimation();
@@ -140,6 +140,8 @@ public:	//Setter
 	void StopAnimation() { m_isPlay = false; }
 	void ResetAnimation() { current_animation_seconds = 0; }
 	void ReplayAnimation() { m_isPlay = true; }
+	void SetLoopAnimation(bool isLoop) { animation_loop_flag = isLoop; }
+	void SetMaxAnimation();
 
 public:	//Getter
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
@@ -151,7 +153,7 @@ public:	//Getter
 	const float GetNowTime(int animationIndex = 0) { return current_animation_seconds; }
 
 	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>
-		& GetAffineTrans() { return affineTrans; }	//スケール行列が入っている為、OBB描画に問題
+		& GetAffineTrans() { return affineTrans; }	//スケール行列が入っている為、OBB描画に問題←治した
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//手固定
 

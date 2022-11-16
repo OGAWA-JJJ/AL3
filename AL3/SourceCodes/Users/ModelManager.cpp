@@ -71,30 +71,33 @@ void ModelManager::Init()
 	//Player
 	model_sword = Model::CreateFromObj("Sword");
 	model_box = Model::CreateFromObj("TestBox");
-	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku");
-	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku");
-	fbxmodel_fastRunMiku = FbxModels::CreateFromFbx("RunMiku");
-	fbxmodel_oneSwrordAttack = FbxModels::CreateFromFbx("OneSwordAttack");
-	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku");
-	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku");
-	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku");
+
+	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku", "Miku");
+	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");
+	fbxmodel_fastRunMiku = FbxModels::CreateFromFbx("RunMiku", "Miku");
+	fbxmodel_oneSwrordAttack = FbxModels::CreateFromFbx("OneSwordAttack", "Miku");
+	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku", "Miku");
+	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku", "Miku");
+	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku", "Miku");
 
 	//Enemy
-	fbxmodel_idleCreature = FbxModels::CreateFromFbx("IdleCreature");
-	fbxmodel_runCreature = FbxModels::CreateFromFbx("RunCreature");
-	fbxmodel_kickCreature = FbxModels::CreateFromFbx("KickingCreature");
-	fbxmodel_punchCreature = FbxModels::CreateFromFbx("PunchingCreature");
-	fbxmodel_dieCreature = FbxModels::CreateFromFbx("DyingCreature");
+	fbxmodel_idleCreature = FbxModels::CreateFromFbx("IdleCreature", "Creature");
+	fbxmodel_runCreature = FbxModels::CreateFromFbx("RunCreature", "Creature");
+	fbxmodel_kickCreature = FbxModels::CreateFromFbx("KickingCreature", "Creature");
+	fbxmodel_punchCreature = FbxModels::CreateFromFbx("PunchingCreature", "Creature");
+	fbxmodel_dieCreature = FbxModels::CreateFromFbx("DyingCreature", "Creature");
 
-	fbxmodel_RTurnCreature = FbxModels::CreateFromFbx("RTurnCreature");
-	fbxmodel_LTurnCreature = FbxModels::CreateFromFbx("LTurnCreature");
-	fbxmodel_RBackCreature = FbxModels::CreateFromFbx("RBackAttackCreature");
-	fbxmodel_LBackCreature = FbxModels::CreateFromFbx("LBackAttackCreature");
-	fbxmodel_explosionCreature = FbxModels::CreateFromFbx("ExplosionCreature");
-	fbxmodel_riseCreature = FbxModels::CreateFromFbx("RiseCreature");
-	fbxmodel_swingDownCreature = FbxModels::CreateFromFbx("SwingDownCreature");
+	fbxmodel_RTurnCreature = FbxModels::CreateFromFbx("RTurnCreature", "Creature");
+	fbxmodel_LTurnCreature = FbxModels::CreateFromFbx("LTurnCreature", "Creature");
+	fbxmodel_RBackCreature = FbxModels::CreateFromFbx("RBackAttackCreature", "Creature");
+	fbxmodel_LBackCreature = FbxModels::CreateFromFbx("LBackAttackCreature", "Creature");
+	fbxmodel_explosionCreature = FbxModels::CreateFromFbx("ExplosionCreature", "Creature");
+	fbxmodel_riseCreature = FbxModels::CreateFromFbx("RiseCreature", "Creature");
+	fbxmodel_swingDownCreature = FbxModels::CreateFromFbx("SwingDownCreature", "Creature");
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
 	model_sponza = Model::CreateFromObj("sponza");
+
+	FbxModels::ReleaseModels();
 }

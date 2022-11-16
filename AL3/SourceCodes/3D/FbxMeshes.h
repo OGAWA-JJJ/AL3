@@ -55,6 +55,9 @@ public:
 	void AddSmoothData(unsigned short indexPosition, unsigned short indexVertex);
 	void CalculateSmoothedVertexNormals();
 
+	void SetVertices(std::vector<VertexPosNormalUv>& vertices) { this->vertices = vertices; }
+	void SetIndices(std::vector<unsigned short>& indices) { this->indices = indices; }
+
 public:
 	const std::string& GetName() { return name; }
 	inline size_t GetVertexCount() { return vertices.size(); }
