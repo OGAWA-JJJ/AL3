@@ -13,6 +13,8 @@ public:	//Player
 	static FbxModels* fbxmodel_slowRunMiku;
 	static FbxModels* fbxmodel_fastRunMiku;
 	static FbxModels* fbxmodel_oneSwrordAttack;
+	static FbxModels* fbxmodel_oneSwrordAttack2;
+	static FbxModels* fbxmodel_oneSwrordAttack3;
 	static FbxModels* fbxmodel_dieMiku;
 	static FbxModels* fbxmodel_impactMiku;
 	static FbxModels* fbxmodel_rollingMiku;

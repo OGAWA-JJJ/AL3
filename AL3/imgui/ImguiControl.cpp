@@ -27,6 +27,9 @@ float ImguiControl::Imgui_playerBlendTimer = 0.0f;
 float ImguiControl::Imgui_playerCurrentAniTimer = 0.0f;
 float ImguiControl::Imgui_playerOldAniTimer = 0.0f;
 char* ImguiControl::Imgui_playerAniType = "NONE";
+char* ImguiControl::Imgui_playerOldAniType = "NONE";
+char* ImguiControl::Imgui_playerIsAccept = "NONE";
+char* ImguiControl::Imgui_playerIsChange = "NONE";
 
 void ImguiControl::Update()
 {
@@ -39,6 +42,7 @@ void ImguiControl::Update()
 		ImGui::SliderFloat("FOV", &Imgui_fov, 30.0f, 150.0f);
 		ImGui::SliderFloat("FAR_Z", &Imgui_far_z, 50.0f, 5000.0f);
 		ImGui::SliderFloat("CAMERA_DIST", &Imgui_cameraDist, 100.0f, 200.0f);
+		ImGui::TreePop();
 	}
 
 	ImGui::Spacing();
@@ -54,6 +58,7 @@ void ImguiControl::Update()
 		ImGui::SliderFloat("LIGHT_DIR_X", &Imgui_lightDir_x, -1.0f, 1.0f);
 		ImGui::SliderFloat("LIGHT_DIR_Y", &Imgui_lightDir_y, -1.0f, 1.0f);
 		ImGui::SliderFloat("LIGHT_DIR_Z", &Imgui_lightDir_z, -1.0f, 1.0f);
+		ImGui::TreePop();
 	}
 
 	ImGui::Spacing();
@@ -66,6 +71,7 @@ void ImguiControl::Update()
 		ImGui::Checkbox("ENEMY_DRAW", &Imgui_isEnemyDraw);
 		ImGui::Checkbox("WEAPON_DRAW", &Imgui_isWeaponDraw);
 		ImGui::Checkbox("SPONZA_DRAW", &Imgui_isSponzaDraw);
+		ImGui::TreePop();
 	}
 
 	ImGui::Spacing();
@@ -77,7 +83,8 @@ void ImguiControl::Update()
 		ImGui::Text("ENEMY_BLEND_TIMER          ： %f", Imgui_enemyBlendTimer);
 		ImGui::Text("ENEMY_CURRENT_ANI_TIMER    ： %f", Imgui_enemyCurrentAniTimer);
 		ImGui::Text("ENEMY_OLD_ANI_TIMER        ： %f", Imgui_enemyOldAniTimer);
-		ImGui::Text("ENEMY_ANIMATION_TYPE ： %s", Imgui_enemyAniType);
+		ImGui::Text("ENEMY_ANIMATION_TYPE       ： %s", Imgui_enemyAniType);
+		ImGui::TreePop();
 	}
 
 	ImGui::Spacing();
@@ -89,7 +96,11 @@ void ImguiControl::Update()
 		ImGui::Text("PLAYER_BLEND_TIMER          ： %f", Imgui_playerBlendTimer);
 		ImGui::Text("PLAYER_CURRENT_ANI_TIMER    ： %f", Imgui_playerCurrentAniTimer);
 		ImGui::Text("PLAYER_OLD_ANI_TIMER        ： %f", Imgui_playerOldAniTimer);
-		ImGui::Text("PLAYER_ANIMATION_TYPE ： %s", Imgui_playerAniType);
+		ImGui::Text("PLAYER_ANIMATION_TYPE       ： %s", Imgui_playerAniType);
+		ImGui::Text("PLAYER_OLD_ANIMATION_TYPE   ： %s", Imgui_playerOldAniType);
+		ImGui::Text("PLAYER_IS_ACCEPT            ： %s", Imgui_playerIsAccept);
+		ImGui::Text("PLAYER_IS_CHANGE            ： %s", Imgui_playerIsChange);
+		ImGui::TreePop();
 	}
 
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);

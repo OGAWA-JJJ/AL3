@@ -24,7 +24,7 @@ private:	//自機のパターン
 		STAND,				//待機
 		SLOWRUN,			//低速移動(未使用)
 		RUN,				//移動
-		NORMAL_ATTACK_1,	//攻撃(連撃非対応 ← やれ)
+		NORMAL_ATTACK_1,	//攻撃(連撃非対応←やれ←した)
 		NORMAL_ATTACK_2,
 		NORMAL_ATTACK_3,
 		DAMAGED,			//被弾(吹っ飛びがない)
@@ -40,14 +40,15 @@ private:	//自機のパターン
 	};
 
 private:		//定数
-	const float C_MAX_CAMERA_NEAR_DISTANCE = 125.0f;	//カメラと自機の距離の最大
-	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;		//カメラと自機の距離の最大
+	const float C_MAX_CAMERA_NEAR_DISTANCE = 125.0f;		//カメラと自機の距離の最大
+	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;			//カメラと自機の距離の最大
 
 private:
-	const int C_ATTACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
-	const int C_ATTACK_COLLISION_ENDTIMER = 60;		//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレーム
+	const int C_ATTACK_COLLISION_TIMER[3] = { 20,15,25 };	//攻撃判定
+	const int C_ATTACK_COLLISION_ENDTIMER = 50;				//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレームに変更
+
 	const int C_HEAL_TIMER = 90;					//回復し始めるまでのフレーム
-	const int C_ATTACK_SUB_STAMINA = 100;			//減少スタミナ(攻撃)
+	const int C_ATTACK_SUB_STAMINA = 10;			//減少スタミナ(攻撃)
 	const int C_ROLLING_SUB_STAMINA = 100;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 10;						//1フレームのスタミナ回復量
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
@@ -63,33 +64,38 @@ private:	//定数(ステータス関係)
 	const int C_MAX_POWER = 100;
 
 private:	//格納用
-	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;
-	std::vector<DirectX::XMMATRIX> matRot;
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;	//ボーン情報
+	std::vector<DirectX::XMMATRIX> matRot;							//回転行列情報
 
 private:	//変数
-	std::vector<OBB> m_obbs;
-	OBB m_obb;
-	XMFLOAT3 m_pos;
-	XMFLOAT3 m_cameraAngle;
-	XMFLOAT3 m_rollingAngle;
-	XMFLOAT3 m_cameraToPlayer;
-	int m_animationTimer;
-	int m_animationType;
-	int m_oldAnimationType;
-	int m_healTimer;
-	int m_padState;
-	int m_padRetentionTimer;
-	float m_cameraMoveEase;
-	float m_cameraY;
-	float m_cameraDist;
-	float m_blendTimer;
-	bool m_isTarget;
-	bool m_isEase;
-	bool m_isAttack;
-	bool m_isInvincible;
-	bool m_isAccept;
-	bool m_isChange;
-	bool m_isAnimation;
+	std::vector<OBB> m_obbs;		//全身のOBB
+	OBB m_obb;						//剣のOBB
+	XMFLOAT3 m_pos;					//ポジション
+	XMFLOAT3 m_cameraAngle;			//カメラのアングル
+	XMFLOAT3 m_rollingAngle;		//回避する方向のアングル
+	XMFLOAT3 m_cameraToPlayer;		//カメラから敵の方向ベクトル
+	int m_animationTimer;			//攻撃し始めてからのフレーム数
+	int m_animationType;			//現在のアニメーションタイプ
+	int m_oldAnimationType;			//過去のアニメーションタイプ
+	int m_healTimer;				//スタミナ回復判定用タイマー
+	int m_padState;					//Padの入力情報
+	int m_padRetentionTimer;		//Padの先行入力保存用
+	int m_attackCollisionTimer[3];	//攻撃判定を始めるフレーム
+	float m_cameraMoveEase;			//カメラのイージング用タイマー
+	float m_cameraY;				//カメラのY軸保存用(めり込み回避)
+	float m_cameraDist;				//自機とカメラの距離
+	float m_blendTimer;				//補間用タイマー
+	bool m_isTarget;				//ターゲットモード中か
+	bool m_isEase;					//カメラがイージング中か
+	bool m_isAttack;				//攻撃中か
+	bool m_isInvincible;			//無敵か
+	bool m_isAccept;				//途中入力を受け付けてるか
+	bool m_isChange;				//アニメーションが切り替わったか
+	bool m_isAnimation;				//STANDとRUN以外true
+
+	//仮
+	int m_keepAnimationType = 0;
+	bool m_isStickReleaseTrigger = true;
 
 private:	//変数(ステータス関係)
 	int m_hp;
@@ -125,6 +131,9 @@ private:
 	void CalcOBB();		//剣のOBB算出
 	void OtherUpdate();	//基本的にUpdateと剣の追従処理
 	void CalcBlendAnimation();
+	void CalcAttackTimer();
+	void CheckAttackAnimationType();
+	void SetImgui();
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
@@ -139,9 +148,9 @@ public:	//Getter
 	const bool IsInvincible() { return m_isInvincible; }
 
 public:	//Setter
-	void UnInvincible() { m_isInvincible = false; }
+	void UnInvincible() { m_isInvincible = false; }	//無敵付与(多重ヒット回避用)
 
 public:	//呼ぶやつ
-	bool IsDead();
-	void HitAttack(int damage);
+	bool IsDead();				//死亡判定
+	void HitAttack(int damage);	//攻撃受けたら呼ぶ
 };

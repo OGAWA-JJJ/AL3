@@ -9,6 +9,8 @@ FbxModels* ModelManager::fbxmodel_standMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_slowRunMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_fastRunMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_oneSwrordAttack = nullptr;
+FbxModels* ModelManager::fbxmodel_oneSwrordAttack2 = nullptr;
+FbxModels* ModelManager::fbxmodel_oneSwrordAttack3 = nullptr;
 FbxModels* ModelManager::fbxmodel_dieMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_impactMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_rollingMiku = nullptr;
@@ -76,6 +78,8 @@ void ModelManager::Init()
 	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");
 	fbxmodel_fastRunMiku = FbxModels::CreateFromFbx("RunMiku", "Miku");
 	fbxmodel_oneSwrordAttack = FbxModels::CreateFromFbx("OneSwordAttack", "Miku");
+	fbxmodel_oneSwrordAttack2 = FbxModels::CreateFromFbx("OneSwordAttack2", "Miku");
+	fbxmodel_oneSwrordAttack3 = FbxModels::CreateFromFbx("OneSwordAttack3", "Miku");
 	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku", "Miku");
 	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku", "Miku");
 	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku", "Miku");

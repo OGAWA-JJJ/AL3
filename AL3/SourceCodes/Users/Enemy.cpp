@@ -796,7 +796,7 @@ void Enemy::CalcSwingDown(DirectX::XMFLOAT3& pPos)
 				JudgAnimationType(l_dist);
 				fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
 				fbxobj_creature[AnimationType::RUN]->Update();
-				fbxobj_creature[AnimationType::SWING_DOWN]->SetMaxAnimation();
+				fbxobj_creature[AnimationType::SWING_DOWN]->SetAnimationTimerMax();
 				m_isAttack = false;
 			}
 		}

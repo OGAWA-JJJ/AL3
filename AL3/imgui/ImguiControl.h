@@ -29,6 +29,9 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_playerCurrentAniTimer;
 	static float Imgui_playerOldAniTimer;
 	static char* Imgui_playerAniType;
+	static char* Imgui_playerOldAniType;
+	static char* Imgui_playerIsAccept;
+	static char* Imgui_playerIsChange;
 
 public:
 	ImguiControl() {};

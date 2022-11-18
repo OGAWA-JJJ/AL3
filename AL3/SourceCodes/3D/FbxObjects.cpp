@@ -358,7 +358,14 @@ void FbxObjects::UpdateAnimation()
 		}
 	}
 
-	current_animation_seconds += animation.add_time;
+	if (!m_isAddTimerEase)
+	{
+		current_animation_seconds += animation.add_time;
+	}
+	else
+	{
+		current_animation_seconds = animation.seconds_length * m_addSpeed;
+	}
 
 	if (current_animation_seconds >= animation.seconds_length)
 	{
@@ -615,7 +622,7 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 	}
 }
 
-void FbxObjects::SetMaxAnimation()
+void FbxObjects::SetAnimationTimerMax()
 {
 	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
 	const FbxModels::Animation& animation = animations.at(current_animation_index);
@@ -625,4 +632,14 @@ void FbxObjects::SetMaxAnimation()
 	const FbxModels::Keyframe& keyframe = keyframes.at(endKeyCount - 3);
 
 	current_animation_seconds = keyframe.seconds;
+}
+
+void FbxObjects::SetAnimationSpeed(float addSpeed, bool isSet)
+{
+	m_isAddTimerEase = isSet;
+	if (!m_isAddTimerEase)
+	{
+		return;
+	}
+	m_addSpeed = addSpeed;
 }

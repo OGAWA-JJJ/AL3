@@ -79,7 +79,10 @@ private:
 
 	bool m_isPlay = false;
 	bool m_isAnimationEndTrigger = false;
+
 	bool m_isBlend = false;
+	bool m_isAddTimerEase = false;
+	float m_addSpeed = 0.0f;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
@@ -135,13 +138,14 @@ public:	//Setter
 	void SetRotation(const DirectX::XMFLOAT3& rotation) { this->rotation = rotation; }
 	void SetPosition(const DirectX::XMFLOAT3& position) { this->position = position; }
 
-	void BlendAnimation(FbxObjects* startObject, float rate, bool isBlend = true);
+	void BlendAnimation(FbxObjects* startObject, float rate, bool isBlend);
 
 	void StopAnimation() { m_isPlay = false; }
 	void ResetAnimation() { current_animation_seconds = 0; }
 	void ReplayAnimation() { m_isPlay = true; }
 	void SetLoopAnimation(bool isLoop) { animation_loop_flag = isLoop; }
-	void SetMaxAnimation();
+	void SetAnimationTimerMax();	//あんま意味ないかも
+	void SetAnimationSpeed(float addSpeed, bool isSet);	//0~1
 
 public:	//Getter
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
