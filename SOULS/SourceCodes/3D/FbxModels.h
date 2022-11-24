@@ -156,7 +156,7 @@ public:
 	~FbxModels();
 
 	void Init(const std::string& modelname, const std::string& key = "", bool smoothing = false);
-	void Draw(ID3D12GraphicsCommandList* cmdList);
+	void Draw(ID3D12GraphicsCommandList* cmdList, std::vector<int> drawSkips);
 
 private:
 	void LoadMaterial(const std::string& directoryPath, const std::string& filename, FbxSurfaceMaterial* fbx_material);

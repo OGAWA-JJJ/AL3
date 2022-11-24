@@ -8,7 +8,7 @@
 #include <DirectXTex.h>
 #include <filesystem>
 
-#include "../Input/Input.h"
+#include "../Math/OgaJHelper.h"
 
 const std::string FbxModels::baseDirectory = "Resources/";
 ID3D12Device* FbxModels::device = nullptr;
@@ -287,7 +287,7 @@ void FbxModels::Init(const std::string& modelname, const std::string& key, bool 
 	LoadTextures();
 }
 
-void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList)
+void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList, std::vector<int> drawSkips)
 {
 	if (descHeap) {
 		ID3D12DescriptorHeap* ppHeaps[] = { descHeap };
@@ -296,8 +296,12 @@ void FbxModels::Draw(ID3D12GraphicsCommandList* cmdList)
 
 	//設計が不安、アルファが今は固定
 	int count = 0;
-	for (auto& mesh : meshes) {
-		mesh->Draw(cmdList, materials[names[count]]);
+	for (auto& mesh : meshes)
+	{
+		if (!OgaJHelper::VectorFinder(drawSkips, count))
+		{
+			mesh->Draw(cmdList, materials[names[count]]);
+		}
 		count++;
 	}
 }

@@ -5,10 +5,6 @@
 #include <wrl.h>
 #include <string>
 
-//using namespace DirectX;
-//using namespace Microsoft::WRL;
-//using namespace std;
-
 class Material
 {
 public:

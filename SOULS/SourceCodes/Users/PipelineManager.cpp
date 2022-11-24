@@ -3,6 +3,7 @@
 ObjPipelineSet PipelineManager::obj_normal;
 ObjPipelineSet PipelineManager::obj_shadow;
 ObjPipelineSet PipelineManager::obj_receiveShadow;
+ObjPipelineSet PipelineManager::obj_texColorReceice;
 
 FbxObjects::FbxPipelineSet PipelineManager::fbx_normal;
 FbxObjects::FbxPipelineSet PipelineManager::fbx_shadow;
@@ -23,6 +24,11 @@ void PipelineManager::Init()
 	receiveInit.m_psEntryPoint = "PSShadowMain";
 	receiveInit.m_vsEntryPoint = "VSShadowMain";
 	obj_receiveShadow = Object::CreateGraphicsPipeline(receiveInit);
+
+	ObjectInitData texInit;
+	texInit.m_psEntryPoint = "PSTexture";
+	texInit.m_vsEntryPoint = "VSmain";
+	obj_texColorReceice = Object::CreateGraphicsPipeline(texInit);
 
 	FbxObjects::FbxInitData fbxNormalInit;
 	fbxNormalInit.m_vsEntryPoint = "PSmain";

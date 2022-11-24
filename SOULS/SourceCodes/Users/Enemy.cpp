@@ -378,7 +378,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 	m_boneCount = static_cast<int>(l_affine.size());
 	for (int i = 0; i < m_boneCount; i++)
 	{
-		obj_Box[i]->SetScale(DirectX::XMFLOAT3(4, 4, 4));
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(6, 6, 6));
 		obj_Box[i]->MultiMatrix(l_affine[i].second);
 		obj_Box[i]->Update();
 
@@ -393,6 +393,15 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		l_obbs.push_back(l_obb);
 	}
 	m_obbs = l_obbs;
+
+	if (m_isInvincible)
+	{
+		ImguiControl::Imgui_enemyInvi = "TRUE";
+	}
+	else
+	{
+		ImguiControl::Imgui_enemyInvi = "FALSE";
+	}
 }
 
 void Enemy::Draw()

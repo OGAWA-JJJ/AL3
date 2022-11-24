@@ -5,10 +5,13 @@
 #include "../Math/OBBCollision.h"
 #include "../3D/FbxObjects.h"
 
+#include "../Users/ParticleManager.h"
+
 class Player
 {
 	//やっぱ爽快感、画面暗転、瀕死だったら画面赤とか、ブルーム以外は暗くしたりとか...。合わせ技だったりする。
 	//工夫点とかアプローチをハッキリ喋れるといい。
+	ParticleManager pManager;
 
 private:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -53,7 +56,7 @@ private:
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
 	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
-	const float C_EASE_CAMERA_TIMER = 0.006f;		//Targetモードが切り替わった際の速度
+	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
 	const float C_MAX_BLEND_TIMER = 0.02f;
 
 private:	//定数(ステータス関係)
@@ -99,6 +102,8 @@ private:	//変数
 	bool m_isStickReleaseTrigger = true;
 	bool m_isHeal = true;
 
+	bool m_isHelmet = true;
+
 private:	//変数(ステータス関係)
 	int m_hp;
 	int m_mp;
@@ -111,7 +116,7 @@ private:	//オブジェクト(Draw用)
 
 	Object* obj_Box[28] = { nullptr };
 	Object* obj_SwordBox = nullptr;
-	Object* obj_HitBox = nullptr;
+	Object* obj_Helmet = nullptr;
 
 	FbxObjects* fbxobj_miku[9] = { nullptr };
 	FbxObjects* fbxobj_shadowMiku[9] = { nullptr };	//shadow用修正

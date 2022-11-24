@@ -7,6 +7,8 @@ class ModelManager
 public:	//Player
 	static Model* model_sword;
 	static Model* model_box;
+	static Model* model_box2;
+	static Model* model_helmet;
 
 	static FbxModels* fbxmodel_standMiku;
 	static FbxModels* fbxmodel_slowRunMiku;

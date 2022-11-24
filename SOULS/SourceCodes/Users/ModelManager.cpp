@@ -3,6 +3,8 @@
 //Player
 Model* ModelManager::model_sword = nullptr;
 Model* ModelManager::model_box = nullptr;
+Model* ModelManager::model_box2 = nullptr;
+Model* ModelManager::model_helmet = nullptr;
 
 FbxModels* ModelManager::fbxmodel_standMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_slowRunMiku = nullptr;
@@ -38,6 +40,7 @@ ModelManager::~ModelManager()
 	//Player
 	delete model_sword;
 	delete model_box;
+	delete model_helmet;
 
 	delete fbxmodel_standMiku;
 	delete fbxmodel_slowRunMiku;
@@ -74,6 +77,8 @@ void ModelManager::Init()
 	//Player
 	model_sword = Model::CreateFromObj("Sword");
 	model_box = Model::CreateFromObj("TestBox");
+	model_box2 = Model::CreateFromObj("TestBox2");
+	model_helmet = Model::CreateFromObj("Artorius_Helmet");
 
 	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku", "Miku");
 	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");

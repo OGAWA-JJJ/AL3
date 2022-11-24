@@ -162,4 +162,11 @@ public:	//Getter
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//ŽèŒÅ’è
 
 	const bool IsAnimationEnd() { return m_isAnimationEndTrigger; }
+
+private:
+	//‰¼
+	std::vector<int> drawSkip;
+public:
+	void SetDrawSkipNum(int num) { drawSkip.push_back(num); }
+	void ResetDrawSkipNum() { drawSkip.clear(); }
 };

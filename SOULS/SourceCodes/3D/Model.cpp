@@ -329,7 +329,7 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 
 	Material* material = nullptr;
 
-	//1s‚¸‚Â“Ç‚İ‚Ş
+	//1s‚¸‚Â“Ç‚İ‚Ş©fgets‚É‚µ‚½•û‚ªŒy‚¢??
 	std::string line;
 	while (getline(file, line)) {
 

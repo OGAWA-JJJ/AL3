@@ -22,6 +22,7 @@ float ImguiControl::Imgui_enemyBlendTimer = 0.0f;
 float ImguiControl::Imgui_enemyCurrentAniTimer = 0.0f;
 float ImguiControl::Imgui_enemyOldAniTimer = 0.0f;
 char* ImguiControl::Imgui_enemyAniType = "NONE";
+char* ImguiControl::Imgui_enemyInvi = "FALSE";
 
 float ImguiControl::Imgui_playerBlendTimer = 0.0f;
 float ImguiControl::Imgui_playerCurrentAniTimer = 0.0f;
@@ -30,6 +31,12 @@ char* ImguiControl::Imgui_playerAniType = "NONE";
 char* ImguiControl::Imgui_playerOldAniType = "NONE";
 char* ImguiControl::Imgui_playerIsAccept = "NONE";
 char* ImguiControl::Imgui_playerIsChange = "NONE";
+
+//仮
+bool ImguiControl::isHel = true;
+float ImguiControl::posX = 0.0f;
+float ImguiControl::posY = 0.0f;
+float ImguiControl::posZ = 0.0f;
 
 void ImguiControl::Update()
 {
@@ -84,6 +91,7 @@ void ImguiControl::Update()
 		ImGui::Text("ENEMY_CURRENT_ANI_TIMER    ： %f", Imgui_enemyCurrentAniTimer);
 		ImGui::Text("ENEMY_OLD_ANI_TIMER        ： %f", Imgui_enemyOldAniTimer);
 		ImGui::Text("ENEMY_ANIMATION_TYPE       ： %s", Imgui_enemyAniType);
+		ImGui::Text("ENEMY_INVI                 ： %s", Imgui_enemyInvi);
 		ImGui::TreePop();
 	}
 
@@ -104,4 +112,10 @@ void ImguiControl::Update()
 	}
 
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	//仮
+	ImGui::Checkbox("IS_HELMET", &isHel);
+	ImGui::SliderFloat("X", &posX, -100.0f, 100.0f);
+	ImGui::SliderFloat("Y", &posY, -100.0f, 100.0f);
+	ImGui::SliderFloat("Z", &posZ, -100.0f, 100.0f);
 }

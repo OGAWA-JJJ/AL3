@@ -24,6 +24,7 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_enemyCurrentAniTimer;
 	static float Imgui_enemyOldAniTimer;
 	static char* Imgui_enemyAniType;
+	static char* Imgui_enemyInvi;
 
 	static float Imgui_playerBlendTimer;
 	static float Imgui_playerCurrentAniTimer;
@@ -32,6 +33,12 @@ public:	//Vector‚É‚µ‚½‚¢
 	static char* Imgui_playerOldAniType;
 	static char* Imgui_playerIsAccept;
 	static char* Imgui_playerIsChange;
+
+	//‰¼
+	static bool isHel;
+	static float posX;
+	static float posY;
+	static float posZ;
 
 public:
 	ImguiControl() {};

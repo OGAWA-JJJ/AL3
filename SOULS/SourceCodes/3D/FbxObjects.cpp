@@ -300,7 +300,7 @@ void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
 	);
 
 	light->Draw(cmdList, 3);
-	model->Draw(cmdList);
+	model->Draw(cmdList, drawSkip);
 }
 
 void FbxObjects::PlayAnimation()

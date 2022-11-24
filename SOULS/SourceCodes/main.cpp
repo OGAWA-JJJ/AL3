@@ -16,7 +16,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ReportLiveObjects();
 
 	//ウィンドウタイトル
-	LPCTSTR WindowTitle = L"OgwJ Engine";
+	LPCTSTR WindowTitle = L"SOULS";
 	//背景の色
 	float WindowColor[] = {
 		0.0f,

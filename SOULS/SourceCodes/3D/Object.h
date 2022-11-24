@@ -127,6 +127,8 @@ public:
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	//スケールの取得
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
+	//色の取得
+	const DirectX::XMFLOAT4& GetColor() { return color; }
 	//座標の設定
 	void SetPosition(DirectX::XMFLOAT3 position) { this->position = position; }
 	//回転角の設定
@@ -150,12 +152,33 @@ public:
 	inline Model* GetModel() { return model; }
 	//テクスチャ追加（マルチテクスチャ）
 	void AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv);
-	//アフィン変換行列を乗算する(Update後)
+	//アフィン変換行列を乗算する
 	void MultiMatrix(DirectX::XMMATRIX matrix)
 	{
 		isAffine = true;
 		this->matrix = matrix;
 	}
 	const DirectX::XMMATRIX GetMatRot() { return matRot; }	//親子関係は無視した回転行列です
+
+	//スケール抜きワールド行列取得
+	const DirectX::XMMATRIX GetMatrix()
+	{
+		DirectX::XMFLOAT3 l_scale = {};
+		l_scale.x = 1 / scale.x;
+		l_scale.y = 1 / scale.y;
+		l_scale.z = 1 / scale.z;
+
+		DirectX::XMMATRIX l_mat = matWorld;
+		l_mat.r[0].m128_f32[0] *= l_scale.x;
+		l_mat.r[0].m128_f32[1] *= l_scale.x;
+		l_mat.r[0].m128_f32[2] *= l_scale.x;
+		l_mat.r[1].m128_f32[0] *= l_scale.y;
+		l_mat.r[1].m128_f32[1] *= l_scale.y;
+		l_mat.r[1].m128_f32[2] *= l_scale.y;
+		l_mat.r[2].m128_f32[0] *= l_scale.z;
+		l_mat.r[2].m128_f32[1] *= l_scale.z;
+		l_mat.r[2].m128_f32[2] *= l_scale.z;
+		return l_mat;
+	}
 };
 
