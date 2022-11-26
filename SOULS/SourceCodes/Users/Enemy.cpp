@@ -9,13 +9,15 @@
 Enemy::Enemy()
 {
 #pragma region Init
+
 	m_pos = { 0,0,0 };
 	m_swingDownStartPos = { 0,0,0 };
 	m_swingDownEndPos = { 0,0,0 };
 	m_animationTimer = 0;
 	m_animationType = STAND;
 	m_oldAnimationType = m_animationType;
-	m_boneCount = 0;
+	//m_boneCount = 0;
+	m_hitOBBNum = 0;
 	m_deg = 180.0f;
 	m_easeTimer = 0.0f;
 	m_turnStartAngle = 0.0f;
@@ -35,16 +37,22 @@ Enemy::Enemy()
 	m_isRise = false;
 	m_isSwing = false;
 	m_isChange = false;
+
 #pragma endregion
 
 #pragma region StatusInit
+
 	m_hp = C_MAX_HP;
+
 #pragma endregion
 
 #pragma region ModelCreate
-	for (int i = 0; i < 37; i++)
+
+	const float boxSize = 6.0f;
+	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i] = Object::Create(ModelManager::model_box);
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(boxSize, boxSize, boxSize));
 	}
 
 	fbxobj_creature[AnimationType::STAND] = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
@@ -82,70 +90,17 @@ Enemy::Enemy()
 
 	fbxobj_creature[AnimationType::SWING_DOWN] = FbxObjects::Create(ModelManager::fbxmodel_swingDownCreature);
 	fbxobj_creature[AnimationType::SWING_DOWN]->PlayAnimation();
+
 #pragma endregion
 
 #pragma region ModelInit
+
 	const float Creature_Scale = 0.4f;
+	for (int i = 0; i < C_CREATURE_NUM; i++)
+	{
+		fbxobj_creature[i]->SetScale(DirectX::XMFLOAT3(Creature_Scale, Creature_Scale, Creature_Scale));
+	}
 
-	fbxobj_creature[AnimationType::STAND]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::RUN]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::KICK]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::PUNCH]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::DIE]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::R_TURN]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::L_TURN]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::R_BACK]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::L_BACK]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::EXPLOSION]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::RISE]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
-
-	fbxobj_creature[AnimationType::SWING_DOWN]->SetScale(DirectX::XMFLOAT3(
-		Creature_Scale,
-		Creature_Scale,
-		Creature_Scale));
 #pragma endregion
 }
 
@@ -165,6 +120,77 @@ Enemy::~Enemy()
 void Enemy::Init()
 {
 	m_pos = DirectX::XMFLOAT3(0.0f, 0.0f, -300.0f);
+
+	//パーティクル
+	const float pScale = 1.0f;
+	const float pPower = 3.0f;
+
+	pManager.Init();
+	Particle::ParticleData pData;
+	pData.isRandVec = true;
+	pData.isRandColor = false;
+	pData.life = 30;
+	pData.scale = { pScale, pScale, pScale };
+	pData.power = { pPower, pPower, pPower };
+	pData.color = { 0.9f, 0.2f, 0.2f, 1.0f };
+	for (int i = 0; i < pManager.GetMaxParticle(); i++)
+	{
+		pManager.SetParticle(i, pData);
+	}
+	pManager.SetCreateNum(pManager.GetMaxParticle());
+	pManager.SetIsCreateStop(true);
+
+	//Box
+	std::array<float, 12> l_x = {
+		15,
+		6,
+		5,
+		6.6f,
+		6,
+		6,
+		5,
+		5,
+		6,
+		5,
+		5,
+		6
+	};
+	std::array<float, 12> l_y = {
+		10,
+		6,
+		7,
+		15,
+		8,
+		10,
+		7,
+		7,
+		7,
+		7,
+		7,
+		7
+	};
+	std::array<float, 12> l_z = {
+		10,
+		6,
+		5,
+		6.6f,
+		6,
+		6,
+		5,
+		5,
+		6,
+		5,
+		5,
+		6
+	};
+	for (int i = 0; i < C_BOX_NUM; i++)
+	{
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(
+			l_x[i],
+			l_y[i],
+			l_z[i]
+		));
+	}
 }
 
 void Enemy::Update(DirectX::XMFLOAT3 playerPos)
@@ -368,31 +394,7 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature[m_animationType]->GetNowTime();
 	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature[m_oldAnimationType]->GetNowTime();
 
-	//OBB計算
-	std::vector<std::pair<std::string, DirectX::XMMATRIX>> l_affine =
-		fbxobj_creature[m_animationType]->GetAffineTrans();
-	std::vector<DirectX::XMMATRIX> l_matRot =
-		fbxobj_creature[m_animationType]->GetMatRots();
-
-	std::vector<OBB> l_obbs;
-	m_boneCount = static_cast<int>(l_affine.size());
-	for (int i = 0; i < m_boneCount; i++)
-	{
-		obj_Box[i]->SetScale(DirectX::XMFLOAT3(6, 6, 6));
-		obj_Box[i]->MultiMatrix(l_affine[i].second);
-		obj_Box[i]->Update();
-
-		OBB l_obb;
-		l_obb.pos = DirectX::XMFLOAT3(
-			l_affine[i].second.r[3].m128_f32[0],
-			l_affine[i].second.r[3].m128_f32[1],
-			l_affine[i].second.r[3].m128_f32[2]);
-		l_obb.matrix = l_matRot[i];
-		l_obb.length = obj_Box[i]->GetScale();
-
-		l_obbs.push_back(l_obb);
-	}
-	m_obbs = l_obbs;
+	CalcOBB();
 
 	if (m_isInvincible)
 	{
@@ -402,6 +404,13 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 	{
 		ImguiControl::Imgui_enemyInvi = "FALSE";
 	}
+
+
+	if (pManager.IsArrivalCreateNum())
+	{
+		pManager.SetIsCreateStop(true);
+	}
+	pManager.Update();
 }
 
 void Enemy::Draw()
@@ -418,19 +427,73 @@ void Enemy::Draw()
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
+
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
-		for (int i = 0; i < m_boneCount; i++)
+		for (int i = 0; i < obj_Box.size(); i++)
 		{
 			obj_Box[i]->Draw(PipelineManager::obj_normal);
 		}
 	}
+
 	Object::PostDraw();
+
+	pManager.Draw();
 }
 
 void Enemy::CalcOBB()
 {
+	//OBB計算
+	std::vector<std::pair<std::string, DirectX::XMMATRIX>> l_affine =
+		fbxobj_creature[m_animationType]->GetAffineTrans();
+	std::vector<DirectX::XMMATRIX> l_matRot =
+		fbxobj_creature[m_animationType]->GetMatRots();
 
+	for (int i = 0; i < C_BOX_NUM; i++)
+	{
+		obj_Box[i]->SetPosition(DirectX::XMFLOAT3(
+			ImguiControl::e[i][0],
+			ImguiControl::e[i][1],
+			ImguiControl::e[i][2]
+		));
+	}
+
+	int i = 0;
+	int l_eraseCount = 0;
+	while (1)
+	{
+		if (boxes.size() <= i)
+		{
+			break;
+		}
+
+		if (boxes[i] == 0)
+		{
+			l_affine.erase(l_affine.begin() + (i - l_eraseCount));
+			l_matRot.erase(l_matRot.begin() + (i - l_eraseCount));
+			l_eraseCount++;
+		}
+
+		i++;
+	}
+
+	std::vector<OBB> l_obbs;
+	for (int i = 0; i < l_affine.size(); i++)
+	{
+		obj_Box[i]->MultiMatrix(l_affine[i].second);
+		obj_Box[i]->Update();
+
+		OBB l_obb;
+		l_obb.pos = DirectX::XMFLOAT3(
+			l_affine[i].second.r[3].m128_f32[0],
+			l_affine[i].second.r[3].m128_f32[1],
+			l_affine[i].second.r[3].m128_f32[2]);
+		l_obb.matrix = l_matRot[i];
+		l_obb.length = obj_Box[i]->GetScale();
+
+		l_obbs.push_back(l_obb);
+	}
+	m_obbs = l_obbs;
 }
 
 void Enemy::JudgAnimationType(float dist)
@@ -823,8 +886,20 @@ void Enemy::CalcSwingDown(DirectX::XMFLOAT3& pPos)
 void Enemy::HitAttack(int damage)
 {
 	m_hp -= damage;
-	m_isInvincible = true;
 	if (m_hp <= 0) { m_hp = 0; }
+	m_isInvincible = true;
+
+	DirectX::XMFLOAT3 l_pos = m_obbs[m_hitOBBNum].pos;
+	for (int i = 0; i < pManager.GetMaxParticle(); i++)
+	{
+		//生成時のみ剣に付随
+		if (!pManager.IsMove(i))
+		{
+			pManager.SetPosition(i, l_pos);
+		}
+	}
+	pManager.SetIsCreateStop(false);
+
 	OutputDebugStringA("Hit!\n");
 }
 

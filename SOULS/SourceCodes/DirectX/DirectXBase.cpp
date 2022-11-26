@@ -1,6 +1,6 @@
 #include "DirectXBase.h"
 #include <string>
-#include <d3dx12.h>
+#include "d3dx12.h"
 
 HRESULT DirectXBase::result;
 Microsoft::WRL::ComPtr<IDXGIAdapter> DirectXBase::tmpAdapter = nullptr;

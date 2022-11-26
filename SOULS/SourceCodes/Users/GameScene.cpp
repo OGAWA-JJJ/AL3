@@ -178,11 +178,12 @@ void GameScene::PlayerUpdate()
 			OBB l_obb = m_player->GetSwordOBB();
 
 			//全ボーンと計算(変えたい)→メッシュだと部位特定だるそう
-			for (int i = 0; i < m_enemy->GetBoneCount(); i++)
+			for (int i = 0; i < l_obbs.size(); i++)
 			{
 				bool l_isHit = OBBCollision::CollisionOBBs(l_obb, l_obbs[i]);
 				if (l_isHit)
 				{
+					m_enemy->SetHitOBBNum(i);
 					m_enemy->HitAttack(m_player->GetPower());
 					SpriteManager::EnemyDamaged(m_enemy->GetHpRate());
 					break;

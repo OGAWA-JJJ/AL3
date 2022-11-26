@@ -10,8 +10,8 @@ float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 
-bool ImguiControl::Imgui_isOBBDraw = false;
-bool ImguiControl::Imgui_isPlayerDraw = true;
+bool ImguiControl::Imgui_isOBBDraw = true;
+bool ImguiControl::Imgui_isPlayerDraw = false;
 bool ImguiControl::Imgui_isEnemyDraw = true;
 bool ImguiControl::Imgui_isWeaponDraw = true;
 bool ImguiControl::Imgui_isSponzaDraw = true;
@@ -32,11 +32,12 @@ char* ImguiControl::Imgui_playerOldAniType = "NONE";
 char* ImguiControl::Imgui_playerIsAccept = "NONE";
 char* ImguiControl::Imgui_playerIsChange = "NONE";
 
+//obb
+float ImguiControl::p[10][3];
+float ImguiControl::e[12][3];
+
 //‰¼
-bool ImguiControl::isHel = true;
-float ImguiControl::posX = 0.0f;
-float ImguiControl::posY = 0.0f;
-float ImguiControl::posZ = 0.0f;
+bool ImguiControl::isHel = false;
 
 void ImguiControl::Update()
 {
@@ -113,9 +114,25 @@ void ImguiControl::Update()
 
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
+	//obb
+	if (ImGui::TreeNode("OBB"))
+	{
+		ImGui::Text("PLAYER");
+		for (int i = 0; i < 10; i++)
+		{
+			char lavel = i + '0';
+			ImGui::SliderFloat3(&lavel, p[i], -5.0f, 5.0f);
+		}
+
+		ImGui::Text("ENEMY");
+		for (int i = 0; i < 12; i++)
+		{
+			char lavel = i + 10 + '0';
+			ImGui::SliderFloat3(&lavel, e[i], -5.0f, 5.0f);
+		}
+		ImGui::TreePop();
+	}
+
 	//‰¼
 	ImGui::Checkbox("IS_HELMET", &isHel);
-	ImGui::SliderFloat("X", &posX, -100.0f, 100.0f);
-	ImGui::SliderFloat("Y", &posY, -100.0f, 100.0f);
-	ImGui::SliderFloat("Z", &posZ, -100.0f, 100.0f);
 }

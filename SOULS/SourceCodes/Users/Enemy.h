@@ -3,10 +3,13 @@
 #include "../3D/Object.h"
 #include "../Math/OBBCollision.h"
 
+#include "ParticleManager.h"
+
 class Enemy
 {
 	//モーション→メリハリあると良くなりそう。ヒットストップとか。
 	//バレットタイムとか。(色んな角度からアニメーション複数回再生的な)
+	ParticleManager pManager;
 
 private:
 	enum AnimationType
@@ -73,7 +76,8 @@ private:
 	int m_animationTimer;
 	int m_animationType;
 	int m_oldAnimationType;
-	int m_boneCount;
+	//int m_boneCount;
+	int m_hitOBBNum;
 	float m_deg;
 	float m_easeTimer;
 	float m_turnStartAngle;
@@ -98,9 +102,22 @@ private:	//変数(ステータス関係)
 	int m_hp;
 
 private:	//オブジェクト(Draw用)
-	Object* obj_Box[37] = { nullptr };
+	std::array<Object*, 12> obj_Box = { nullptr };
+	const int C_BOX_NUM = 12;
 
-	FbxObjects* fbxobj_creature[12] = { nullptr };
+	std::array<bool, 37> boxes = {
+		0,1,0,0,0,
+		1,0,0,1,0,
+		1,0,1,0,1,
+		0,0,0,0,0,
+		0,0,0,0,0,
+		0,0,1,1,1,
+		0,0,1,1,1,
+		0,0
+	};
+
+	std::array<FbxObjects*, 12> fbxobj_creature = { nullptr };
+	const int C_CREATURE_NUM = 12;
 
 public:
 	Enemy();
@@ -122,7 +139,7 @@ private:
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	const int GetBoneCount() { return m_boneCount; }
+	//const int GetBoneCount() { return m_boneCount; }
 	const int GetPower() { return C_MAX_POWER; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
 	const bool IsInvincible() { return m_isInvincible; }
@@ -132,6 +149,7 @@ public:	//Getter
 public:	//Setter
 	void UnInvincible() { m_isInvincible = false; }
 	void DiscoverPlayer() { m_animationType = RUN; }
+	void SetHitOBBNum(int hitNum) { m_hitOBBNum = hitNum; }
 
 public:	//呼ぶやつ
 	void HitAttack(int damage);

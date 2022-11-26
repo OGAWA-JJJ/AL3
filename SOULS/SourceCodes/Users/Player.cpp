@@ -9,6 +9,7 @@
 Player::Player()
 {
 #pragma region Init
+
 	m_obb = {};
 	m_pos = { 0,0,0 };
 	m_cameraAngle = { 0,0,0 };
@@ -37,13 +38,16 @@ Player::Player()
 	m_isAccept = true;
 	m_isChange = false;
 	m_isAnimation = false;
+
 #pragma endregion
 
 #pragma region StatusInit
+
 	m_hp = C_MAX_HP;
 	m_mp = C_MAX_MP;
 	m_stamina = C_MAX_STAMINA;
 	m_power = C_MAX_POWER;
+
 #pragma endregion
 
 #pragma region ModelCreate
@@ -52,7 +56,7 @@ Player::Player()
 	obj_Sword = Object::Create(ModelManager::model_sword);
 	obj_ShadowSword = Object::Create(ModelManager::model_sword);
 
-	for (int i = 0; i < 28; i++)
+	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i] = Object::Create(ModelManager::model_box);
 	}
@@ -171,6 +175,7 @@ Player::Player()
 		fbxobj_shadowMiku[i]->SetDrawSkipNum(12);
 		fbxobj_shadowMiku[i]->SetDrawSkipNum(14);
 	}
+
 #pragma endregion
 }
 
@@ -223,6 +228,7 @@ void Player::Init()
 
 	ImguiControl::Imgui_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
 
+	//パーティクル
 	const float pScale = 0.3f;
 	const float pPower = 0.03f;
 	const float pColor = 0.9f;
@@ -232,12 +238,57 @@ void Player::Init()
 	pData.isRandVec = true;
 	pData.isRandColor = false;
 	pData.scale = { pScale, pScale, pScale };
-	//pData.power = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 	pData.power = { pPower, pPower, pPower };
 	pData.color = { pColor, pColor, pColor, 1.0f };
-	for (int i = 0; i < pManager.MAX_PARTICLE; i++)
+	for (int i = 0; i < pManager.GetMaxParticle(); i++)
 	{
 		pManager.SetParticle(i, pData);
+	}
+
+	//Box
+	std::array<float, 10> l_x = {
+		3,
+		1.7f,
+		3,
+		2,
+		2,
+		1.6f,
+		1.6f,
+		2,
+		1.6f,
+		2
+	};
+	std::array<float, 10> l_y = {
+		7,
+		3.7f,
+		3,
+		3.5f,
+		3.5f,
+		3,
+		5,
+		2,
+		5,
+		2
+	};
+	std::array<float, 10> l_z = {
+		3,
+		1.7f,
+		3,
+		2,
+		2,
+		1.6f,
+		1.6f,
+		3.5f,
+		1.6f,
+		3.5f
+	};
+	for (int i = 0; i < C_BOX_NUM; i++)
+	{
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(
+			l_x[i],
+			l_y[i],
+			l_z[i]
+		));
 	}
 }
 
@@ -847,18 +898,16 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 
 	m_cameraDist = ImguiControl::Imgui_cameraDist;
 
-	DirectX::XMFLOAT3 particlePos = {
-		ImguiControl::posX,
-		ImguiControl::posY,
-		ImguiControl::posZ
-	};
-	for (int i = 0; i < pManager.MAX_PARTICLE; i++)
+	//パーティクル
+	for (int i = 0; i < pManager.GetMaxParticle(); i++)
 	{
+		//剣から微調整
 		pManager.SetPosition(i, DirectX::XMFLOAT3(
 			0,
 			static_cast<float>(rand() % 21) + 5.0f,
 			0));
 
+		//生成時のみ剣に付随
 		if (!pManager.IsMove(i))
 		{
 			pManager.MultiMatrix(i, obj_Sword->GetMatrix());
@@ -895,17 +944,14 @@ void Player::Draw()
 
 	if (ImguiControl::Imgui_isOBBDraw && m_animationType != DAMAGED)
 	{
-		for (int i = 0; i < 28; i++)
+		for (int i = 0; i < C_BOX_NUM; i++)
 		{
 			obj_Box[i]->Draw(PipelineManager::obj_normal);
 		}
-		if (m_isAttack)
-		{
-			obj_SwordBox->Draw(PipelineManager::obj_normal);
-		}
+		obj_SwordBox->Draw(PipelineManager::obj_normal);
 	}
-	Object::PostDraw();
 
+	Object::PostDraw();
 
 	pManager.Draw();
 }
@@ -1105,7 +1151,8 @@ void Player::CalcOBB()
 	std::vector<OBB> l_obbs;
 	for (int i = 0; i < matRot.size(); i++)
 	{
-		obj_Box[i]->SetScale(DirectX::XMFLOAT3(2, 2, 2));
+		obj_Box[i]->MultiMatrix(bones[i].second);
+		obj_Box[i]->Update();
 
 		OBB l_obb;
 		l_obb.pos = DirectX::XMFLOAT3(
@@ -1241,23 +1288,28 @@ void Player::OtherUpdate()
 	//Imgui
 	SetImgui();
 
-	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affine =
-		fbxobj_miku[m_animationType]->GetAffineTrans();
-	for (int i = 0; i < affine.size(); i++)
-	{
-		obj_Box[i]->MultiMatrix(affine[i].second);
-		obj_Box[i]->Update();
-	}
 	bones = fbxobj_miku[m_animationType]->GetAffineTrans();
 	matRot = fbxobj_miku[m_animationType]->GetMatRots();
+	int i = 0;
+	int l_eraseCount = 0;
+	while (1)
+	{
+		if (boxes.size() <= i)
+		{
+			break;
+		}
+
+		if (boxes[i] == 0)
+		{
+			bones.erase(bones.begin() + (i - l_eraseCount));
+			matRot.erase(matRot.begin() + (i - l_eraseCount));
+			l_eraseCount++;
+		}
+
+		i++;
+	}
 
 	//仮
-	/*DirectX::XMFLOAT3 helPos = {
-		ImguiControl::posX,
-		ImguiControl::posY,
-		ImguiControl::posZ
-	};
-	obj_Helmet->SetPosition(helPos);*/
 	if (m_isHelmet != ImguiControl::isHel)
 	{
 		if (ImguiControl::isHel)
@@ -1294,7 +1346,7 @@ void Player::OtherUpdate()
 	}
 	m_isHelmet = ImguiControl::isHel;
 
-	obj_Helmet->MultiMatrix(affine[9].second);
+	obj_Helmet->MultiMatrix(bones[2].second);
 	obj_Sword->MultiMatrix(fbxobj_miku[m_animationType]->GetMatrix());
 	obj_ShadowSword->MultiMatrix(fbxobj_miku[m_animationType]->GetMatrix());
 
@@ -1478,6 +1530,16 @@ void Player::SetImgui()
 
 	ImguiControl::Imgui_playerCurrentAniTimer = fbxobj_miku[m_animationType]->GetNowTime();
 	ImguiControl::Imgui_playerOldAniTimer = fbxobj_miku[m_oldAnimationType]->GetNowTime();
+
+	for (int i = 0; i < C_BOX_NUM; i++)
+	{
+		obj_Box[i]->SetPosition(DirectX::XMFLOAT3(
+			ImguiControl::p[i][0],
+			ImguiControl::p[i][1],
+			ImguiControl::p[i][2]
+		));
+	}
+	obj_Box[2]->SetPosition(DirectX::XMFLOAT3(0, 2.0f, 0));
 }
 
 /*----------呼ぶやつ----------*/

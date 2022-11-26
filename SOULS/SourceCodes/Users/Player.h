@@ -5,7 +5,7 @@
 #include "../Math/OBBCollision.h"
 #include "../3D/FbxObjects.h"
 
-#include "../Users/ParticleManager.h"
+#include "ParticleManager.h"
 
 class Player
 {
@@ -114,13 +114,18 @@ private:	//オブジェクト(Draw用)
 	Object* obj_Sword = nullptr;
 	Object* obj_ShadowSword = nullptr;
 
-	Object* obj_Box[28] = { nullptr };
+	std::array<Object*, 10> obj_Box = { nullptr };
+	const int C_BOX_NUM = 10;
+	std::array<bool, 28> boxes = {
+		1,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,1,0,0,0,1,0,1,1,0,1
+	};
+
 	Object* obj_SwordBox = nullptr;
 	Object* obj_Helmet = nullptr;
 
-	FbxObjects* fbxobj_miku[9] = { nullptr };
-	FbxObjects* fbxobj_shadowMiku[9] = { nullptr };	//shadow用修正
-	const int C_MIKU_NUM = 9;						//fbx増減時変更
+	std::array<FbxObjects*, 9> fbxobj_miku = { nullptr };
+	std::array<FbxObjects*, 9> fbxobj_shadowMiku = { nullptr };	//shadow用修正
+	const int C_MIKU_NUM = 9;									//fbx増減時変更
 
 public:
 	Player();

@@ -3,7 +3,7 @@
 #include "../DirectX/ConstantBuffer.h"
 #include "../DirectX/Camera.h"
 
-#include <d3dx12.h>
+#include "../DirectX/d3dx12.h"
 #include <d3dcompiler.h>
 #include <cassert>
 

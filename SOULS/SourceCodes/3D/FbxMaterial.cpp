@@ -1,5 +1,5 @@
 #include "../3D/FbxMaterial.h"
-#include <DirectXTex.h>
+#include "include/DirectXTex.h"
 #include <cassert>
 
 ID3D12Device* FbxMaterial::device = nullptr;

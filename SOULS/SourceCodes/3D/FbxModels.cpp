@@ -5,7 +5,7 @@
 #include <cassert>
 #include <xlocbuf>
 #include <codecvt> 
-#include <DirectXTex.h>
+#include "include/DirectXTex.h"
 #include <filesystem>
 
 #include "../Math/OgaJHelper.h"

@@ -23,9 +23,10 @@ public:
 private:
 	ParticleData m_particleData;
 	Object* m_object = nullptr;
-	int m_life = 0;
-	int m_createFrame = 0;
-	bool m_isDraw = false;
+	int m_life;
+	int m_createFrame;
+	int m_loopNum;
+	bool m_isDraw;
 
 public:
 	void Init();
@@ -47,21 +48,28 @@ public:
 	void SetVec(const DirectX::XMFLOAT3 vec);
 	void SetColor(const DirectX::XMFLOAT4 color);
 
-	bool GetIsDraw() { return m_isDraw; }
-
+public:
 	Object* GetModel() { return m_object; }
+	bool GetIsDraw() { return m_isDraw; }
 };
 
 class ParticleManager
 {
-public:
-	const int MAX_PARTICLE = 100;
-	const int MAX_CREATE_TIMER = 1;
+private:
+	const int C_MAX_PARTICLE = 100;
+	const int C_INIT_CREATE_TIMER = 1;
+	const int C_INIT_CREATE_NUM = 1;
 
 private:
 	std::vector<Particle> m_particles;
-	int isCreateTimer = 0;
-	bool isCreate = false;
+	int m_maxParticle;
+	int m_createTimer;
+	int m_maxCreateTimer;
+	int m_createNum;
+	int m_createCount;
+	bool m_isCreate;
+	bool m_isCreateStop;
+	bool m_isArrivalCreateNum;
 
 public:
 	void Init();
@@ -70,6 +78,9 @@ public:
 
 public:
 	void SetParticle(const int num, const Particle::ParticleData& particleData);
+	void SetMaxParticle(const int num);
+	void SetMaxCreateTimer(const int num);
+	void SetCreateNum(const int num);
 
 	void SetLife(const int num, const int life);
 	void SetPosition(const int num, const DirectX::XMFLOAT3 pos);
@@ -79,13 +90,13 @@ public:
 	void SetVec(const int num, const DirectX::XMFLOAT3 vec);
 	void SetColor(const int num, const DirectX::XMFLOAT3 color);
 
-	void MultiMatrix(const int num, DirectX::XMMATRIX matrix)
-	{
-		m_particles.at(num).GetModel()->MultiMatrix(matrix);
-	}
-
-	bool IsMove(const int num);
-
+	void SetIsCreateStop(const bool isCreateStop);
+	void MultiMatrix(const int num, DirectX::XMMATRIX matrix);
 	void EndAllParticle();
+
+public:
+	bool IsMove(const int num) { return m_particles.at(num).GetIsDraw(); }
+	bool IsArrivalCreateNum() { return m_isArrivalCreateNum; }
+	int GetMaxParticle() { return m_maxParticle; }
 };
 

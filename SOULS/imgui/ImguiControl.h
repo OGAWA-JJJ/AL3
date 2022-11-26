@@ -1,4 +1,5 @@
 #pragma once
+#include <DirectXMath.h>
 
 class ImguiControl
 {
@@ -34,11 +35,11 @@ public:	//Vector‚É‚µ‚½‚¢
 	static char* Imgui_playerIsAccept;
 	static char* Imgui_playerIsChange;
 
+	static float p[10][3];
+	static float e[12][3];
+
 	//‰¼
 	static bool isHel;
-	static float posX;
-	static float posY;
-	static float posZ;
 
 public:
 	ImguiControl() {};

@@ -1,6 +1,6 @@
 #include "ConstantBuffer.h"
 #include <cassert>
-#include <d3dx12.h>
+#include "d3dx12.h"
 
 ID3D12Resource* ConstantBuffer::CreateConstantBuffer(size_t size)
 {

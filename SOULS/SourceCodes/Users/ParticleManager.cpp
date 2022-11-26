@@ -6,6 +6,10 @@
 //Particle
 void Particle::Init()
 {
+	m_life = 0;
+	m_createFrame = 0;
+	m_loopNum = 0;
+	m_isDraw = false;
 	m_object = Object::Create(ModelManager::model_box2);
 }
 
@@ -58,17 +62,6 @@ void Particle::Move()
 		l_pos.y += m_particleData.power.y * m_particleData.vec.y;
 		l_pos.z += m_particleData.power.z * m_particleData.vec.z;
 		m_object->SetPosition(l_pos);
-
-		//‰¼
-		if (m_life <= 10)
-		{
-			DirectX::XMFLOAT4 l_col = m_object->GetColor();
-			if (l_col.w > 0.0f)
-			{
-				l_col.w -= 0.08f;
-			}
-			//m_object->SetColor(l_col);
-		}
 
 		m_life++;
 	}
@@ -146,7 +139,16 @@ void Particle::SetColor(const DirectX::XMFLOAT4 color)
 //ParticleManager
 void ParticleManager::Init()
 {
-	m_particles.resize(MAX_PARTICLE);
+	m_maxParticle = C_MAX_PARTICLE;
+	m_createTimer = 0;
+	m_maxCreateTimer = C_INIT_CREATE_TIMER;
+	m_createNum = C_INIT_CREATE_NUM;
+	m_createCount = 0;
+	m_isCreate = false;
+	m_isCreateStop = false;
+	m_isArrivalCreateNum = false;
+
+	m_particles.resize(C_MAX_PARTICLE);
 	for (int i = 0; i < m_particles.size(); i++)
 	{
 		m_particles.at(i).Init();
@@ -155,28 +157,39 @@ void ParticleManager::Init()
 
 void ParticleManager::Update()
 {
-	if (isCreateTimer >= MAX_CREATE_TIMER)
+	if (m_createTimer >= m_maxCreateTimer && !m_isCreateStop)
 	{
-		isCreateTimer = 0;
-		isCreate = true;
+		m_createTimer = 0;
+		m_createCount = 0;
+		m_isCreate = true;
+		m_isArrivalCreateNum = false;
+	}
+	else
+	{
+		m_createTimer++;
 	}
 
-	for (int i = 0; i < m_particles.size(); i++)
+	for (int i = 0; i < m_maxParticle; i++)
 	{
-		bool isCreateFlag = m_particles.at(i).Update(isCreate);
-		if (isCreateFlag)
+		if (m_particles.at(i).Update(m_isCreate))
 		{
-			isCreate = false;
+			if (m_createCount < m_createNum)
+			{
+				m_createCount++;
+				if (m_createCount >= m_createNum)
+				{
+					m_isCreate = false;
+					m_isArrivalCreateNum = true;
+				}
+			}
 		}
 	}
-
-	isCreateTimer++;
 }
 
 void ParticleManager::Draw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	for (int i = 0; i < m_particles.size(); i++)
+	for (int i = 0; i < m_maxParticle; i++)
 	{
 		m_particles.at(i).Draw();
 	}
@@ -186,6 +199,24 @@ void ParticleManager::Draw()
 void ParticleManager::SetParticle(const int num, const Particle::ParticleData& particleData)
 {
 	m_particles.at(num).SetParticle(particleData);
+}
+
+void ParticleManager::SetMaxParticle(const int num)
+{
+	if (num > C_MAX_PARTICLE) { assert(0); }
+	m_maxParticle = num;
+}
+
+void ParticleManager::SetMaxCreateTimer(const int num)
+{
+	m_createTimer = 0;
+	m_maxCreateTimer = num;
+}
+
+void ParticleManager::SetCreateNum(const int num)
+{
+	if (num > C_MAX_PARTICLE) { assert(0); }
+	m_createNum = num;
 }
 
 void ParticleManager::SetLife(const int num, const int life)
@@ -223,9 +254,15 @@ void ParticleManager::SetColor(const int num, const DirectX::XMFLOAT3 color)
 	m_particles.at(num).SetPosition(color);
 }
 
-bool ParticleManager::IsMove(const int num)
+void ParticleManager::SetIsCreateStop(const bool isCreateStop)
 {
-	return m_particles.at(num).GetIsDraw();
+	m_isCreateStop = isCreateStop;
+	m_isArrivalCreateNum = false;
+}
+
+void ParticleManager::MultiMatrix(const int num, DirectX::XMMATRIX matrix)
+{
+	m_particles.at(num).GetModel()->MultiMatrix(matrix);
 }
 
 void ParticleManager::EndAllParticle()

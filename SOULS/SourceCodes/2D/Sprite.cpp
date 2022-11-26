@@ -1,8 +1,8 @@
 #include "Sprite.h"
 #include <cassert>
-#include <d3dx12.h>
+#include "../DirectX/d3dx12.h"
 #include <d3dcompiler.h>
-#include <DirectXTex.h>
+#include "include/DirectXTex.h"
 
 #include "../DirectX/DirectXImportant.h"
 

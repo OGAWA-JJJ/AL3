@@ -12,7 +12,7 @@ Stage::Stage()
 	const float Stage_Scale = 2000.0f;
 	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 200.0f, Stage_Scale, Stage_Scale));
 
-	const float colosseumScale = 1.0f;
+	const float colosseumScale = 100.0f;
 	obj_colosseum->SetScale(DirectX::XMFLOAT3(colosseumScale, colosseumScale, colosseumScale));
 }
 

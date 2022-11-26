@@ -1,5 +1,5 @@
 #include "Material.h"
-#include <DirectXTex.h>
+#include "include/DirectXTex.h"
 #include <cassert>
 #include <filesystem>
 
