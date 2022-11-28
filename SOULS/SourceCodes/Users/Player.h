@@ -31,12 +31,11 @@ private:	//自機のパターン
 		NORMAL_ATTACK_3,
 		DAMAGED,			//被弾(吹っ飛びがない)
 		ROLLING,			//回避
-		DIE					//死亡時
+		DIE,				//死亡時
+		HEAL				//アイテム(回復)使用
 
-		//新規
-		//アイテム使用
+		//追加
 		//武器切り替え
-
 		//戦技
 		//バックステップ
 	};
@@ -46,14 +45,15 @@ private:		//定数
 	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;			//カメラと自機の距離の最大
 
 private:
-	const int C_ATTACK_COLLISION_TIMER[3] = { 40,30,50 };	//攻撃判定
-	const int C_ATTACK_COLLISION_ENDTIMER = 50;				//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレームに変更
+	const int C_ATTACK_COLLISION_TIMER[3] = { 45,35,50 };	//攻撃判定
+	const int C_ATTACK_COLLISION_ENDTIMER = 55;				//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレームに変更
 
-	const int C_HEAL_TIMER = 60;					//回復し始めるまでのフレーム
+	const int C_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
 	const int C_ATTACK_SUB_STAMINA = 220;			//減少スタミナ(攻撃)
 	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 5;						//1フレームのスタミナ回復量
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
+	const int C_HEAL_HP_TIMER = 30;					//エスト飲んでから回復までのフレーム数
 	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
@@ -63,7 +63,8 @@ private:	//定数(ステータス関係)
 	const int C_MAX_HP = 1000;
 	const int C_MAX_MP = 100;
 	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER = 40;
+	const int C_MAX_POWER = 40;	//変更必要
+	const int C_MAX_ESTUS = 5;
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;	//ボーン情報
@@ -109,6 +110,7 @@ private:	//変数(ステータス関係)
 	int m_mp;
 	int m_stamina;
 	int m_power;
+	int m_estus;
 
 private:	//オブジェクト(Draw用)
 	Object* obj_Sword = nullptr;
@@ -123,9 +125,9 @@ private:	//オブジェクト(Draw用)
 	Object* obj_SwordBox = nullptr;
 	Object* obj_Helmet = nullptr;
 
-	std::array<FbxObjects*, 9> fbxobj_miku = { nullptr };
-	std::array<FbxObjects*, 9> fbxobj_shadowMiku = { nullptr };	//shadow用修正
-	const int C_MIKU_NUM = 9;									//fbx増減時変更
+	std::array<FbxObjects*, 10> fbxobj_miku = { nullptr };
+	std::array<FbxObjects*, 10> fbxobj_shadowMiku = { nullptr };	//shadow用修正
+	const int C_MIKU_NUM = 10;										//fbx増減時変更
 
 public:
 	Player();
@@ -146,6 +148,7 @@ private:
 	void CalcAttackTimer();
 	void CheckAttackAnimationType();
 	void DoAttack(const int animationType);
+	void CalcRolling();
 	void SetImgui();
 
 public:	//Getter

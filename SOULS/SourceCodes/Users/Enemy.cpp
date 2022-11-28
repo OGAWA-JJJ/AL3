@@ -452,9 +452,9 @@ void Enemy::CalcOBB()
 	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i]->SetPosition(DirectX::XMFLOAT3(
-			ImguiControl::e[i][0],
-			ImguiControl::e[i][1],
-			ImguiControl::e[i][2]
+			ImguiControl::Imgui_enemyOBBPos[i][0],
+			ImguiControl::Imgui_enemyOBBPos[i][1],
+			ImguiControl::Imgui_enemyOBBPos[i][2]
 		));
 	}
 

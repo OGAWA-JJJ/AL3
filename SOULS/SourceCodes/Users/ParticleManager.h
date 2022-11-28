@@ -88,7 +88,7 @@ public:
 	void SetRotation(const int num, const DirectX::XMFLOAT3 rotation);
 	void SetPower(const int num, const DirectX::XMFLOAT3 power);
 	void SetVec(const int num, const DirectX::XMFLOAT3 vec);
-	void SetColor(const int num, const DirectX::XMFLOAT3 color);
+	void SetColor(const int num, const DirectX::XMFLOAT4 color);
 
 	void SetIsCreateStop(const bool isCreateStop);
 	void MultiMatrix(const int num, DirectX::XMMATRIX matrix);

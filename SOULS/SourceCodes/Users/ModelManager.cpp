@@ -15,6 +15,7 @@ FbxModels* ModelManager::fbxmodel_oneSwrordAttack3 = nullptr;
 FbxModels* ModelManager::fbxmodel_dieMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_impactMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_rollingMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_drinkingMiku = nullptr;
 
 //Enemy
 FbxModels* ModelManager::fbxmodel_idleCreature = nullptr;
@@ -78,7 +79,7 @@ void ModelManager::Init()
 	model_sword = Model::CreateFromObj("Sword");
 	model_box = Model::CreateFromObj("TestBox");
 	model_box2 = Model::CreateFromObj("TestBox2");
-	model_helmet = Model::CreateFromObj("Artorius_Helmet");
+	model_helmet = Model::CreateFromObj("knight_Helmet");
 
 	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku", "Miku");
 	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");
@@ -89,6 +90,7 @@ void ModelManager::Init()
 	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku", "Miku");
 	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku", "Miku");
 	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku", "Miku");
+	fbxmodel_drinkingMiku = FbxModels::CreateFromFbx("DrinkingMiku", "Miku");
 
 	//Enemy
 	fbxmodel_idleCreature = FbxModels::CreateFromFbx("IdleCreature", "Creature");
@@ -107,7 +109,7 @@ void ModelManager::Init()
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
-	model_sponza = Model::CreateFromObj("yuka");
+	model_sponza = Model::CreateFromObj("sponza");
 
 	FbxModels::ReleaseModels();
 }

@@ -19,6 +19,7 @@ public:	//Player
 	static FbxModels* fbxmodel_dieMiku;
 	static FbxModels* fbxmodel_impactMiku;
 	static FbxModels* fbxmodel_rollingMiku;
+	static FbxModels* fbxmodel_drinkingMiku;
 
 public:	//Enemy
 	static FbxModels* fbxmodel_idleCreature;

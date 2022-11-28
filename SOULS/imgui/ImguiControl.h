@@ -35,14 +35,14 @@ public:	//Vector‚É‚µ‚½‚¢
 	static char* Imgui_playerIsAccept;
 	static char* Imgui_playerIsChange;
 
-	static float p[10][3];
-	static float e[12][3];
+	static float Imgui_playerOBBPos[10][3];
+	static float Imgui_enemyOBBPos[12][3];
 
 	//‰¼
 	static bool isHel;
 
 public:
-	ImguiControl() {};
+	ImguiControl();
 	static void Update();
 };
 

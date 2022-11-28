@@ -22,7 +22,6 @@ Player::Player()
 	m_healTimer = 0;
 	m_padState = 0;
 	m_padRetentionTimer = 0;
-
 	for (int i = 0; i < 3; i++)
 	{
 		m_attackCollisionTimer[i] = C_ATTACK_COLLISION_TIMER[i];
@@ -47,6 +46,7 @@ Player::Player()
 	m_mp = C_MAX_MP;
 	m_stamina = C_MAX_STAMINA;
 	m_power = C_MAX_POWER;
+	m_estus = C_MAX_ESTUS;
 
 #pragma endregion
 
@@ -101,6 +101,9 @@ Player::Player()
 	fbxobj_miku[ROLLING]->PlayAnimation();
 	fbxobj_miku[ROLLING]->SetLoopAnimation(false);
 
+	fbxobj_miku[HEAL] = FbxObjects::Create(ModelManager::fbxmodel_drinkingMiku);
+	fbxobj_miku[HEAL]->PlayAnimation();
+
 	//Fbx(Shadow)
 	fbxobj_shadowMiku[STAND] = FbxObjects::Create(ModelManager::fbxmodel_standMiku);
 	fbxobj_shadowMiku[STAND]->PlayAnimation();
@@ -134,6 +137,9 @@ Player::Player()
 	fbxobj_shadowMiku[ROLLING] = FbxObjects::Create(ModelManager::fbxmodel_rollingMiku);
 	fbxobj_shadowMiku[ROLLING]->PlayAnimation();
 	fbxobj_shadowMiku[ROLLING]->SetLoopAnimation(false);
+
+	fbxobj_shadowMiku[HEAL] = FbxObjects::Create(ModelManager::fbxmodel_drinkingMiku);
+	fbxobj_shadowMiku[HEAL]->PlayAnimation();
 
 #pragma endregion
 
@@ -338,12 +344,16 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_miku[m_animationType]->GetPosition());
 		m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_miku[m_animationType]->GetPosition());
 	}
-	//2と3追加
 	else if (m_animationType == ROLLING)
 	{
 		enemyToPlayer = OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_miku[AnimationType::ROLLING]->GetPosition());
 		m_cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_miku[AnimationType::ROLLING]->GetPosition());
 	}
+
+	enemyToPlayer =
+		OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_miku[m_animationType]->GetPosition());
+	m_cameraToPlayer =
+		OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_miku[m_animationType]->GetPosition());
 
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 	m_cameraToPlayer = OgaJHelper::CalcNormalizeVec3(m_cameraToPlayer);
@@ -910,6 +920,18 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		//生成時のみ剣に付随
 		if (!pManager.IsMove(i))
 		{
+			if (m_isAttack)
+			{
+				pManager.SetIsCreateStop(false);
+				pManager.SetCreateNum(5);
+				pManager.SetPower(i, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+			}
+			else
+			{
+				pManager.SetIsCreateStop(true);
+				pManager.SetCreateNum(1);
+				pManager.SetPower(i, DirectX::XMFLOAT3(0.03f, 0.03f, 0.03f));
+			}
 			pManager.MultiMatrix(i, obj_Sword->GetMatrix());
 		}
 	}
@@ -1016,6 +1038,11 @@ void Player::Input()
 			m_padRetentionTimer = 0;
 			m_padState = XINPUT_GAMEPAD_B;
 		}
+		else if (Input::isPadTrigger(XINPUT_GAMEPAD_X))
+		{
+			m_padRetentionTimer = 0;
+			m_padState = XINPUT_GAMEPAD_X;
+		}
 	}
 
 	//アニメーションが一定フレームを超えたら攻撃判定開始←連撃非対応←した
@@ -1049,54 +1076,25 @@ void Player::Input()
 				m_animationType != DAMAGED &&
 				m_animationType != ROLLING)
 			{
-				m_padState = 0;
+				CalcRolling();
+			}
+		}
+	}
 
-				m_healTimer = C_HEAL_TIMER;
-				m_stamina -= C_ROLLING_SUB_STAMINA;
-				if (m_stamina < 0)
-				{
-					m_stamina = 0;
-				}
-
-				m_oldAnimationType = m_animationType;
-				m_animationType = ROLLING;
-				fbxobj_miku[AnimationType::ROLLING]->ResetAnimation();
-				fbxobj_miku[AnimationType::ROLLING]->ReplayAnimation();
-				fbxobj_shadowMiku[AnimationType::ROLLING]->ResetAnimation();
-				fbxobj_shadowMiku[AnimationType::ROLLING]->ReplayAnimation();
+	//回復
+	if (m_estus > 0)
+	{
+		if (m_padState == XINPUT_GAMEPAD_X)
+		{
+			if (m_isAccept &&
+				m_animationType != DAMAGED &&
+				m_animationType != ROLLING &&
+				m_animationType != HEAL)
+			{
+				m_estus--;
+				m_animationType = HEAL;
 				m_isAnimation = true;
 				m_isStickReleaseTrigger = false;
-				m_isInvincible = true;
-
-				//向きの計算
-				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
-				{
-					XMFLOAT3 l_deg = { 0,0,0 };
-					l_deg.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-					l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
-					l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
-
-					DirectX::XMVECTOR l_matRotVec = DirectX::XMLoadFloat3(&l_deg);
-					l_matRotVec = DirectX::XMVector3Transform(l_matRotVec, Camera::BillboardYMatrix());
-
-					m_rollingAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
-					float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-					fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-					fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-				}
-				else
-				{
-					XMFLOAT3 l_deg = fbxobj_miku[AnimationType::STAND]->GetRotation();
-					OgaJHelper::ConvertToRadian(l_deg.y);
-					float l_radX = sinf(l_deg.y);
-					float l_radZ = cosf(l_deg.y);
-
-					m_rollingAngle = { l_radX,0,l_radZ };
-					float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-					fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-					fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-				}
 			}
 		}
 	}
@@ -1111,6 +1109,7 @@ void Player::Setter()
 	fbxobj_miku[AnimationType::NORMAL_ATTACK_2]->SetPosition(m_pos);
 	fbxobj_miku[AnimationType::NORMAL_ATTACK_3]->SetPosition(m_pos);
 	fbxobj_miku[AnimationType::DAMAGED]->SetPosition(m_pos);
+	fbxobj_miku[AnimationType::HEAL]->SetPosition(m_pos);
 
 	fbxobj_shadowMiku[AnimationType::STAND]->SetPosition(m_pos);
 	fbxobj_shadowMiku[AnimationType::SLOWRUN]->SetPosition(m_pos);
@@ -1119,6 +1118,7 @@ void Player::Setter()
 	fbxobj_shadowMiku[AnimationType::NORMAL_ATTACK_2]->SetPosition(m_pos);
 	fbxobj_shadowMiku[AnimationType::NORMAL_ATTACK_3]->SetPosition(m_pos);
 	fbxobj_shadowMiku[AnimationType::DAMAGED]->SetPosition(m_pos);
+	fbxobj_shadowMiku[AnimationType::HEAL]->SetPosition(m_pos);
 }
 
 void Player::CalcOBB()
@@ -1129,6 +1129,16 @@ void Player::CalcOBB()
 		ModelManager::model_sword->GetModelSize().y / 2.0f,
 		ModelManager::model_sword->GetModelSize().z / 2.0f
 	));
+
+	if (m_animationType == NORMAL_ATTACK_3)
+	{
+		const float addMultiScale = 2.0f;
+		obj_SwordBox->SetScale(DirectX::XMFLOAT3(
+			obj_SwordBox->GetScale().x * addMultiScale,
+			obj_SwordBox->GetScale().y * addMultiScale,
+			obj_SwordBox->GetScale().z * addMultiScale
+		));
+	}
 
 	obj_SwordBox->Update();
 
@@ -1284,6 +1294,18 @@ void Player::OtherUpdate()
 			m_isInvincible = false;
 		}
 	}
+	else if (m_animationType == HEAL)
+	{
+		fbxobj_miku[AnimationType::HEAL]->Update();
+		fbxobj_shadowMiku[AnimationType::HEAL]->Update(true);
+
+		ImguiControl::Imgui_playerAniType = "HEAL";
+
+		if (fbxobj_miku[AnimationType::HEAL]->IsAnimationEnd())
+		{
+			m_isAnimation = false;
+		}
+	}
 
 	//Imgui
 	SetImgui();
@@ -1424,7 +1446,7 @@ void Player::CalcAttackTimer()
 			m_animationTimer = 0;
 			m_isAttack = true;
 
-			m_healTimer = C_HEAL_TIMER;
+			m_healTimer = C_AUTOHEAL_STAMINA_TIMER;
 			m_stamina -= C_ATTACK_SUB_STAMINA;
 			if (m_stamina < 0)
 			{
@@ -1468,6 +1490,58 @@ void Player::DoAttack(const int animationType)
 	m_animationType = animationType;
 	fbxobj_miku[animationType]->ReplayAnimation();
 	fbxobj_shadowMiku[animationType]->ReplayAnimation();
+}
+
+void Player::CalcRolling()
+{
+	m_padState = 0;
+
+	m_healTimer = C_AUTOHEAL_STAMINA_TIMER;
+	m_stamina -= C_ROLLING_SUB_STAMINA;
+	if (m_stamina < 0)
+	{
+		m_stamina = 0;
+	}
+
+	m_oldAnimationType = m_animationType;
+	m_animationType = ROLLING;
+	fbxobj_miku[AnimationType::ROLLING]->ResetAnimation();
+	fbxobj_miku[AnimationType::ROLLING]->ReplayAnimation();
+	fbxobj_shadowMiku[AnimationType::ROLLING]->ResetAnimation();
+	fbxobj_shadowMiku[AnimationType::ROLLING]->ReplayAnimation();
+	m_isAnimation = true;
+	m_isStickReleaseTrigger = false;
+	m_isInvincible = true;
+
+	//向きの計算
+	if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+		0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+	{
+		XMFLOAT3 l_deg = { 0,0,0 };
+		l_deg.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+		l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+		l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
+
+		DirectX::XMVECTOR l_matRotVec = DirectX::XMLoadFloat3(&l_deg);
+		l_matRotVec = DirectX::XMVector3Transform(l_matRotVec, Camera::BillboardYMatrix());
+
+		m_rollingAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
+		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
+		fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+	}
+	else
+	{
+		XMFLOAT3 l_deg = fbxobj_miku[AnimationType::STAND]->GetRotation();
+		OgaJHelper::ConvertToRadian(l_deg.y);
+		float l_radX = sinf(l_deg.y);
+		float l_radZ = cosf(l_deg.y);
+
+		m_rollingAngle = { l_radX,0,l_radZ };
+		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
+		fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+	}
 }
 
 void Player::SetImgui()
@@ -1534,12 +1608,11 @@ void Player::SetImgui()
 	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i]->SetPosition(DirectX::XMFLOAT3(
-			ImguiControl::p[i][0],
-			ImguiControl::p[i][1],
-			ImguiControl::p[i][2]
+			ImguiControl::Imgui_playerOBBPos[i][0],
+			ImguiControl::Imgui_playerOBBPos[i][1],
+			ImguiControl::Imgui_playerOBBPos[i][2]
 		));
 	}
-	obj_Box[2]->SetPosition(DirectX::XMFLOAT3(0, 2.0f, 0));
 }
 
 /*----------呼ぶやつ----------*/

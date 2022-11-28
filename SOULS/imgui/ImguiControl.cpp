@@ -10,8 +10,8 @@ float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 
-bool ImguiControl::Imgui_isOBBDraw = true;
-bool ImguiControl::Imgui_isPlayerDraw = false;
+bool ImguiControl::Imgui_isOBBDraw = false;
+bool ImguiControl::Imgui_isPlayerDraw = true;
 bool ImguiControl::Imgui_isEnemyDraw = true;
 bool ImguiControl::Imgui_isWeaponDraw = true;
 bool ImguiControl::Imgui_isSponzaDraw = true;
@@ -33,11 +33,22 @@ char* ImguiControl::Imgui_playerIsAccept = "NONE";
 char* ImguiControl::Imgui_playerIsChange = "NONE";
 
 //obb
-float ImguiControl::p[10][3];
-float ImguiControl::e[12][3];
+float ImguiControl::Imgui_playerOBBPos[10][3];
+float ImguiControl::Imgui_enemyOBBPos[12][3];
 
 //‰¼
 bool ImguiControl::isHel = false;
+
+ImguiControl::ImguiControl()
+{
+	//Player
+	ImguiControl::Imgui_playerOBBPos[2][1] = 2.0f;
+
+	//Enemy
+	ImguiControl::Imgui_enemyOBBPos[0][1] = 5.0f;
+	ImguiControl::Imgui_enemyOBBPos[3][1] = 5.0f;
+	ImguiControl::Imgui_enemyOBBPos[5][1] = 3.0f;
+}
 
 void ImguiControl::Update()
 {
@@ -121,14 +132,14 @@ void ImguiControl::Update()
 		for (int i = 0; i < 10; i++)
 		{
 			char lavel = i + '0';
-			ImGui::SliderFloat3(&lavel, p[i], -5.0f, 5.0f);
+			ImGui::SliderFloat3(&lavel, Imgui_playerOBBPos[i], -5.0f, 5.0f);
 		}
 
 		ImGui::Text("ENEMY");
 		for (int i = 0; i < 12; i++)
 		{
 			char lavel = i + 10 + '0';
-			ImGui::SliderFloat3(&lavel, e[i], -5.0f, 5.0f);
+			ImGui::SliderFloat3(&lavel, Imgui_enemyOBBPos[i], -10.0f, 10.0f);
 		}
 		ImGui::TreePop();
 	}

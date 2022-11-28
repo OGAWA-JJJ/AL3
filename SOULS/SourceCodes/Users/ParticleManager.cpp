@@ -231,27 +231,27 @@ void ParticleManager::SetPosition(const int num, const DirectX::XMFLOAT3 pos)
 
 void ParticleManager::SetScale(const int num, const DirectX::XMFLOAT3 scale)
 {
-	m_particles.at(num).SetPosition(scale);
+	m_particles.at(num).SetScale(scale);
 }
 
 void ParticleManager::SetRotation(const int num, const DirectX::XMFLOAT3 rotation)
 {
-	m_particles.at(num).SetPosition(rotation);
+	m_particles.at(num).SetRotation(rotation);
 }
 
 void ParticleManager::SetPower(const int num, const DirectX::XMFLOAT3 power)
 {
-	m_particles.at(num).SetPosition(power);
+	m_particles.at(num).SetPower(power);
 }
 
 void ParticleManager::SetVec(const int num, const DirectX::XMFLOAT3 vec)
 {
-	m_particles.at(num).SetPosition(vec);
+	m_particles.at(num).SetVec(vec);
 }
 
-void ParticleManager::SetColor(const int num, const DirectX::XMFLOAT3 color)
+void ParticleManager::SetColor(const int num, const DirectX::XMFLOAT4 color)
 {
-	m_particles.at(num).SetPosition(color);
+	m_particles.at(num).SetColor(color);
 }
 
 void ParticleManager::SetIsCreateStop(const bool isCreateStop)
