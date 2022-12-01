@@ -9,7 +9,10 @@ class Enemy
 {
 	//モーション→メリハリあると良くなりそう。ヒットストップとか。
 	//バレットタイムとか。(色んな角度からアニメーション複数回再生的な)
-	ParticleManager pManager;
+	//連撃しろ！
+
+	ParticleManager pManager_Hit;
+	ParticleManager pManager_Ex;
 
 private:
 	enum AnimationType
@@ -27,10 +30,11 @@ private:
 		R_BACK,		//右回転後ろ攻撃
 		L_BACK,		//左回転後ろ攻撃
 
-		//未実装
+		//未実装(演出とフロー)
 		EXPLOSION,	//爆発(周囲)
 		RISE,		//上昇
 		SWING_DOWN,	//振り下ろし(上昇とセット)
+		TACKLE		//突進
 	};
 
 private:
@@ -41,30 +45,35 @@ private:
 	};
 
 private:	//定数(判定系)
-	const int C_KICK_COLLISION_TIMER = 30;		//攻撃判定を取り出すフレーム
-	const int C_KICK_COLLISION_ENDTIMER = 20;	//攻撃判定後、判定を取り消すフレーム
+	const int C_KICK_COLLISION_TIMER = 15;		//攻撃判定を取り出すフレーム
+	const int C_KICK_COLLISION_ENDTIMER = 30;	//攻撃判定後、判定を取り消すフレーム
 
-	const int C_PUNCH_COLLISION_TIMER = 15;		//攻撃判定を取り出すフレーム
-	const int C_PUNCH_COLLISION_ENDTIMER = 30;	//攻撃判定後、判定を取り消すフレーム
+	const int C_PUNCH_COLLISION_TIMER = 60;		//攻撃判定を取り出すフレーム
+	const int C_PUNCH_COLLISION_ENDTIMER = 20;	//攻撃判定後、判定を取り消すフレーム
 
 	const int C_BACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
 	const int C_BACK_COLLISION_ENDTIMER = 90;	//攻撃判定後、判定を取り消すフレーム
 
+	const int C_EXPLOSION_COLLISION_TIMER = 180;	//爆発を溜めるフレーム
+	const int C_EXPLOSION_COLLISION_DELAY = 65;		//何もないフレーム
+	const int C_EXPLOSION_COLLISION_ENDTIMER = 10;	//解放する判定を行うフレーム
+
 private:	//定数
 	const float C_MAX_DIST = 35.0f;
-	const float C_MAX_TURN_RAD = 15.0f;
+	const float C_MAX_TURN_RAD = 45.0f;
 	const float C_MAX_BACK_RAD = 150.0f;
 	const float C_MAX_BLEND_TIMER = 0.02f;
 
 private:	//定数(ステータス関係)
-	const int C_MAX_POWER = 100;
+	const int C_MAX_POWER = 300;
+	const int C_MAX_EXPLOSION_POWER = 500;
 	const int C_MAX_HP = 1000;
 
 	const int C_RISE_TIMER = 110;
 	const int C_SWING_DOWN_TIMER = 30;
 	const float C_MAX_RISE_HEIGHT = 100.0f;
 	const float C_MAX_MOVE_SPEED = 2.0f;		//移動速度
-	const float C_MAX_TURN_TIMER = 0.01f;		//振り向きイージング
+	const float C_MAX_TURN_TIMER = 0.02f;		//振り向きイージング
 	const float C_MAX_RISE_TIMER = 0.01f;		//上昇イージング
 	const float C_MAX_SWING_DOWN_TIMER = 0.02f;	//振り下ろしイージング
 
@@ -98,12 +107,21 @@ private:
 	bool m_isSwing;
 	bool m_isChange;
 
+	DirectX::XMFLOAT3 m_tackleDirection = {};
+	const int c_MaxTackleTimer = 60;
+	const float c_tackleSpeed = 10.0f;
+
+	int m_pPowerCount = 0;
+	int m_createCount = 1;
+	int m_keepAnimationType = 0;
+	bool m_isExplosion = false;
+
 private:	//変数(ステータス関係)
 	int m_hp;
 
 private:	//オブジェクト(Draw用)
-	std::array<Object*, 12> obj_Box = { nullptr };
-	const int C_BOX_NUM = 12;
+	std::array<Object*, 10> obj_Box = { nullptr };
+	const int C_BOX_NUM = 10;
 
 	std::array<bool, 37> boxes = {
 		0,1,0,0,0,
@@ -111,13 +129,15 @@ private:	//オブジェクト(Draw用)
 		1,0,1,0,1,
 		0,0,0,0,0,
 		0,0,0,0,0,
-		0,0,1,1,1,
-		0,0,1,1,1,
+		0,0,0,1,1,
+		0,0,0,1,1,
 		0,0
 	};
 
-	std::array<FbxObjects*, 12> fbxobj_creature = { nullptr };
-	const int C_CREATURE_NUM = 12;
+	std::array<FbxObjects*, 13> fbxobj_creature = { nullptr };
+	const int C_CREATURE_NUM = 13;
+
+	Object* obj_circle = nullptr;
 
 public:
 	Enemy();
@@ -126,25 +146,35 @@ public:
 	void Init();
 	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
+	void LuminanceDraw();
 
 private:
 	void CalcOBB();
 	void JudgAnimationType(float dist);
 	void CalcAngleDiff(DirectX::XMFLOAT3& pPos);
-	void CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY);	//攻撃終了時に挟む
-	void CalcAttackCollisionTimer(const int startFrame, const int endFrame);
+	void CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY);				//攻撃終了時に挟む
+	void CalcAttackCollisionTimer(const int startFrame, const int endFrame);	//接触判定のみ
 	void CalcRise(DirectX::XMFLOAT3& pPos);
 	void CalcSwingDown(DirectX::XMFLOAT3& pPos);
+	void CalcTackle(DirectX::XMFLOAT3& playerPos);
+
+	void OtherUpdate(DirectX::XMFLOAT3& pPos);
+	void SetImgui();
+	void CalcBlendAnimation();
+
+	float CalcDeg(DirectX::XMFLOAT3& pos);
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
 	//const int GetBoneCount() { return m_boneCount; }
 	const int GetPower() { return C_MAX_POWER; }
+	const int GetExplosionPower() { return C_MAX_EXPLOSION_POWER; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
 	const bool IsInvincible() { return m_isInvincible; }
 	const bool IsAttack() { return m_isAttack; }
 	const bool IsCalc() { return m_isCalc; }
+	const bool IsExplosion() { return m_isExplosion; }
 
 public:	//Setter
 	void UnInvincible() { m_isInvincible = false; }

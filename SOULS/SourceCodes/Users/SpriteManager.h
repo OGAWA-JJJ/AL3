@@ -53,10 +53,12 @@ private:
 	static Sprite* tex_title;
 	static Sprite* tex_title_press_a;
 
+	static Sprite* tex_estus;
+
 public:
 	static void Init();
 	static void Update();
-	static void PlayerUIDraw();
+	static void PlayerUIDraw(const int estusNum);
 	static void EnemyUIDraw();
 	static void DiedDraw();
 	static void TitleDraw(bool& isSceneChange);
@@ -64,6 +66,8 @@ public:
 	static void PlayerMpAndStaminaUpdate(float mpRate, float staminaRate, bool isHealdelay);
 	static void PlayerDamaged(float hpRate);
 	static void EnemyDamaged(float hpRate);
+
+	static void PlayerHPUpdate(float hpRate);
 
 	static bool IsSceneChangeEnd() { return m_isSceneChangeEnd; }
 };

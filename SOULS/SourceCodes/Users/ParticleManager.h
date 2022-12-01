@@ -11,7 +11,7 @@ public:
 	{
 		bool isRandVec = true;						//ランダム方向に飛ばすか
 		bool isRandColor = false;					//ランダム色にするか
-		int life = 60;								//粒の寿命フレーム(調整可能)
+		int life = 60;								//粒の寿命フレーム
 		DirectX::XMFLOAT3 pos = { 0,50,0 };			//出現座標
 		DirectX::XMFLOAT3 scale = { 1.0,1.0,1.0 };	//大きさ
 		DirectX::XMFLOAT3 rotation = { 0,0,0 };		//回転(角度)
@@ -27,6 +27,9 @@ private:
 	int m_createFrame;
 	int m_loopNum;
 	bool m_isDraw;
+
+	//仮
+	DirectX::XMFLOAT3 m_scale = { 0,0,0 };
 
 public:
 	void Init();
@@ -51,12 +54,14 @@ public:
 public:
 	Object* GetModel() { return m_object; }
 	bool GetIsDraw() { return m_isDraw; }
+	DirectX::XMFLOAT3& GetPower() { return m_particleData.power; }
+	void ResetLifeParticle();
 };
 
 class ParticleManager
 {
 private:
-	const int C_MAX_PARTICLE = 100;
+	const int C_MAX_PARTICLE = 200;
 	const int C_INIT_CREATE_TIMER = 1;
 	const int C_INIT_CREATE_NUM = 1;
 
@@ -92,11 +97,13 @@ public:
 
 	void SetIsCreateStop(const bool isCreateStop);
 	void MultiMatrix(const int num, DirectX::XMMATRIX matrix);
-	void EndAllParticle();
+	void ResetLifeParticle();
 
 public:
 	bool IsMove(const int num) { return m_particles.at(num).GetIsDraw(); }
 	bool IsArrivalCreateNum() { return m_isArrivalCreateNum; }
 	int GetMaxParticle() { return m_maxParticle; }
+
+	DirectX::XMFLOAT3& GetPower(const int num) { return m_particles.at(num).GetPower(); }
 };
 

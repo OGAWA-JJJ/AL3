@@ -25,6 +25,7 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_enemyCurrentAniTimer;
 	static float Imgui_enemyOldAniTimer;
 	static char* Imgui_enemyAniType;
+	static char* Imgui_enemyOldAniType;
 	static char* Imgui_enemyInvi;
 
 	static float Imgui_playerBlendTimer;
@@ -34,9 +35,14 @@ public:	//Vector‚É‚µ‚½‚¢
 	static char* Imgui_playerOldAniType;
 	static char* Imgui_playerIsAccept;
 	static char* Imgui_playerIsChange;
+	static char* Imgui_playerIsAttack;
+	static char* Imgui_playerIsInvincible;
 
 	static float Imgui_playerOBBPos[10][3];
 	static float Imgui_enemyOBBPos[12][3];
+
+	static float Imgui_playerOBBScale[10][3];
+	static float Imgui_enemyOBBScale[12][3];
 
 	//‰¼
 	static bool isHel;

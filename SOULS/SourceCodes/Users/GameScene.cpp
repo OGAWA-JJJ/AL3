@@ -109,6 +109,15 @@ void GameScene::Update()
 		PlayerUpdate();
 		EnemyUpdate();
 
+		if (m_enemy->IsExplosion() && !m_player->IsInvincible())
+		{
+			float dist = OgaJHelper::CalcDist(m_player->GetPos(), m_enemy->GetPos());
+			if (dist < 175.0f)
+			{
+				m_player->HitAttack(m_enemy->GetExplosionPower());
+			}
+		}
+
 		m_player->Update(m_enemy->GetPos());
 		m_enemy->Update(m_player->GetPos());
 		m_stage->Update();
@@ -118,6 +127,7 @@ void GameScene::Update()
 		isDead = m_enemy->IsDead();
 
 		SpriteManager::Update();
+		SpriteManager::PlayerHPUpdate(m_player->GetHpRate());
 		SpriteManager::PlayerMpAndStaminaUpdate(
 			m_player->GetMpRate(),
 			m_player->GetStaminaRate(),
@@ -137,7 +147,7 @@ void GameScene::Draw()
 		m_player->Draw();
 		m_enemy->Draw();
 		m_stage->Draw();
-		SpriteManager::PlayerUIDraw();
+		SpriteManager::PlayerUIDraw(m_player->GetEstus());
 
 		if (m_enemy->IsFighting())
 		{
@@ -155,6 +165,7 @@ void GameScene::LuminanceDraw()
 	if (m_gameSceneType == GAME)
 	{
 		m_player->LuminanceDraw();
+		//m_enemy->LuminanceDraw();
 	}
 }
 

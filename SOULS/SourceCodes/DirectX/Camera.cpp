@@ -8,6 +8,10 @@ DirectX::XMFLOAT3 Camera::target = { 0,0,0 };
 DirectX::XMFLOAT3 Camera::up = { 0,1,0 };
 float Camera::fov = 60.0f;
 
+bool Camera::isShake = false;
+DirectX::XMFLOAT3 Camera::shakeEye;
+DirectX::XMFLOAT3 Camera::shakeTarget;
+
 DirectX::XMMATRIX Camera::ViewMatrix()
 {
 	//eye.x = ImguiControl::Imgui_eye_x;

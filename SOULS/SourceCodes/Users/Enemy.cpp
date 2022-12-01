@@ -48,12 +48,14 @@ Enemy::Enemy()
 
 #pragma region ModelCreate
 
-	const float boxSize = 6.0f;
+	//const float boxSize = 12.0f;
 	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i] = Object::Create(ModelManager::model_box);
-		obj_Box[i]->SetScale(DirectX::XMFLOAT3(boxSize, boxSize, boxSize));
+		//obj_Box[i]->SetScale(DirectX::XMFLOAT3(boxSize, boxSize, boxSize));
 	}
+
+	obj_circle = Object::Create(ModelManager::model_circle);
 
 	fbxobj_creature[AnimationType::STAND] = FbxObjects::Create(ModelManager::fbxmodel_idleCreature);
 	fbxobj_creature[AnimationType::STAND]->PlayAnimation();
@@ -63,39 +65,52 @@ Enemy::Enemy()
 
 	fbxobj_creature[AnimationType::KICK] = FbxObjects::Create(ModelManager::fbxmodel_kickCreature);
 	fbxobj_creature[AnimationType::KICK]->PlayAnimation();
+	fbxobj_creature[AnimationType::KICK]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::PUNCH] = FbxObjects::Create(ModelManager::fbxmodel_punchCreature);
 	fbxobj_creature[AnimationType::PUNCH]->PlayAnimation();
+	fbxobj_creature[AnimationType::PUNCH]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::DIE] = FbxObjects::Create(ModelManager::fbxmodel_dieCreature);
 	fbxobj_creature[AnimationType::DIE]->PlayAnimation();
 
 	fbxobj_creature[AnimationType::R_TURN] = FbxObjects::Create(ModelManager::fbxmodel_RTurnCreature);
 	fbxobj_creature[AnimationType::R_TURN]->PlayAnimation();
+	fbxobj_creature[AnimationType::R_TURN]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::L_TURN] = FbxObjects::Create(ModelManager::fbxmodel_LTurnCreature);
 	fbxobj_creature[AnimationType::L_TURN]->PlayAnimation();
+	fbxobj_creature[AnimationType::L_TURN]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::R_BACK] = FbxObjects::Create(ModelManager::fbxmodel_RBackCreature);
 	fbxobj_creature[AnimationType::R_BACK]->PlayAnimation();
+	fbxobj_creature[AnimationType::R_BACK]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::L_BACK] = FbxObjects::Create(ModelManager::fbxmodel_LBackCreature);
 	fbxobj_creature[AnimationType::L_BACK]->PlayAnimation();
+	fbxobj_creature[AnimationType::L_BACK]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::EXPLOSION] = FbxObjects::Create(ModelManager::fbxmodel_explosionCreature);
 	fbxobj_creature[AnimationType::EXPLOSION]->PlayAnimation();
+	fbxobj_creature[AnimationType::EXPLOSION]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::RISE] = FbxObjects::Create(ModelManager::fbxmodel_riseCreature);
 	fbxobj_creature[AnimationType::RISE]->PlayAnimation();
+	fbxobj_creature[AnimationType::RISE]->SetLoopAnimation(false);
 
 	fbxobj_creature[AnimationType::SWING_DOWN] = FbxObjects::Create(ModelManager::fbxmodel_swingDownCreature);
 	fbxobj_creature[AnimationType::SWING_DOWN]->PlayAnimation();
+	fbxobj_creature[AnimationType::SWING_DOWN]->SetLoopAnimation(false);
+
+	fbxobj_creature[AnimationType::TACKLE] = FbxObjects::Create(ModelManager::fbxmodel_swipingCreature);
+	fbxobj_creature[AnimationType::TACKLE]->PlayAnimation();
+	fbxobj_creature[AnimationType::TACKLE]->SetLoopAnimation(false);
 
 #pragma endregion
 
 #pragma region ModelInit
 
-	const float Creature_Scale = 0.4f;
+	const float Creature_Scale = 0.6f;
 	for (int i = 0; i < C_CREATURE_NUM; i++)
 	{
 		fbxobj_creature[i]->SetScale(DirectX::XMFLOAT3(Creature_Scale, Creature_Scale, Creature_Scale));
@@ -125,7 +140,7 @@ void Enemy::Init()
 	const float pScale = 1.0f;
 	const float pPower = 3.0f;
 
-	pManager.Init();
+	pManager_Hit.Init();
 	Particle::ParticleData pData;
 	pData.isRandVec = true;
 	pData.isRandColor = false;
@@ -133,15 +148,30 @@ void Enemy::Init()
 	pData.scale = { pScale, pScale, pScale };
 	pData.power = { pPower, pPower, pPower };
 	pData.color = { 0.9f, 0.2f, 0.2f, 1.0f };
-	for (int i = 0; i < pManager.GetMaxParticle(); i++)
+	for (int i = 0; i < pManager_Hit.GetMaxParticle(); i++)
 	{
-		pManager.SetParticle(i, pData);
+		pManager_Hit.SetParticle(i, pData);
 	}
-	pManager.SetCreateNum(pManager.GetMaxParticle());
-	pManager.SetIsCreateStop(true);
+	pManager_Hit.SetCreateNum(pManager_Hit.GetMaxParticle());
+	pManager_Hit.SetIsCreateStop(true);
 
-	//Box
-	std::array<float, 12> l_x = {
+	const float pScale2 = 2.0f;
+	const float pPower2 = 1.0f;
+	pManager_Ex.Init();
+	Particle::ParticleData pData2;
+	pData2.isRandVec = false;
+	pData2.life = 30;
+	pData2.scale = { pScale2, pScale2, pScale2 };
+	pData2.power = { pPower2, pPower2, pPower2 };
+	pData2.color = { 0.9f, 0.9f, 0.2f, 1.0f };
+	for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
+	{
+		pManager_Ex.SetParticle(i, pData2);
+	}
+	pManager_Ex.SetIsCreateStop(true);
+
+	//Box(enemyScale=0.4fがベース)
+	std::array<float, 10> l_x = {
 		15,
 		6,
 		5,
@@ -149,13 +179,11 @@ void Enemy::Init()
 		6,
 		6,
 		5,
-		5,
 		6,
-		5,
 		5,
 		6
 	};
-	std::array<float, 12> l_y = {
+	std::array<float, 10> l_y = {
 		10,
 		6,
 		7,
@@ -165,11 +193,9 @@ void Enemy::Init()
 		7,
 		7,
 		7,
-		7,
-		7,
 		7
 	};
-	std::array<float, 12> l_z = {
+	std::array<float, 10> l_z = {
 		10,
 		6,
 		5,
@@ -177,20 +203,26 @@ void Enemy::Init()
 		6,
 		6,
 		5,
-		5,
 		6,
-		5,
 		5,
 		6
 	};
+	float addScale = fbxobj_creature[AnimationType::STAND]->GetScale().x / 0.4f;
 	for (int i = 0; i < C_BOX_NUM; i++)
 	{
 		obj_Box[i]->SetScale(DirectX::XMFLOAT3(
-			l_x[i],
-			l_y[i],
-			l_z[i]
+			l_x[i] * addScale,
+			l_y[i] * addScale,
+			l_z[i] * addScale
 		));
+		ImguiControl::Imgui_enemyOBBScale[i][0] = l_x[i] * addScale;
+		ImguiControl::Imgui_enemyOBBScale[i][1] = l_y[i] * addScale;
+		ImguiControl::Imgui_enemyOBBScale[i][2] = l_z[i] * addScale;
 	}
+
+	const float circleScale = 30.0f;
+	obj_circle->SetScale(DirectX::XMFLOAT3(circleScale, circleScale, circleScale));
+	obj_circle->SetColor(DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f));
 }
 
 void Enemy::Update(DirectX::XMFLOAT3 playerPos)
@@ -225,7 +257,6 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 
 				if (l_dist >= C_MAX_DIST)
 				{
-					m_animationType = RUN;
 					m_pos.x += -eDirection.x * C_MAX_MOVE_SPEED;
 					m_pos.z += -eDirection.z * C_MAX_MOVE_SPEED;
 				}
@@ -237,180 +268,22 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		CalcAngleDiff(playerPos);
 	}
 
-	//切り替わったら
-	if (!m_isChange &&
-		fbxobj_creature[m_animationType] != fbxobj_creature[m_oldAnimationType])
-	{
-		m_blendTimer = 0.0f;
-		m_isChange = true;
-		fbxobj_creature[m_animationType]->ResetAnimation();
-	}
-
-	//補間計算
-	else
-	{
-		if (m_blendTimer < 1.0f)
-		{
-			m_blendTimer += C_MAX_BLEND_TIMER;
-			//fbxobj_creature[m_oldAnimationType]->Update();
-			if (m_blendTimer > 1.0f)
-			{
-				m_blendTimer = 1.0f;
-				m_isChange = false;
-				m_oldAnimationType = m_animationType;
-			}
-		}
-		else
-		{
-			m_isChange = false;
-			m_oldAnimationType = m_animationType;
-		}
-	}
-	ImguiControl::Imgui_enemyBlendTimer = m_blendTimer;
-
-	//BindAnimation
-	fbxobj_creature[m_animationType]->
-		BlendAnimation(fbxobj_creature[m_oldAnimationType], OgaJEase::easeOutCubic(m_blendTimer), true);
-
-	//FbxUpdate
-	if (m_animationType == STAND)
-	{
-		fbxobj_creature[AnimationType::STAND]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::STAND]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::STAND]->Update();
-
-		ImguiControl::Imgui_enemyAniType = "STAND";
-	}
-	else if (m_animationType == RUN)
-	{
-		m_isAttack = false;
-		fbxobj_creature[AnimationType::RUN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::RUN]->Update();
-
-		ImguiControl::Imgui_enemyAniType = "RUN";
-	}
-	else if (m_animationType == KICK)
-	{
-		if (!m_isCalcEnd)
-		{
-			CalcAttackCollisionTimer(C_KICK_COLLISION_TIMER, C_KICK_COLLISION_ENDTIMER);
-		}
-
-		fbxobj_creature[AnimationType::KICK]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::KICK]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::KICK]->Update();
-
-		ImguiControl::Imgui_enemyAniType = "KICK";
-
-		if (fbxobj_creature[AnimationType::KICK]->IsAnimationEnd())
-		{
-			fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::RUN]->Update();
-
-			m_isAttack = false;
-
-			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::KICK]->GetRotation().y);
-		}
-	}
-	else if (m_animationType == PUNCH)
-	{
-		if (!m_isCalcEnd)
-		{
-			CalcAttackCollisionTimer(C_PUNCH_COLLISION_TIMER, C_PUNCH_COLLISION_ENDTIMER);
-		}
-
-		fbxobj_creature[AnimationType::PUNCH]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::PUNCH]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::PUNCH]->Update();
-
-		ImguiControl::Imgui_enemyAniType = "PUNCH";
-
-		if (fbxobj_creature[AnimationType::PUNCH]->IsAnimationEnd())
-		{
-			fbxobj_creature[AnimationType::PUNCH]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::PUNCH]->Update();
-
-			m_isAttack = false;
-
-			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::PUNCH]->GetRotation().y);
-		}
-	}
-	else if (m_animationType == R_TURN)
-	{
-		ImguiControl::Imgui_enemyAniType = "R_TURN";
-	}
-	else if (m_animationType == L_TURN)
-	{
-		ImguiControl::Imgui_enemyAniType = "L_TURN";
-	}
-	else if (m_animationType == R_BACK)
-	{
-		if (!m_isCalcEnd)
-		{
-			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
-		}
-
-		ImguiControl::Imgui_enemyAniType = "R_BACK";
-	}
-	else if (m_animationType == L_BACK)
-	{
-		if (!m_isCalcEnd)
-		{
-			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
-		}
-
-		ImguiControl::Imgui_enemyAniType = "L_BACK";
-	}
-	else if (m_animationType == EXPLOSION)
-	{
-		fbxobj_creature[AnimationType::EXPLOSION]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::EXPLOSION]->Update();
-
-		ImguiControl::Imgui_enemyAniType = "EXPLOSION";
-
-		if (fbxobj_creature[AnimationType::EXPLOSION]->IsAnimationEnd())
-		{
-			fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::EXPLOSION]->Update();
-
-			m_isAttack = false;
-
-			CalcNearAngle(playerPos, fbxobj_creature[AnimationType::EXPLOSION]->GetRotation().y);
-		}
-	}
-	else if (m_animationType == RISE)
-	{
-		CalcRise(playerPos);
-		ImguiControl::Imgui_enemyAniType = "RISE";
-	}
-	else if (m_animationType == SWING_DOWN)
-	{
-		CalcSwingDown(playerPos);
-		ImguiControl::Imgui_enemyAniType = "SWING_DOWN";
-	}
-
-	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature[m_animationType]->GetNowTime();
-	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature[m_oldAnimationType]->GetNowTime();
-
+	CalcBlendAnimation();
+	OtherUpdate(playerPos);
 	CalcOBB();
+	SetImgui();
 
-	if (m_isInvincible)
+	//パーティクル
+	if (pManager_Hit.IsArrivalCreateNum())
 	{
-		ImguiControl::Imgui_enemyInvi = "TRUE";
+		pManager_Hit.SetIsCreateStop(true);
 	}
-	else
-	{
-		ImguiControl::Imgui_enemyInvi = "FALSE";
-	}
+	pManager_Hit.Update();
 
-
-	if (pManager.IsArrivalCreateNum())
-	{
-		pManager.SetIsCreateStop(true);
-	}
-	pManager.Update();
+	DirectX::XMFLOAT3 l_pos = m_pos;
+	l_pos.y += 1.0f;
+	obj_circle->SetPosition(l_pos);
+	obj_circle->Update();
 }
 
 void Enemy::Draw()
@@ -428,6 +301,7 @@ void Enemy::Draw()
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 
+	obj_circle->Draw(PipelineManager::obj_normal);
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < obj_Box.size(); i++)
@@ -438,7 +312,16 @@ void Enemy::Draw()
 
 	Object::PostDraw();
 
-	pManager.Draw();
+	pManager_Hit.Draw();
+	pManager_Ex.Draw();
+}
+
+void Enemy::LuminanceDraw()
+{
+	if (m_isExplosion)
+	{
+		//pManager_Ex.Draw();
+	}
 }
 
 void Enemy::CalcOBB()
@@ -455,6 +338,11 @@ void Enemy::CalcOBB()
 			ImguiControl::Imgui_enemyOBBPos[i][0],
 			ImguiControl::Imgui_enemyOBBPos[i][1],
 			ImguiControl::Imgui_enemyOBBPos[i][2]
+		));
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(
+			ImguiControl::Imgui_enemyOBBScale[i][0],
+			ImguiControl::Imgui_enemyOBBScale[i][1],
+			ImguiControl::Imgui_enemyOBBScale[i][2]
 		));
 	}
 
@@ -515,11 +403,15 @@ void Enemy::JudgAnimationType(float dist)
 			{
 				m_animationType = R_BACK;
 				fbxobj_creature[AnimationType::R_BACK]->SetPosition(m_pos);
+				fbxobj_creature[AnimationType::R_BACK]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+				fbxobj_creature[AnimationType::R_BACK]->ReplayAnimation();
 			}
 			else
 			{
 				m_animationType = L_BACK;
 				fbxobj_creature[AnimationType::L_BACK]->SetPosition(m_pos);
+				fbxobj_creature[AnimationType::L_BACK]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+				fbxobj_creature[AnimationType::L_BACK]->ReplayAnimation();
 			}
 
 			m_isAttack = true;
@@ -535,55 +427,66 @@ void Enemy::JudgAnimationType(float dist)
 			if (m_turnVec == RIGHT)
 			{
 				m_animationType = R_TURN;
+				fbxobj_creature[AnimationType::R_TURN]->ReplayAnimation();
 			}
 			else
 			{
 				m_animationType = L_TURN;
+				fbxobj_creature[AnimationType::L_TURN]->ReplayAnimation();
 			}
 		}
-
-		return;
 	}
 	else if (dist > C_MAX_DIST)
 	{
-		//return;
+		//l_rand = l_rand % l_div;
+		/*if (l_rand == 0)
+		{
+			m_isAttack = true;
+			m_animationType = TACKLE;
+			return;
+		}*/
 		m_animationType = RUN;
 	}
 	else
 	{
-		//ここの管理方法を考える
-		/*m_riseStartY = 0.0f;
-		m_isAttack = true;
-		m_animationType = RISE;
-		fbxobj_creature[AnimationType::RISE]->SetPosition(m_pos);
-		fbxobj_creature[AnimationType::RISE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature[AnimationType::SWING_DOWN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-
-		fbxobj_creature[AnimationType::RISE]->ResetAnimation();
-		fbxobj_creature[AnimationType::SWING_DOWN]->ResetAnimation();
-		return;*/
-
 		m_isAttack = true;
 		m_isCalc = false;
 		m_isCalcEnd = false;
 
 		l_rand = l_rand % l_div;
-		if (l_rand == l_div - 1 &&
-			dist < C_MAX_DIST)
+		if (l_rand % 7 == 0 &&
+			m_oldAnimationType != EXPLOSION &&
+			GetHpRate() < 0.75f)
 		{
+			m_pPowerCount = 20;
+			pManager_Ex.SetCreateNum(m_createCount);
+			pManager_Ex.SetIsCreateStop(false);
 			m_animationType = EXPLOSION;
-			//fbxobj_explosionCreature->ResetAnimation();
+			fbxobj_creature[AnimationType::EXPLOSION]->ReplayAnimation();
 		}
 
-		else if (l_rand % 2 == 0)
+		//else if (l_rand % 10 == 0)
+		//{
+		//	//ここの管理方法を考える←仮
+		//	m_riseStartY = 0.0f;
+		//	m_animationType = RISE;
+		//	fbxobj_creature[AnimationType::RISE]->SetPosition(m_pos);
+		//	fbxobj_creature[AnimationType::RISE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		//	fbxobj_creature[AnimationType::SWING_DOWN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+
+		//	fbxobj_creature[AnimationType::RISE]->ResetAnimation();
+		//	fbxobj_creature[AnimationType::SWING_DOWN]->ResetAnimation();
+		//}
+
+		else if (m_oldAnimationType != KICK)
 		{
 			m_animationType = KICK;
-			//fbxobj_kickCreature->ResetAnimation();
+			fbxobj_creature[AnimationType::KICK]->ReplayAnimation();
 		}
 		else
 		{
 			m_animationType = PUNCH;
-			//fbxobj_punchCreature->ResetAnimation();
+			fbxobj_creature[AnimationType::PUNCH]->ReplayAnimation();
 		}
 	}
 }
@@ -593,17 +496,28 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 	if (m_isTurn)
 	{
 		float l_rotY = 0.0f;
+		m_deg = CalcDeg(pPos);
+		if (fabsf(m_turnStartAngle - (m_deg + 180.0f)) >= 180.0f)
+		{
+			if (m_turnStartAngle < m_deg + 180.0f)
+			{
+				m_turnStartAngle += 359.9f;
+			}
+			else
+			{
+				m_deg += 359.9f;
+			}
+		}
+
 		if (m_turnVec == RIGHT)
 		{
-			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+			l_rotY = ((m_deg + 180.0f) - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
 			fbxobj_creature[AnimationType::R_TURN]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-			fbxobj_creature[AnimationType::R_TURN]->Update();
 		}
 		else
 		{
-			l_rotY = (m_turnEndAngle - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
+			l_rotY = ((m_deg + 180.0f) - m_turnStartAngle) * OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
 			fbxobj_creature[AnimationType::L_TURN]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-			fbxobj_creature[AnimationType::L_TURN]->Update();
 		}
 
 		if (m_easeTimer < 1.0f)
@@ -617,20 +531,16 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 			{
 				if (fbxobj_creature[AnimationType::R_TURN]->IsAnimationEnd())
 				{
-					//fbxobj_RTurnCreature->ResetAnimation();
 					m_easeTimer = 0.0f;
 					m_isTurn = false;
-					JudgAnimationType(OgaJHelper::CalcDist(m_pos, pPos));
 				}
 			}
 			else
 			{
 				if (fbxobj_creature[AnimationType::L_TURN]->IsAnimationEnd())
 				{
-					//fbxobj_LTurnCreature->ResetAnimation();
 					m_easeTimer = 0.0f;
 					m_isTurn = false;
-					JudgAnimationType(OgaJHelper::CalcDist(m_pos, pPos));
 				}
 			}
 		}
@@ -646,8 +556,6 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 				fbxobj_creature[AnimationType::R_BACK]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
 				m_easeTimer += C_MAX_TURN_TIMER;
 			}
-
-			fbxobj_creature[AnimationType::R_BACK]->Update();
 		}
 		else
 		{
@@ -658,8 +566,6 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 				fbxobj_creature[AnimationType::L_BACK]->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
 				m_easeTimer += C_MAX_TURN_TIMER;
 			}
-
-			fbxobj_creature[AnimationType::L_BACK]->Update();
 		}
 
 		if (m_easeTimer >= 1.0f)
@@ -669,7 +575,6 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 			{
 				if (fbxobj_creature[AnimationType::R_BACK]->IsAnimationEnd())
 				{
-					//fbxobj_creature[AnimationType::R_BACK]->ResetAnimation();
 					m_easeTimer = 0.0f;
 					m_isBackAttack = false;
 					m_isAttack = false;
@@ -677,14 +582,12 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 					CalcNearAngle(pPos, fbxobj_creature[AnimationType::R_BACK]->GetRotation().y);
 					m_isBackAttackLottery = false;
 					float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
-					JudgAnimationType(l_dist);
 				}
 			}
 			else
 			{
 				if (fbxobj_creature[AnimationType::L_BACK]->IsAnimationEnd())
 				{
-					//fbxobj_LBackCreature->ResetAnimation();
 					m_easeTimer = 0.0f;
 					m_isBackAttack = false;
 					m_isAttack = false;
@@ -692,10 +595,11 @@ void Enemy::CalcAngleDiff(DirectX::XMFLOAT3& pPos)
 					CalcNearAngle(pPos, fbxobj_creature[AnimationType::L_BACK]->GetRotation().y);
 					m_isBackAttackLottery = false;
 					float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
-					JudgAnimationType(l_dist);
 				}
 			}
 		}
+
+		//fbxobj_creature[m_animationType]->Update();
 	}
 }
 
@@ -745,14 +649,14 @@ void Enemy::CalcNearAngle(DirectX::XMFLOAT3& pPos, float myAngleY)
 			m_turnVec = TurnVec::RIGHT;
 			fbxobj_creature[AnimationType::R_TURN]->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
 			fbxobj_creature[AnimationType::R_TURN]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::R_TURN]->Update();
+			//fbxobj_creature[AnimationType::R_TURN]->Update();
 		}
 		else
 		{
 			m_turnVec = TurnVec::LEFT;
 			fbxobj_creature[AnimationType::L_TURN]->SetRotation(DirectX::XMFLOAT3(0, myAngleY, 0));
 			fbxobj_creature[AnimationType::L_TURN]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::L_TURN]->Update();
+			//fbxobj_creature[AnimationType::L_TURN]->Update();
 		}
 	}
 	else
@@ -832,6 +736,7 @@ void Enemy::CalcRise(DirectX::XMFLOAT3& pPos)
 			m_swingDownEndPos = pPos;
 			m_animationType = AnimationType::SWING_DOWN;
 			fbxobj_creature[AnimationType::SWING_DOWN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::SWING_DOWN]->SetRotation(fbxobj_creature[RISE]->GetRotation());
 			fbxobj_creature[AnimationType::SWING_DOWN]->StopAnimation();
 			fbxobj_creature[AnimationType::SWING_DOWN]->Update();
 		}
@@ -867,7 +772,7 @@ void Enemy::CalcSwingDown(DirectX::XMFLOAT3& pPos)
 				m_animationTimer = 0;
 				m_easeTimer = 0.0f;
 				float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
-				JudgAnimationType(l_dist);
+				//JudgAnimationType(l_dist);
 				fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
 				fbxobj_creature[AnimationType::RUN]->Update();
 				fbxobj_creature[AnimationType::SWING_DOWN]->SetAnimationTimerMax();
@@ -882,6 +787,462 @@ void Enemy::CalcSwingDown(DirectX::XMFLOAT3& pPos)
 	}
 }
 
+void Enemy::CalcTackle(DirectX::XMFLOAT3& pPos)
+{
+	//違うとこでも結構求めてるから修正必要アリ(共有化)
+	DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(pPos, m_pos);
+	eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
+
+	//飛ぶ前
+	if (m_animationTimer < c_MaxTackleTimer)
+	{
+		m_deg = atan2(eDirection.x, eDirection.z);
+		OgaJHelper::ConvertToDegree(m_deg);
+		m_animationTimer++;
+		if (m_animationTimer >= c_MaxTackleTimer)
+		{
+			m_tackleDirection = eDirection;
+		}
+	}
+	else
+	{
+		//仮
+		if (m_animationTimer < 150)
+		{
+			m_pos.x += -m_tackleDirection.x * c_tackleSpeed;
+			m_pos.y += -m_tackleDirection.y * c_tackleSpeed;
+			m_pos.z += -m_tackleDirection.z * c_tackleSpeed;
+			m_animationTimer++;
+		}
+		else
+		{
+			m_animationTimer = 0;
+			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+			float l_dist = OgaJHelper::CalcDist(l_pos, pPos);
+			//JudgAnimationType(l_dist);
+		}
+	}
+}
+
+void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
+{
+	//FbxUpdate
+	if (m_animationType == STAND)
+	{
+		fbxobj_creature[AnimationType::STAND]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::STAND]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::STAND]->Update();
+	}
+	else if (m_animationType == RUN)
+	{
+		m_isAttack = false;
+		fbxobj_creature[AnimationType::RUN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::RUN]->Update();
+	}
+	else if (m_animationType == KICK)
+	{
+		if (!m_isCalcEnd)
+		{
+			CalcAttackCollisionTimer(C_KICK_COLLISION_TIMER, C_KICK_COLLISION_ENDTIMER);
+		}
+		if (!m_isCalc && !m_isCalcEnd)
+		{
+			m_deg = CalcDeg(pPos);
+		}
+
+		fbxobj_creature[AnimationType::KICK]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::KICK]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::KICK]->Update();
+
+		if (m_isCalc)
+		{
+			obj_Box[9]->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		else
+		{
+			obj_Box[9]->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		}
+
+		if (fbxobj_creature[AnimationType::KICK]->IsAnimationEnd())
+		{
+			m_isAttack = false;
+
+			CalcNearAngle(pPos, fbxobj_creature[AnimationType::KICK]->GetRotation().y);
+		}
+	}
+	else if (m_animationType == PUNCH)
+	{
+		if (!m_isCalcEnd)
+		{
+			CalcAttackCollisionTimer(C_PUNCH_COLLISION_TIMER, C_PUNCH_COLLISION_ENDTIMER);
+		}
+		if (!m_isCalc && !m_isCalcEnd)
+		{
+			m_deg = CalcDeg(pPos);
+		}
+
+		fbxobj_creature[AnimationType::PUNCH]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::PUNCH]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::PUNCH]->Update();
+
+		if (m_isCalc)
+		{
+			obj_Box[5]->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		else
+		{
+			obj_Box[5]->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		}
+
+		if (fbxobj_creature[AnimationType::PUNCH]->IsAnimationEnd())
+		{
+			m_isAttack = false;
+
+			CalcNearAngle(pPos, fbxobj_creature[AnimationType::PUNCH]->GetRotation().y);
+		}
+	}
+	else if (m_animationType == R_TURN)
+	{
+		fbxobj_creature[AnimationType::R_TURN]->Update();
+	}
+	else if (m_animationType == L_TURN)
+	{
+		fbxobj_creature[AnimationType::L_TURN]->Update();
+	}
+	else if (m_animationType == R_BACK)
+	{
+		if (!m_isCalcEnd)
+		{
+			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
+		}
+		fbxobj_creature[AnimationType::R_BACK]->Update();
+	}
+	else if (m_animationType == L_BACK)
+	{
+		if (!m_isCalcEnd)
+		{
+			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
+		}
+		fbxobj_creature[AnimationType::L_BACK]->Update();
+	}
+	else if (m_animationType == EXPLOSION)
+	{
+		fbxobj_creature[AnimationType::EXPLOSION]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::EXPLOSION]->Update();
+
+		//パーティクル
+		for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
+		{
+			if (!m_isExplosion)
+			{
+				if (!pManager_Ex.IsMove(i))
+				{
+					DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
+						rand() % 501 - 250.0f,
+						rand() % 501 - 250.0f,
+						rand() % 501 - 250.0f);
+					DirectX::XMFLOAT3 l_pos2 = m_pos;
+					l_pos2.y = 100.0f;
+					DirectX::XMFLOAT3 l_vec =
+						OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos, l_pos2));
+
+					pManager_Ex.SetPosition(i, l_pos);
+					pManager_Ex.SetVec(i, l_vec);
+					pManager_Ex.SetPower(i, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+					pManager_Ex.SetScale(i, DirectX::XMFLOAT3(2.0f, 2.0f, 2.0f));
+					pManager_Ex.SetColor(i, DirectX::XMFLOAT4(0.9f, 0.9f, 0.2f, 1.0f));
+				}
+
+				else
+				{
+					DirectX::XMFLOAT3 l_power = pManager_Ex.GetPower(i);
+					l_power.x *= 1.1f;
+					l_power.y *= 1.1f;
+					l_power.z *= 1.1f;
+					pManager_Ex.SetPower(i, l_power);
+				}
+			}
+			else
+			{
+				if (pManager_Ex.IsMove(i))
+				{
+					pManager_Ex.SetIsCreateStop(true);
+					break;
+				}
+			}
+		}
+
+		if (!m_isExplosion &&
+			m_pPowerCount < C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+		{
+			if (m_pPowerCount % 15 == 0)
+			{
+				m_createCount++;
+				pManager_Ex.SetCreateNum(m_createCount);
+			}
+			if (m_pPowerCount == C_EXPLOSION_COLLISION_TIMER)
+			{
+				pManager_Ex.SetIsCreateStop(true);
+			}
+			if (m_pPowerCount >= C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY)
+			{
+				m_isExplosion = true;
+				pManager_Ex.SetCreateNum(pManager_Ex.GetMaxParticle());
+				pManager_Ex.SetIsCreateStop(false);
+				pManager_Ex.ResetLifeParticle();
+
+				for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
+				{
+					DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
+						rand() % 21 - 10.0f,
+						rand() % 21 - 10.0f + 100.0f,
+						rand() % 21 - 10.0f);
+					DirectX::XMFLOAT3 l_pos2 = m_pos;
+					l_pos2.y = 100.0f;
+					DirectX::XMFLOAT3 l_vec =
+						OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos2, l_pos));
+
+					pManager_Ex.SetPosition(i, l_pos2);
+					pManager_Ex.SetVec(i, l_vec);
+					pManager_Ex.SetPower(i, DirectX::XMFLOAT3(
+						3.0f + (rand() % 81 / 10.0f),
+						3.0f + (rand() % 81 / 10.0f),
+						3.0f + (rand() % 81 / 10.0f)));
+					pManager_Ex.SetScale(i, DirectX::XMFLOAT3(
+						5.0f + (rand() % 101 / 10.0f),
+						5.0f + (rand() % 101 / 10.0f),
+						5.0f + (rand() % 101 / 10.0f)));
+					pManager_Ex.SetColor(i, DirectX::XMFLOAT4(
+						0.7f + (rand() % 21 / 100.0f),
+						0.4f + (rand() % 51 / 100.0f),
+						0.2f, 1.0f));
+				}
+			}
+		}
+		else if (m_isExplosion)
+		{
+			if (m_pPowerCount >
+				C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+			{
+				m_isExplosion = false;
+				pManager_Ex.SetIsCreateStop(true);
+			}
+		}
+		m_pPowerCount++;
+
+		if (fbxobj_creature[AnimationType::EXPLOSION]->IsAnimationEnd())
+		{
+			m_isAttack = false;
+
+			CalcNearAngle(pPos, fbxobj_creature[AnimationType::EXPLOSION]->GetRotation().y);
+
+			m_pPowerCount = 0;
+			m_createCount = 1;
+			m_isExplosion = false;
+			pManager_Ex.SetIsCreateStop(true);
+		}
+	}
+	else if (m_animationType == RISE)
+	{
+		CalcRise(pPos);
+	}
+	else if (m_animationType == SWING_DOWN)
+	{
+		CalcSwingDown(pPos);
+	}
+	else if (m_animationType == TACKLE)
+	{
+		CalcTackle(pPos);
+
+		fbxobj_creature[AnimationType::TACKLE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
+		fbxobj_creature[AnimationType::TACKLE]->SetPosition(m_pos);
+		fbxobj_creature[AnimationType::TACKLE]->Update();
+
+		if (fbxobj_creature[AnimationType::TACKLE]->IsAnimationEnd())
+		{
+			fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
+			fbxobj_creature[AnimationType::RUN]->Update();
+			m_isAttack = false;
+			CalcNearAngle(pPos, fbxobj_creature[AnimationType::TACKLE]->GetRotation().y);
+		}
+	}
+
+	pManager_Ex.Update();
+}
+
+void Enemy::SetImgui()
+{
+	//各アニメーションタイプ
+	if (m_animationType == STAND)
+	{
+		ImguiControl::Imgui_enemyAniType = "STAND";
+	}
+	else if (m_animationType == RUN)
+	{
+		ImguiControl::Imgui_enemyAniType = "RUN";
+	}
+	else if (m_animationType == KICK)
+	{
+		ImguiControl::Imgui_enemyAniType = "KICK";
+	}
+	else if (m_animationType == PUNCH)
+	{
+		ImguiControl::Imgui_enemyAniType = "PUNCH";
+	}
+	else if (m_animationType == R_TURN)
+	{
+		ImguiControl::Imgui_enemyAniType = "R_TURN";
+	}
+	else if (m_animationType == L_TURN)
+	{
+		ImguiControl::Imgui_enemyAniType = "L_TURN";
+	}
+	else if (m_animationType == R_BACK)
+	{
+		ImguiControl::Imgui_enemyAniType = "R_BACK";
+	}
+	else if (m_animationType == L_BACK)
+	{
+		ImguiControl::Imgui_enemyAniType = "L_BACK";
+	}
+	else if (m_animationType == EXPLOSION)
+	{
+		ImguiControl::Imgui_enemyAniType = "EXPLOSION";
+	}
+	else if (m_animationType == RISE)
+	{
+		ImguiControl::Imgui_enemyAniType = "RISE";
+	}
+	else if (m_animationType == SWING_DOWN)
+	{
+		ImguiControl::Imgui_enemyAniType = "SWING_DOWN";
+	}
+	else if (m_animationType == TACKLE)
+	{
+		ImguiControl::Imgui_enemyAniType = "TACKLE";
+	}
+
+	if (m_oldAnimationType == STAND)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "STAND";
+	}
+	else if (m_oldAnimationType == RUN)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "RUN";
+	}
+	else if (m_oldAnimationType == KICK)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "KICK";
+	}
+	else if (m_oldAnimationType == PUNCH)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "PUNCH";
+	}
+	else if (m_oldAnimationType == R_TURN)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "R_TURN";
+	}
+	else if (m_oldAnimationType == L_TURN)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "L_TURN";
+	}
+	else if (m_oldAnimationType == R_BACK)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "R_BACK";
+	}
+	else if (m_oldAnimationType == L_BACK)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "L_BACK";
+	}
+	else if (m_oldAnimationType == EXPLOSION)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "EXPLOSION";
+	}
+	else if (m_oldAnimationType == RISE)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "RISE";
+	}
+	else if (m_oldAnimationType == SWING_DOWN)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "SWING_DOWN";
+	}
+	else if (m_oldAnimationType == TACKLE)
+	{
+		ImguiControl::Imgui_enemyOldAniType = "TACKLE";
+	}
+
+	//無敵かどうか
+	if (m_isInvincible)
+	{
+		ImguiControl::Imgui_enemyInvi = "TRUE";
+	}
+	else
+	{
+		ImguiControl::Imgui_enemyInvi = "FALSE";
+	}
+
+	ImguiControl::Imgui_enemyBlendTimer = m_blendTimer;
+	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature[m_animationType]->GetNowTime();
+	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature[m_oldAnimationType]->GetNowTime();
+}
+
+void Enemy::CalcBlendAnimation()
+{
+	//切り替わったら
+	if (!m_isChange &&
+		fbxobj_creature[m_animationType] != fbxobj_creature[m_oldAnimationType])
+	{
+		m_blendTimer = 0.0f;
+		m_isChange = true;
+		m_keepAnimationType = m_animationType;
+		fbxobj_creature[m_animationType]->ResetAnimation();
+	}
+
+	//補間計算
+	else
+	{
+		//途中切り替え時
+		if (m_animationType != m_keepAnimationType)
+		{
+			m_blendTimer = 0.0f;
+			m_keepAnimationType = m_animationType;
+			fbxobj_creature[m_animationType]->ResetAnimation();
+		}
+
+		if (m_blendTimer < 1.0f)
+		{
+			m_blendTimer += C_MAX_BLEND_TIMER;
+			//fbxobj_creature[m_oldAnimationType]->Update();
+			if (m_blendTimer > 1.0f)
+			{
+				m_blendTimer = 1.0f;
+				m_isChange = false;
+				m_oldAnimationType = m_animationType;
+			}
+		}
+		else
+		{
+			m_isChange = false;
+			m_oldAnimationType = m_animationType;
+		}
+	}
+
+	//BlendAnimation
+	fbxobj_creature[m_animationType]->
+		BlendAnimation(fbxobj_creature[m_oldAnimationType], OgaJEase::easeOutCubic(m_blendTimer), true);
+}
+
+float Enemy::CalcDeg(DirectX::XMFLOAT3& pos)
+{
+	DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(pos, m_pos);
+	eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
+	float l_deg = atan2(eDirection.x, eDirection.z);
+	OgaJHelper::ConvertToDegree(l_deg);
+	return l_deg;
+}
+
 /*----------呼ぶやつ----------*/
 void Enemy::HitAttack(int damage)
 {
@@ -890,15 +1251,15 @@ void Enemy::HitAttack(int damage)
 	m_isInvincible = true;
 
 	DirectX::XMFLOAT3 l_pos = m_obbs[m_hitOBBNum].pos;
-	for (int i = 0; i < pManager.GetMaxParticle(); i++)
+	for (int i = 0; i < pManager_Hit.GetMaxParticle(); i++)
 	{
 		//生成時のみ剣に付随
-		if (!pManager.IsMove(i))
+		if (!pManager_Hit.IsMove(i))
 		{
-			pManager.SetPosition(i, l_pos);
+			pManager_Hit.SetPosition(i, l_pos);
 		}
 	}
-	pManager.SetIsCreateStop(false);
+	pManager_Hit.SetIsCreateStop(false);
 
 	OutputDebugStringA("Hit!\n");
 }
@@ -907,11 +1268,11 @@ OBB& Enemy::GetAttackOBB()
 {
 	if (m_animationType == KICK)
 	{
-		return m_obbs[36];
+		return m_obbs[9];
 	}
 	else
 	{
-		return m_obbs[26];
+		return m_obbs[3];
 	}
 }
 

@@ -31,6 +31,9 @@ FbxModels* ModelManager::fbxmodel_LBackCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_explosionCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_riseCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_swingDownCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_swipingCreature = nullptr;
+
+Model* ModelManager::model_circle = nullptr;
 
 //Stage
 Model* ModelManager::model_stage = nullptr;
@@ -106,6 +109,9 @@ void ModelManager::Init()
 	fbxmodel_explosionCreature = FbxModels::CreateFromFbx("ExplosionCreature", "Creature");
 	fbxmodel_riseCreature = FbxModels::CreateFromFbx("RiseCreature", "Creature");
 	fbxmodel_swingDownCreature = FbxModels::CreateFromFbx("SwingDownCreature", "Creature");
+	fbxmodel_swipingCreature = FbxModels::CreateFromFbx("SwipingCreature", "Creature");
+
+	model_circle = Model::CreateFromObj("circle");
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");

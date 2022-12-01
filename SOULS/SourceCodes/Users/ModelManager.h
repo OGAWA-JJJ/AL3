@@ -35,6 +35,9 @@ public:	//Enemy
 	static FbxModels* fbxmodel_explosionCreature;
 	static FbxModels* fbxmodel_riseCreature;
 	static FbxModels* fbxmodel_swingDownCreature;
+	static FbxModels* fbxmodel_swipingCreature;
+
+	static Model* model_circle;
 
 public:	//Stage
 	static Model* model_stage;

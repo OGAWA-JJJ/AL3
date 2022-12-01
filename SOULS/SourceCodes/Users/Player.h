@@ -53,8 +53,7 @@ private:
 	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 5;						//1フレームのスタミナ回復量
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
-	const int C_HEAL_HP_TIMER = 30;					//エスト飲んでから回復までのフレーム数
-	const float C_MAX_MOVE_SPEED = 2.0f;			//自機の最大速度
+	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
 	const float C_MAX_BLEND_TIMER = 0.02f;
@@ -63,8 +62,11 @@ private:	//定数(ステータス関係)
 	const int C_MAX_HP = 1000;
 	const int C_MAX_MP = 100;
 	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER = 40;	//変更必要
-	const int C_MAX_ESTUS = 5;
+	const int C_MAX_POWER[3] = { 40,25,70 };	//変更必要
+	const int C_MAX_ESTUS = 5;					//所持数
+	const int C_ESTUS_TIMER = 60;				//エスト飲んでから回復までのフレーム数
+	const int C_MAX_ESTUS_HEAL = 350;			//回復量
+	const int C_MAX_ESTUS_HEAL_SPEED = 15;		//1フレームの回復量
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;	//ボーン情報
@@ -85,6 +87,8 @@ private:	//変数
 	int m_padState;					//Padの入力情報
 	int m_padRetentionTimer;		//Padの先行入力保存用
 	int m_attackCollisionTimer[3];	//攻撃判定を始めるフレーム
+	int m_estusHeal;				//HP回復残量
+	int m_estusTimer;				//HP回復判定開始までのフレーム
 	float m_cameraMoveEase;			//カメラのイージング用タイマー
 	float m_cameraY;				//カメラのY軸保存用(めり込み回避)
 	float m_cameraDist;				//自機とカメラの距離
@@ -96,6 +100,7 @@ private:	//変数
 	bool m_isAccept;				//途中入力を受け付けてるか
 	bool m_isChange;				//アニメーションが切り替わったか
 	bool m_isAnimation;				//STANDとRUN以外true
+	bool m_isEstus;
 
 	//仮
 	int m_keepAnimationType = 0;
@@ -149,6 +154,7 @@ private:
 	void CheckAttackAnimationType();
 	void DoAttack(const int animationType);
 	void CalcRolling();
+	void CalcHeal();
 	void SetImgui();
 
 public:	//Getter
@@ -156,6 +162,7 @@ public:	//Getter
 	const OBB& GetSwordOBB() { return m_obb; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
 	const int GetPower() { return m_power; }
+	const int GetEstus() { return m_estus; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
 	const inline float GetMpRate() { return static_cast<float>(m_mp) / static_cast<float>(C_MAX_MP); }
 	const inline float GetStaminaRate() { return static_cast<float>(m_stamina) / static_cast<float>(C_MAX_STAMINA); }

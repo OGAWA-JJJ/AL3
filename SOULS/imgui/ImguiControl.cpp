@@ -3,11 +3,11 @@
 
 float ImguiControl::Imgui_fov = 60.0f;
 float ImguiControl::Imgui_far_z = 3000.0f;
-float ImguiControl::Imgui_lightColor_r = 0.6f;
-float ImguiControl::Imgui_lightColor_g = 0.6f;
-float ImguiControl::Imgui_lightColor_b = 0.6f;
+float ImguiControl::Imgui_lightColor_r = 1.0f;
+float ImguiControl::Imgui_lightColor_g = 1.0f;
+float ImguiControl::Imgui_lightColor_b = 1.0f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
-float ImguiControl::Imgui_lightDir_y = 0.1f;
+float ImguiControl::Imgui_lightDir_y = 0.0f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 
 bool ImguiControl::Imgui_isOBBDraw = false;
@@ -22,6 +22,7 @@ float ImguiControl::Imgui_enemyBlendTimer = 0.0f;
 float ImguiControl::Imgui_enemyCurrentAniTimer = 0.0f;
 float ImguiControl::Imgui_enemyOldAniTimer = 0.0f;
 char* ImguiControl::Imgui_enemyAniType = "NONE";
+char* ImguiControl::Imgui_enemyOldAniType = "NONE";
 char* ImguiControl::Imgui_enemyInvi = "FALSE";
 
 float ImguiControl::Imgui_playerBlendTimer = 0.0f;
@@ -31,10 +32,15 @@ char* ImguiControl::Imgui_playerAniType = "NONE";
 char* ImguiControl::Imgui_playerOldAniType = "NONE";
 char* ImguiControl::Imgui_playerIsAccept = "NONE";
 char* ImguiControl::Imgui_playerIsChange = "NONE";
+char* ImguiControl::Imgui_playerIsAttack = "NONE";
+char* ImguiControl::Imgui_playerIsInvincible = "NONE";
 
 //obb
 float ImguiControl::Imgui_playerOBBPos[10][3];
 float ImguiControl::Imgui_enemyOBBPos[12][3];
+
+float ImguiControl::Imgui_playerOBBScale[10][3];
+float ImguiControl::Imgui_enemyOBBScale[12][3];
 
 //仮
 bool ImguiControl::isHel = false;
@@ -54,7 +60,16 @@ void ImguiControl::Update()
 {
 	ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
 
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 0.3f, 1.0f);
+	const ImVec4 text_cameraColor = { 1.0f, 1.0f, 0.3f, 1.0f };
+	const ImVec4 text_lightColor = { 0.3f, 1.0f, 1.0f, 1.0f };
+	const ImVec4 text_isDrawColor = { 1.0f, 0.3f, 1.0f, 1.0f };
+	const ImVec4 text_enemyStatusColor = { 1.0f, 0.3f, 0.3f, 1.0f };
+	const ImVec4 text_playerStatusColor = { 0.3f, 0.3f, 1.0f, 1.0f };
+	const ImVec4 text_obbColor = { 0.3f, 1.0f, 0.3f, 1.0f };
+	const ImVec4 text_particleManagerColor = { 0.3f, 0.5f, 0.7f, 1.0f };
+
+	//カメラ関係
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_cameraColor;
 	if (ImGui::TreeNode("CameraSettings"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -66,8 +81,9 @@ void ImguiControl::Update()
 
 	ImGui::Spacing();
 
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(0.3f, 1.0f, 1.0f, 1.0f);
-	if (ImGui::TreeNode("ColorSettings"))
+	//ライティング関係
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_lightColor;
+	if (ImGui::TreeNode("LightColorSettings"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		ImGui::SliderFloat("LIGHT_COLOR_R", &Imgui_lightColor_r, 0.0f, 1.0f);
@@ -82,7 +98,8 @@ void ImguiControl::Update()
 
 	ImGui::Spacing();
 
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 0.3f, 1.0f, 1.0f);
+	//描画関係
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_isDrawColor;
 	if (ImGui::TreeNode("IsDraw"))
 	{
 		ImGui::Checkbox("OBB_BOX_DRAW", &Imgui_isOBBDraw);
@@ -95,7 +112,8 @@ void ImguiControl::Update()
 
 	ImGui::Spacing();
 
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
+	//敵関係
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_enemyStatusColor;
 	if (ImGui::TreeNode("EnemyStatus"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -103,13 +121,15 @@ void ImguiControl::Update()
 		ImGui::Text("ENEMY_CURRENT_ANI_TIMER    ： %f", Imgui_enemyCurrentAniTimer);
 		ImGui::Text("ENEMY_OLD_ANI_TIMER        ： %f", Imgui_enemyOldAniTimer);
 		ImGui::Text("ENEMY_ANIMATION_TYPE       ： %s", Imgui_enemyAniType);
+		ImGui::Text("ENEMY_OLD_ANIMATION_TYPE   ： %s", Imgui_enemyOldAniType);
 		ImGui::Text("ENEMY_INVI                 ： %s", Imgui_enemyInvi);
 		ImGui::TreePop();
 	}
 
 	ImGui::Spacing();
 
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(0.1f, 0.1f, 1.0f, 1.0f);
+	//プレイヤー関係
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_playerStatusColor;
 	if (ImGui::TreeNode("PlayerStatus"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -120,29 +140,68 @@ void ImguiControl::Update()
 		ImGui::Text("PLAYER_OLD_ANIMATION_TYPE   ： %s", Imgui_playerOldAniType);
 		ImGui::Text("PLAYER_IS_ACCEPT            ： %s", Imgui_playerIsAccept);
 		ImGui::Text("PLAYER_IS_CHANGE            ： %s", Imgui_playerIsChange);
+		ImGui::Text("PLAYER_IS_CHANGE            ： %s", Imgui_playerIsAttack);
+		ImGui::Text("PLAYER_IS_INVINCIBLE        ： %s", Imgui_playerIsInvincible);
 		ImGui::TreePop();
 	}
-
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//obb
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_obbColor;
 	if (ImGui::TreeNode("OBB"))
 	{
-		ImGui::Text("PLAYER");
-		for (int i = 0; i < 10; i++)
+		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		if (ImGui::TreeNode("PLAYER_POS"))
 		{
-			char lavel = i + '0';
-			ImGui::SliderFloat3(&lavel, Imgui_playerOBBPos[i], -5.0f, 5.0f);
+			for (int i = 0; i < 10; i++)
+			{
+				char lavel = i + '0';
+				ImGui::SliderFloat3(&lavel, Imgui_playerOBBPos[i], -5.0f, 5.0f);
+			}
+			ImGui::TreePop();
 		}
 
-		ImGui::Text("ENEMY");
-		for (int i = 0; i < 12; i++)
+		if (ImGui::TreeNode("PLAYER_SCALE"))
 		{
-			char lavel = i + 10 + '0';
-			ImGui::SliderFloat3(&lavel, Imgui_enemyOBBPos[i], -10.0f, 10.0f);
+			for (int i = 0; i < 10; i++)
+			{
+				char lavel = i + 10 + '0';
+				ImGui::SliderFloat3(&lavel, Imgui_playerOBBScale[i], -10.0f, 10.0f);
+			}
+			ImGui::TreePop();
 		}
+
+		if (ImGui::TreeNode("ENEMY_POS"))
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				char lavel = i + 20 + '0';
+				ImGui::SliderFloat3(&lavel, Imgui_enemyOBBPos[i], -10.0f, 10.0f);
+			}
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("ENEMY_SCALE"))
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				char lavel = i + 30 + '0';
+				ImGui::SliderFloat3(&lavel, Imgui_enemyOBBScale[i], -25.0f, 25.0f);
+			}
+			ImGui::TreePop();
+		}
+
 		ImGui::TreePop();
 	}
+
+	//パーティクル
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_particleManagerColor;
+	if (ImGui::TreeNode("ParticleManager"))
+	{
+		ImGui::TreePop();
+	}
+
+	//リセット
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//仮
 	ImGui::Checkbox("IS_HELMET", &isHel);

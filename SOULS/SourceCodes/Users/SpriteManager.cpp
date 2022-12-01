@@ -47,6 +47,8 @@ Sprite* SpriteManager::tex_player_stamina_back = nullptr;
 Sprite* SpriteManager::tex_title = nullptr;
 Sprite* SpriteManager::tex_title_press_a = nullptr;
 
+Sprite* SpriteManager::tex_estus = nullptr;
+
 void SpriteManager::Init()
 {
 	//•ª‚¯‚È‚¢‚Æƒ‹[ƒv‚É‚¾‚é‚¢‚©‚à
@@ -78,9 +80,12 @@ void SpriteManager::Init()
 	Sprite::LoadTexture(18, L"Resources/UIs/title.png");
 	Sprite::LoadTexture(19, L"Resources/UIs/press_a.png");
 
+	Sprite::LoadTexture(20, L"Resources/UIs/estus.png");
+
 	for (int i = 0; i < 10; i++)
 	{
-		tex_numbers[i] = Sprite::Create(i, DirectX::XMFLOAT2(0, 0));
+		tex_numbers[i] = Sprite::Create(i, DirectX::XMFLOAT2(108, 660));
+		tex_numbers[i]->SetSize(DirectX::XMFLOAT2(32, 32));
 	}
 
 	//“G‰æ‘œ‰Šú‰»
@@ -126,7 +131,9 @@ void SpriteManager::Init()
 	tex_title->SetColor(DirectX::XMFLOAT4(0, 0, 0, 1));
 
 	tex_title_press_a = Sprite::Create(19, DirectX::XMFLOAT2(469, 574));
-	//tex_title_press_a->SetColor(DirectX::XMFLOAT4(0, 0, 0, 1));
+
+	tex_estus = Sprite::Create(20, DirectX::XMFLOAT2(48, 572));
+	tex_estus->SetSize(DirectX::XMFLOAT2(72, 128));
 }
 
 void SpriteManager::TitleDraw(bool& isSceneChange)
@@ -165,7 +172,7 @@ void SpriteManager::TitleDraw(bool& isSceneChange)
 	Sprite::PostDraw();
 }
 
-void SpriteManager::PlayerUIDraw()
+void SpriteManager::PlayerUIDraw(const int estusNum)
 {
 	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_player_hp_back->Draw();
@@ -179,6 +186,9 @@ void SpriteManager::PlayerUIDraw()
 	tex_player_hp_red->Draw();
 	tex_player_mp_blue->Draw();
 	tex_player_stamina_green->Draw();
+
+	tex_estus->Draw();
+	tex_numbers[estusNum]->Draw();
 	Sprite::PostDraw();
 }
 
@@ -236,6 +246,7 @@ void SpriteManager::Update()
 		}
 		else
 		{
+			//‘½•ª‹}‚É•Ï‚í‚é
 			tex_player_hp_yellow->SetSize(DirectX::XMFLOAT2(
 				m_player_hpRate,
 				C_PLAYER_HP_BAR_SIZE_Y));
@@ -280,22 +291,13 @@ void SpriteManager::PlayerDamaged(float hpRate)
 {
 	if (!m_playerDamaged)
 	{
-		m_player_hpRate = C_PLAYER_HP_BAR_SIZE_X * hpRate;
-
-		tex_player_hp_red->SetSize(DirectX::XMFLOAT2(
-			m_player_hpRate,
-			C_PLAYER_HP_BAR_SIZE_Y));
 		m_playerDamaged = true;
+		PlayerHPUpdate(hpRate);
 	}
 	else
 	{
-		m_player_hpRate = C_PLAYER_HP_BAR_SIZE_X * hpRate;
-
-		tex_player_hp_red->SetSize(DirectX::XMFLOAT2(
-			m_player_hpRate,
-			C_PLAYER_HP_BAR_SIZE_Y));
-
 		m_player_yellowCount = 0;
+		PlayerHPUpdate(hpRate);
 	}
 }
 
@@ -319,5 +321,21 @@ void SpriteManager::EnemyDamaged(float hpRate)
 			C_ENEMY_HP_BAR_SIZE_Y));
 
 		m_enemy_yellowCount = 0;
+	}
+}
+
+void SpriteManager::PlayerHPUpdate(float hpRate)
+{
+	m_player_hpRate = C_PLAYER_HP_BAR_SIZE_X * hpRate;
+
+	tex_player_hp_red->SetSize(DirectX::XMFLOAT2(
+		m_player_hpRate,
+		C_PLAYER_HP_BAR_SIZE_Y));
+
+	if (!m_playerDamaged)
+	{
+		tex_player_hp_yellow->SetSize(DirectX::XMFLOAT2(
+			m_player_hpRate,
+			C_PLAYER_HP_BAR_SIZE_Y));
 	}
 }

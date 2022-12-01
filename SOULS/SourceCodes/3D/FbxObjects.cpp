@@ -360,7 +360,7 @@ void FbxObjects::UpdateAnimation()
 
 	if (!m_isAddTimerEase)
 	{
-		current_animation_seconds += animation.add_time;
+		current_animation_seconds += animation.add_time * m_rate;
 	}
 	else
 	{

@@ -63,6 +63,22 @@ void Particle::Move()
 		l_pos.z += m_particleData.power.z * m_particleData.vec.z;
 		m_object->SetPosition(l_pos);
 
+		if (m_life == m_particleData.life - 10)
+		{
+			m_scale = m_object->GetScale();
+			m_scale.x *= 0.1f;
+			m_scale.y *= 0.1f;
+			m_scale.z *= 0.1f;
+		}
+		else if (m_life > m_particleData.life - 10)
+		{
+			DirectX::XMFLOAT3 l_scale = m_object->GetScale();
+			l_scale.x -= m_scale.x;
+			l_scale.y -= m_scale.y;
+			l_scale.z -= m_scale.z;
+			m_object->SetScale(l_scale);
+		}
+
 		m_life++;
 	}
 	else
@@ -134,6 +150,11 @@ void Particle::SetVec(const DirectX::XMFLOAT3 vec)
 void Particle::SetColor(const DirectX::XMFLOAT4 color)
 {
 	m_particleData.color = color;
+}
+
+void Particle::ResetLifeParticle()
+{
+	m_life = m_particleData.life;
 }
 
 //ParticleManager
@@ -265,7 +286,10 @@ void ParticleManager::MultiMatrix(const int num, DirectX::XMMATRIX matrix)
 	m_particles.at(num).GetModel()->MultiMatrix(matrix);
 }
 
-void ParticleManager::EndAllParticle()
+void ParticleManager::ResetLifeParticle()
 {
-	m_particles.clear();
+	for (int i = 0; i < m_maxParticle; i++)
+	{
+		m_particles.at(i).ResetLifeParticle();
+	}
 }

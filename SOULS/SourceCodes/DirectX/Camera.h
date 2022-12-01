@@ -14,6 +14,10 @@ private:
 	static DirectX::XMFLOAT3 up;
 	static float fov;
 
+	static bool isShake;
+	static DirectX::XMFLOAT3 shakeEye;
+	static DirectX::XMFLOAT3 shakeTarget;
+
 public:
 	//static void SetEye(XMFLOAT3 Eye);
 	//static void SetTarget(XMFLOAT3 Target);

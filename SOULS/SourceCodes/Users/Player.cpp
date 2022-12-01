@@ -26,6 +26,7 @@ Player::Player()
 	{
 		m_attackCollisionTimer[i] = C_ATTACK_COLLISION_TIMER[i];
 	}
+	m_estusHeal = 0;
 
 	m_cameraMoveEase = 0.0f;
 	m_cameraY = 0.0f;
@@ -37,6 +38,7 @@ Player::Player()
 	m_isAccept = true;
 	m_isChange = false;
 	m_isAnimation = false;
+	m_isEstus = false;
 
 #pragma endregion
 
@@ -45,7 +47,7 @@ Player::Player()
 	m_hp = C_MAX_HP;
 	m_mp = C_MAX_MP;
 	m_stamina = C_MAX_STAMINA;
-	m_power = C_MAX_POWER;
+	m_power = C_MAX_POWER[0];
 	m_estus = C_MAX_ESTUS;
 
 #pragma endregion
@@ -235,7 +237,7 @@ void Player::Init()
 	ImguiControl::Imgui_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
 
 	//パーティクル
-	const float pScale = 0.3f;
+	const float pScale = 0.5f;
 	const float pPower = 0.03f;
 	const float pColor = 0.9f;
 
@@ -250,6 +252,7 @@ void Player::Init()
 	{
 		pManager.SetParticle(i, pData);
 	}
+	pManager.SetCreateNum(1);
 
 	//Box
 	std::array<float, 10> l_x = {
@@ -295,6 +298,9 @@ void Player::Init()
 			l_y[i],
 			l_z[i]
 		));
+		ImguiControl::Imgui_playerOBBScale[i][0] = l_x[i];
+		ImguiControl::Imgui_playerOBBScale[i][1] = l_y[i];
+		ImguiControl::Imgui_playerOBBScale[i][2] = l_z[i];
 	}
 }
 
@@ -795,7 +801,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		}
 
 		//ターゲットのゴール地点
-		const XMFLOAT3 GoalCameraTarget = {
+		XMFLOAT3 GoalCameraTarget = {
 				enemyPos.x,
 				enemyPos.y - 30.0f,
 				enemyPos.z
@@ -805,6 +811,20 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 				50.0f,
 				m_pos.z + m_cameraDist * enemyToPlayer.z
 		};
+
+		float l_dist = OgaJHelper::CalcDist(enemyPos, m_pos);
+		if (l_dist < 150.0f)
+		{
+			if (l_dist < 75.0f)
+			{
+				GoalCameraTarget.y += 75.0f;
+			}
+			else
+			{
+				GoalCameraTarget.y += 150.0f - l_dist;
+			}
+		}
+
 		if (!l_isThumb && m_cameraMoveEase < 1.0f)
 		{
 			//カメラ挙動管理用
@@ -888,6 +908,22 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		}
 	}
 
+	//エスト管理
+	if (m_estusHeal > 0)
+	{
+		//誤差が発生する可能性アリ
+		m_estusHeal -= C_MAX_ESTUS_HEAL_SPEED;
+		if (m_hp < C_MAX_HP)
+		{
+			m_hp += C_MAX_ESTUS_HEAL_SPEED;
+			if (m_hp >= C_MAX_HP)
+			{
+				m_hp = C_MAX_HP;
+				m_estusHeal = 0;
+			}
+		}
+	}
+
 	Setter();
 	Input();
 
@@ -920,18 +956,6 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		//生成時のみ剣に付随
 		if (!pManager.IsMove(i))
 		{
-			if (m_isAttack)
-			{
-				pManager.SetIsCreateStop(false);
-				pManager.SetCreateNum(5);
-				pManager.SetPower(i, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
-			}
-			else
-			{
-				pManager.SetIsCreateStop(true);
-				pManager.SetCreateNum(1);
-				pManager.SetPower(i, DirectX::XMFLOAT3(0.03f, 0.03f, 0.03f));
-			}
 			pManager.MultiMatrix(i, obj_Sword->GetMatrix());
 		}
 	}
@@ -1068,7 +1092,7 @@ void Player::Input()
 	}
 
 	//回避
-	if (m_stamina > 0 && !m_isTarget)
+	if (m_stamina > 0)
 	{
 		if (m_padState == XINPUT_GAMEPAD_B)
 		{
@@ -1091,10 +1115,11 @@ void Player::Input()
 				m_animationType != ROLLING &&
 				m_animationType != HEAL)
 			{
-				m_estus--;
 				m_animationType = HEAL;
+				m_estusTimer = 0;
 				m_isAnimation = true;
 				m_isStickReleaseTrigger = false;
+				m_isEstus = false;
 			}
 		}
 	}
@@ -1183,26 +1208,23 @@ void Player::OtherUpdate()
 	{
 		fbxobj_miku[AnimationType::STAND]->Update();
 		fbxobj_shadowMiku[AnimationType::STAND]->Update(true);
-
-		ImguiControl::Imgui_playerAniType = "STAND";
 	}
 	else if (m_animationType == SLOWRUN)
 	{
 		fbxobj_miku[AnimationType::SLOWRUN]->Update();
 		fbxobj_shadowMiku[AnimationType::SLOWRUN]->Update(true);
-
-		ImguiControl::Imgui_playerAniType = "SLOWRUN";
 	}
 	else if (m_animationType == RUN)
 	{
 		fbxobj_miku[AnimationType::RUN]->Update();
 		fbxobj_shadowMiku[AnimationType::RUN]->Update(true);
-
-		ImguiControl::Imgui_playerAniType = "RUN";
 	}
 	else if (m_animationType >= NORMAL_ATTACK_1 &&
 		m_animationType <= NORMAL_ATTACK_3)
 	{
+		//攻撃力
+		m_power = C_MAX_POWER[m_animationType - 3];
+
 		//最大までのフレーム数
 		float l_frame = fbxobj_miku[m_animationType]->GetEndTime() / fbxobj_miku[m_animationType]->GetAddTime();
 		fbxobj_miku[m_animationType]->SetAnimationSpeed(OgaJEase::easeInSine(m_attackEase), true);
@@ -1218,20 +1240,6 @@ void Player::OtherUpdate()
 
 		fbxobj_miku[m_animationType]->Update();
 		fbxobj_shadowMiku[m_animationType]->Update(true);
-
-		if (m_animationType == NORMAL_ATTACK_1)
-		{
-			ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_1";
-		}
-		else if (m_animationType == NORMAL_ATTACK_2)
-		{
-			ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_2";
-		}
-		else if (m_animationType == NORMAL_ATTACK_3)
-		{
-			ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_3";
-		}
-
 
 		//攻撃アニメーション中断ローリング
 		if (!m_isAccept)
@@ -1256,8 +1264,6 @@ void Player::OtherUpdate()
 		if (m_isAttack) { m_isAttack = false; }
 		fbxobj_miku[AnimationType::DAMAGED]->Update();
 		fbxobj_shadowMiku[AnimationType::DAMAGED]->Update(true);
-
-		ImguiControl::Imgui_playerAniType = "DAMAGED";
 
 		if (fbxobj_miku[AnimationType::DAMAGED]->IsAnimationEnd())
 		{
@@ -1286,8 +1292,6 @@ void Player::OtherUpdate()
 		fbxobj_miku[AnimationType::ROLLING]->Update();
 		fbxobj_shadowMiku[AnimationType::ROLLING]->Update(true);
 
-		ImguiControl::Imgui_playerAniType = "ROLLING";
-
 		if (fbxobj_miku[AnimationType::ROLLING]->IsAnimationEnd())
 		{
 			m_isAnimation = false;
@@ -1296,10 +1300,13 @@ void Player::OtherUpdate()
 	}
 	else if (m_animationType == HEAL)
 	{
+		if (!m_isEstus)
+		{
+			CalcHeal();
+		}
+
 		fbxobj_miku[AnimationType::HEAL]->Update();
 		fbxobj_shadowMiku[AnimationType::HEAL]->Update(true);
-
-		ImguiControl::Imgui_playerAniType = "HEAL";
 
 		if (fbxobj_miku[AnimationType::HEAL]->IsAnimationEnd())
 		{
@@ -1544,6 +1551,20 @@ void Player::CalcRolling()
 	}
 }
 
+void Player::CalcHeal()
+{
+	if (m_estusTimer < C_ESTUS_TIMER)
+	{
+		m_estusTimer++;
+	}
+	else
+	{
+		m_estus--;
+		m_estusHeal = C_MAX_ESTUS_HEAL;
+		m_isEstus = true;
+	}
+}
+
 void Player::SetImgui()
 {
 	//Old
@@ -1583,6 +1604,10 @@ void Player::SetImgui()
 	{
 		ImguiControl::Imgui_playerOldAniType = "ROLLING";
 	}
+	else if (m_oldAnimationType == HEAL)
+	{
+		ImguiControl::Imgui_playerOldAniType = "HEAL";
+	}
 
 	if (m_isAccept)
 	{
@@ -1602,6 +1627,15 @@ void Player::SetImgui()
 		ImguiControl::Imgui_playerIsChange = "FALSE";
 	}
 
+	if (m_isAttack)
+	{
+		ImguiControl::Imgui_playerIsAttack = "TRUE";
+	}
+	else
+	{
+		ImguiControl::Imgui_playerIsAttack = "FALSE";
+	}
+
 	ImguiControl::Imgui_playerCurrentAniTimer = fbxobj_miku[m_animationType]->GetNowTime();
 	ImguiControl::Imgui_playerOldAniTimer = fbxobj_miku[m_oldAnimationType]->GetNowTime();
 
@@ -1612,6 +1646,20 @@ void Player::SetImgui()
 			ImguiControl::Imgui_playerOBBPos[i][1],
 			ImguiControl::Imgui_playerOBBPos[i][2]
 		));
+		obj_Box[i]->SetScale(DirectX::XMFLOAT3(
+			ImguiControl::Imgui_playerOBBScale[i][0],
+			ImguiControl::Imgui_playerOBBScale[i][1],
+			ImguiControl::Imgui_playerOBBScale[i][2]
+		));
+	}
+
+	if (m_isInvincible)
+	{
+		ImguiControl::Imgui_playerIsInvincible = "TRUE";
+	}
+	else
+	{
+		ImguiControl::Imgui_playerIsInvincible = "FALSE";
 	}
 }
 
@@ -1625,9 +1673,12 @@ bool Player::IsDead()
 void Player::HitAttack(int damage)
 {
 	m_hp -= damage;
+	m_estusHeal = 0;
 	m_isAnimation = true;
 	m_isInvincible = true;
+	m_isStickReleaseTrigger = false;
 	m_isAccept = true;
+	m_isHeal = true;
 	m_oldAnimationType = m_animationType;
 	m_animationType = DAMAGED;
 	if (m_hp < 0) { m_hp = 0; }

@@ -83,6 +83,7 @@ private:
 	bool m_isBlend = false;
 	bool m_isAddTimerEase = false;
 	float m_addSpeed = 0.0f;
+	float m_rate = 1.0f;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
@@ -146,6 +147,7 @@ public:	//Setter
 	void SetLoopAnimation(bool isLoop) { animation_loop_flag = isLoop; }
 	void SetAnimationTimerMax();	//あんま意味ないかも
 	void SetAnimationSpeed(float addSpeed, bool isSet);	//0~1
+	void MultiAnimationSpeed(float rate) { m_rate = rate; }
 
 public:	//Getter
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
