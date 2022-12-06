@@ -1093,3 +1093,101 @@ void FbxModels::FetchAnimaton()
 		delete animation_stack_names[animation_stack_index];
 	}
 }
+
+void FbxModels::AddAnimation(const std::string& modelname)
+{
+	//読み込み
+	const std::string filename = modelname + ".fbx";
+	const std::string directoryPath = baseDirectory + modelname + "/";
+	const std::string path = directoryPath + filename;
+
+	name = modelname;
+
+	FbxManager* fbx_manager = fbxsdk::FbxManager::Create();
+	assert(fbx_manager != nullptr);
+
+	FbxImporter* fbx_importer = FbxImporter::Create(fbx_manager, "");
+	if (fbx_importer == nullptr)
+	{
+		fbx_manager->Destroy();
+		assert(0);
+	}
+
+	FbxScene* fbxScene = FbxScene::Create(fbx_manager, "");
+	if (fbxScene == nullptr)
+	{
+		fbx_importer->Destroy();
+		fbx_manager->Destroy();
+		assert(0);
+	}
+
+	fbx_importer->Initialize(path.c_str());
+	fbx_importer->Import(fbxScene);
+
+	FbxGeometryConverter converter(fbx_manager);
+	converter.Triangulate(fbxScene, true);
+	converter.RemoveBadPolygonsFromMeshes(fbxScene);
+
+	//アニメーション抜き取り
+	FbxArray<FbxString*> animation_stack_names;
+
+	fbxScene->FillAnimStackNameArray(animation_stack_names);
+	const int animation_stack_count = animation_stack_names.GetCount();
+
+	for (int animation_stack_index = 0; animation_stack_index < animation_stack_count; ++animation_stack_index)
+	{
+		animation_clips.emplace_back();
+		Animation& animation_clip = animation_clips.back();
+		animation_clip.name = animation_stack_names[animation_stack_index]->Buffer();
+
+		FbxAnimStack* animation_stack = fbxScene->FindMember<FbxAnimStack>(animation_clip.name.c_str());
+		fbxScene->SetCurrentAnimationStack(animation_stack);
+
+		const FbxTime::EMode time_mode{ fbxScene->GetGlobalSettings().GetTimeMode() };
+		FbxTime one_second;
+		one_second.SetTime(0, 0, 1, 0, 0, time_mode);
+		animation_clip.sampling_rate = static_cast<float>(one_second.GetFrameRate(time_mode));
+
+		const FbxTime sampling_interval = static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
+		float fsamplng_interval = one_second.Get() / animation_clip.sampling_rate;
+		const FbxTakeInfo* take_info = fbxScene->GetTakeInfo(animation_clip.name.c_str());
+		const FbxTime start_time = take_info->mLocalTimeSpan.GetStart();
+		const FbxTime stop_time = take_info->mLocalTimeSpan.GetStop();
+
+		float stop = stop_time.GetFrameCount() / animation_clip.sampling_rate;
+		float start = start_time.GetFrameCount() / animation_clip.sampling_rate;
+		animation_clip.seconds_length = stop - start;
+
+		animation_clip.add_time = stop / stop_time.GetFrameCount(FbxTime::EMode::eFrames60);
+
+		for (FbxTime time = start_time; time < stop_time; time += sampling_interval)
+		{
+			animation_clip.keyframes.emplace_back();
+			Keyframe& keyframe = animation_clip.keyframes.back();
+
+			const size_t node_count = nodes.size();
+			keyframe.nodeKeys.resize(node_count);
+
+			float f_time = time.GetFrameCount() / animation_clip.sampling_rate;
+			keyframe.seconds = f_time - start;
+
+			for (size_t node_index = 0; node_index < node_count; ++node_index)
+			{
+				FbxNode* fbx_node = fbxScene->FindNodeByName(nodes.at(node_index).name.c_str());
+				if (fbx_node)
+				{
+					NodeKeyData& node = keyframe.nodeKeys.at(node_index);
+
+					const FbxAMatrix& local_transform = fbx_node->EvaluateLocalTransform(time);
+					node.scale = ToXMFLOAT3(local_transform.GetS());
+					node.rotate = ToXMFLOAT4(local_transform.GetQ());
+					node.translate = ToXMFLOAT3(local_transform.GetT());
+				}
+			}
+		}
+	}
+	for (int animation_stack_index = 0; animation_stack_index < animation_stack_count; ++animation_stack_index)
+	{
+		delete animation_stack_names[animation_stack_index];
+	}
+}

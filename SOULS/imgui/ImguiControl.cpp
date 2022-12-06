@@ -3,11 +3,11 @@
 
 float ImguiControl::Imgui_fov = 60.0f;
 float ImguiControl::Imgui_far_z = 3000.0f;
-float ImguiControl::Imgui_lightColor_r = 1.0f;
-float ImguiControl::Imgui_lightColor_g = 1.0f;
-float ImguiControl::Imgui_lightColor_b = 1.0f;
+float ImguiControl::Imgui_lightColor_r = 0.4f;
+float ImguiControl::Imgui_lightColor_g = 0.4f;
+float ImguiControl::Imgui_lightColor_b = 0.4f;
 float ImguiControl::Imgui_lightDir_x = 0.0f;
-float ImguiControl::Imgui_lightDir_y = 0.0f;
+float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 
 bool ImguiControl::Imgui_isOBBDraw = false;

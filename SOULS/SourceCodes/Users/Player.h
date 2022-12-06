@@ -26,6 +26,9 @@ private:	//自機のパターン
 		STAND,				//待機
 		SLOWRUN,			//低速移動(未使用)
 		RUN,				//移動
+		BACK_RUN,			//ターゲット中
+		R_RUN,
+		L_RUN,
 		NORMAL_ATTACK_1,	//攻撃(連撃非対応←やれ←した)
 		NORMAL_ATTACK_2,
 		NORMAL_ATTACK_3,
@@ -45,7 +48,7 @@ private:		//定数
 	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;			//カメラと自機の距離の最大
 
 private:
-	const int C_ATTACK_COLLISION_TIMER[3] = { 45,35,50 };	//攻撃判定
+	const int C_ATTACK_COLLISION_TIMER[3] = { 40,35,50 };	//攻撃判定
 	const int C_ATTACK_COLLISION_ENDTIMER = 55;				//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレームに変更
 
 	const int C_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
@@ -53,7 +56,7 @@ private:
 	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 5;						//1フレームのスタミナ回復量
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
-	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
+	const float C_MAX_MOVE_SPEED = 0.1f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
 	const float C_MAX_BLEND_TIMER = 0.02f;
@@ -130,9 +133,9 @@ private:	//オブジェクト(Draw用)
 	Object* obj_SwordBox = nullptr;
 	Object* obj_Helmet = nullptr;
 
-	std::array<FbxObjects*, 10> fbxobj_miku = { nullptr };
-	std::array<FbxObjects*, 10> fbxobj_shadowMiku = { nullptr };	//shadow用修正
-	const int C_MIKU_NUM = 10;										//fbx増減時変更
+	std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
+	std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
+	const int C_MIKU_NUM = 13;										//fbx増減時変更
 
 public:
 	Player();

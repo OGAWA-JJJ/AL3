@@ -16,7 +16,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     //シェーディングによる色
     float4 shadecolor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     //光沢度
-    const float shininess = 4.0f;
+    const float shininess = 2.0f;
     //頂点から視点への方向ベクトル
     float3 eyedir = normalize(cameraPos - input.svpos.xyz);
     //ライトに向かうベクトルと法線の内積

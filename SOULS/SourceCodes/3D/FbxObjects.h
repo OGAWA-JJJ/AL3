@@ -141,6 +141,8 @@ public:	//Setter
 
 	void BlendAnimation(FbxObjects* startObject, float rate, bool isBlend);
 
+	void BlendAnimation2(int startIndex, int endindex, float rate, bool isBlend);
+
 	void StopAnimation() { m_isPlay = false; }
 	void ResetAnimation() { current_animation_seconds = 0; }
 	void ReplayAnimation() { m_isPlay = true; }

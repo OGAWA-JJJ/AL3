@@ -107,6 +107,7 @@ public:
 	std::vector<uint64_t>& GetNodeIndices() { return node_indices; }
 	std::vector<Animation>& GetAnimations() { return animation_clips; }
 	void SetMeshNode(Node* meshNode) { this->meshNode = meshNode; }
+	void AddAnimation(const std::string& modelname);
 
 private:
 	static const std::string baseDirectory;

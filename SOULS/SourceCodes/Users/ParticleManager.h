@@ -52,10 +52,16 @@ public:
 	void SetColor(const DirectX::XMFLOAT4 color);
 
 public:
+	void ResetLifeParticle();
+
+public:
 	Object* GetModel() { return m_object; }
 	bool GetIsDraw() { return m_isDraw; }
 	DirectX::XMFLOAT3& GetPower() { return m_particleData.power; }
-	void ResetLifeParticle();
+
+public:
+	void SetNowScale(DirectX::XMFLOAT3 scale) { m_object->SetScale(scale); }
+	DirectX::XMFLOAT3 GetNowPosition() { return m_object->GetPosition(); }
 };
 
 class ParticleManager
@@ -105,5 +111,8 @@ public:
 	int GetMaxParticle() { return m_maxParticle; }
 
 	DirectX::XMFLOAT3& GetPower(const int num) { return m_particles.at(num).GetPower(); }
+
+	DirectX::XMFLOAT3 GetNowPosition(const int num) { return m_particles.at(num).GetNowPosition(); }
+	void SetNowScale(const int num, DirectX::XMFLOAT3 scale) { return m_particles.at(num).SetNowScale(scale); }
 };
 

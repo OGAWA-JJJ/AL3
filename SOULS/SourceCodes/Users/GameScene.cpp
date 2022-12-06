@@ -165,7 +165,7 @@ void GameScene::LuminanceDraw()
 	if (m_gameSceneType == GAME)
 	{
 		m_player->LuminanceDraw();
-		//m_enemy->LuminanceDraw();
+		m_enemy->LuminanceDraw();
 	}
 }
 
@@ -216,19 +216,22 @@ void GameScene::EnemyUpdate()
 	{
 		if (!m_player->IsInvincible())
 		{
-			OBB l_obb = m_enemy->GetAttackOBB();
-			std::vector<OBB> l_obbs = m_player->GetOBBs();
+			std::vector<OBB> l_eObbs = m_enemy->GetAttackOBBs();
+			std::vector<OBB> l_pObbs = m_player->GetOBBs();
 
-			for (int i = 0; i < l_obbs.size(); i++)
+			for (int i = 0; i < l_eObbs.size(); i++)
 			{
-				bool l_isHit = OBBCollision::CollisionOBBs(l_obb, l_obbs[i]);
-				if (l_isHit)
+				for (int j = 0; j < l_pObbs.size(); j++)
 				{
-					m_player->HitAttack(m_enemy->GetPower());
+					bool l_isHit = OBBCollision::CollisionOBBs(l_eObbs[i], l_pObbs[j]);
+					if (l_isHit)
+					{
+						m_player->HitAttack(m_enemy->GetPower());
 
-					//‚Ü‚¾‹ó©“ü‚ê‚½
-					SpriteManager::PlayerDamaged(m_player->GetHpRate());
-					break;
+						//‚Ü‚¾‹ó©“ü‚ê‚½
+						SpriteManager::PlayerDamaged(m_player->GetHpRate());
+						return;
+					}
 				}
 			}
 		}

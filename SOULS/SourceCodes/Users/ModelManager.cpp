@@ -9,6 +9,9 @@ Model* ModelManager::model_helmet = nullptr;
 FbxModels* ModelManager::fbxmodel_standMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_slowRunMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_fastRunMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_backRunMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_rightRunMiku = nullptr;
+FbxModels* ModelManager::fbxmodel_leftRunMiku = nullptr;
 FbxModels* ModelManager::fbxmodel_oneSwrordAttack = nullptr;
 FbxModels* ModelManager::fbxmodel_oneSwrordAttack2 = nullptr;
 FbxModels* ModelManager::fbxmodel_oneSwrordAttack3 = nullptr;
@@ -31,7 +34,7 @@ FbxModels* ModelManager::fbxmodel_LBackCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_explosionCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_riseCreature = nullptr;
 FbxModels* ModelManager::fbxmodel_swingDownCreature = nullptr;
-FbxModels* ModelManager::fbxmodel_swipingCreature = nullptr;
+FbxModels* ModelManager::fbxmodel_tackleCreature = nullptr;
 
 Model* ModelManager::model_circle = nullptr;
 
@@ -85,15 +88,31 @@ void ModelManager::Init()
 	model_helmet = Model::CreateFromObj("knight_Helmet");
 
 	fbxmodel_standMiku = FbxModels::CreateFromFbx("StandMiku", "Miku");
-	fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");
+	fbxmodel_standMiku->AddAnimation("SlowRunMiku");
+	fbxmodel_standMiku->AddAnimation("RunMiku");
+	fbxmodel_standMiku->AddAnimation("BackRunMiku");
+	fbxmodel_standMiku->AddAnimation("RightRunMiku");
+	fbxmodel_standMiku->AddAnimation("LeftRunMiku");
+	fbxmodel_standMiku->AddAnimation("OneSwordAttack");
+	fbxmodel_standMiku->AddAnimation("OneSwordAttack2");
+	fbxmodel_standMiku->AddAnimation("OneSwordAttack3");
+	fbxmodel_standMiku->AddAnimation("DyingMiku");
+	fbxmodel_standMiku->AddAnimation("ImpactMiku");
+	fbxmodel_standMiku->AddAnimation("RollingMiku");
+	fbxmodel_standMiku->AddAnimation("DrinkingMiku");
+
+	/*fbxmodel_slowRunMiku = FbxModels::CreateFromFbx("SlowRunMiku", "Miku");
 	fbxmodel_fastRunMiku = FbxModels::CreateFromFbx("RunMiku", "Miku");
+	fbxmodel_backRunMiku = FbxModels::CreateFromFbx("BackRunMiku", "Miku");
+	fbxmodel_rightRunMiku = FbxModels::CreateFromFbx("RightRunMiku", "Miku");
+	fbxmodel_leftRunMiku = FbxModels::CreateFromFbx("LeftRunMiku", "Miku");
 	fbxmodel_oneSwrordAttack = FbxModels::CreateFromFbx("OneSwordAttack", "Miku");
 	fbxmodel_oneSwrordAttack2 = FbxModels::CreateFromFbx("OneSwordAttack2", "Miku");
 	fbxmodel_oneSwrordAttack3 = FbxModels::CreateFromFbx("OneSwordAttack3", "Miku");
 	fbxmodel_dieMiku = FbxModels::CreateFromFbx("DyingMiku", "Miku");
 	fbxmodel_impactMiku = FbxModels::CreateFromFbx("ImpactMiku", "Miku");
 	fbxmodel_rollingMiku = FbxModels::CreateFromFbx("RollingMiku", "Miku");
-	fbxmodel_drinkingMiku = FbxModels::CreateFromFbx("DrinkingMiku", "Miku");
+	fbxmodel_drinkingMiku = FbxModels::CreateFromFbx("DrinkingMiku", "Miku");*/
 
 	//Enemy
 	fbxmodel_idleCreature = FbxModels::CreateFromFbx("IdleCreature", "Creature");
@@ -109,7 +128,7 @@ void ModelManager::Init()
 	fbxmodel_explosionCreature = FbxModels::CreateFromFbx("ExplosionCreature", "Creature");
 	fbxmodel_riseCreature = FbxModels::CreateFromFbx("RiseCreature", "Creature");
 	fbxmodel_swingDownCreature = FbxModels::CreateFromFbx("SwingDownCreature", "Creature");
-	fbxmodel_swipingCreature = FbxModels::CreateFromFbx("SwipingCreature", "Creature");
+	fbxmodel_tackleCreature = FbxModels::CreateFromFbx("TackleCreature", "Creature");
 
 	model_circle = Model::CreateFromObj("circle");
 

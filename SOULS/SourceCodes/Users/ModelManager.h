@@ -13,6 +13,9 @@ public:	//Player
 	static FbxModels* fbxmodel_standMiku;
 	static FbxModels* fbxmodel_slowRunMiku;
 	static FbxModels* fbxmodel_fastRunMiku;
+	static FbxModels* fbxmodel_backRunMiku;
+	static FbxModels* fbxmodel_rightRunMiku;
+	static FbxModels* fbxmodel_leftRunMiku;
 	static FbxModels* fbxmodel_oneSwrordAttack;
 	static FbxModels* fbxmodel_oneSwrordAttack2;
 	static FbxModels* fbxmodel_oneSwrordAttack3;
@@ -35,7 +38,7 @@ public:	//Enemy
 	static FbxModels* fbxmodel_explosionCreature;
 	static FbxModels* fbxmodel_riseCreature;
 	static FbxModels* fbxmodel_swingDownCreature;
-	static FbxModels* fbxmodel_swipingCreature;
+	static FbxModels* fbxmodel_tackleCreature;
 
 	static Model* model_circle;
 

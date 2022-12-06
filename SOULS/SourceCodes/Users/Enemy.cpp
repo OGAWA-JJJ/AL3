@@ -102,9 +102,8 @@ Enemy::Enemy()
 	fbxobj_creature[AnimationType::SWING_DOWN]->PlayAnimation();
 	fbxobj_creature[AnimationType::SWING_DOWN]->SetLoopAnimation(false);
 
-	fbxobj_creature[AnimationType::TACKLE] = FbxObjects::Create(ModelManager::fbxmodel_swipingCreature);
+	fbxobj_creature[AnimationType::TACKLE] = FbxObjects::Create(ModelManager::fbxmodel_tackleCreature);
 	fbxobj_creature[AnimationType::TACKLE]->PlayAnimation();
-	fbxobj_creature[AnimationType::TACKLE]->SetLoopAnimation(false);
 
 #pragma endregion
 
@@ -220,9 +219,10 @@ void Enemy::Init()
 		ImguiControl::Imgui_enemyOBBScale[i][2] = l_z[i] * addScale;
 	}
 
+	//丸影
 	const float circleScale = 30.0f;
 	obj_circle->SetScale(DirectX::XMFLOAT3(circleScale, circleScale, circleScale));
-	obj_circle->SetColor(DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f));
+	obj_circle->SetColor(DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f));
 }
 
 void Enemy::Update(DirectX::XMFLOAT3 playerPos)
@@ -301,7 +301,7 @@ void Enemy::Draw()
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 
-	obj_circle->Draw(PipelineManager::obj_normal);
+	obj_circle->Draw(PipelineManager::obj_texColorReceice);
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < obj_Box.size(); i++)
@@ -318,10 +318,7 @@ void Enemy::Draw()
 
 void Enemy::LuminanceDraw()
 {
-	if (m_isExplosion)
-	{
-		//pManager_Ex.Draw();
-	}
+	pManager_Ex.Draw();
 }
 
 void Enemy::CalcOBB()
@@ -438,13 +435,20 @@ void Enemy::JudgAnimationType(float dist)
 	}
 	else if (dist > C_MAX_DIST)
 	{
-		//l_rand = l_rand % l_div;
-		/*if (l_rand == 0)
+		l_rand = l_rand % l_div;
+		if (dist < C_MAX_TACKLE_RANGE)
 		{
-			m_isAttack = true;
-			m_animationType = TACKLE;
-			return;
-		}*/
+			if (l_rand == 0)
+			{
+				m_isAttack = true;
+
+				m_isTackleEnd = false;
+				m_tackleCount = 0;
+				m_animationType = TACKLE;
+				fbxobj_creature[TACKLE]->ReplayAnimation();
+				return;
+			}
+		}
 		m_animationType = RUN;
 	}
 	else
@@ -473,7 +477,6 @@ void Enemy::JudgAnimationType(float dist)
 		//	fbxobj_creature[AnimationType::RISE]->SetPosition(m_pos);
 		//	fbxobj_creature[AnimationType::RISE]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
 		//	fbxobj_creature[AnimationType::SWING_DOWN]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-
 		//	fbxobj_creature[AnimationType::RISE]->ResetAnimation();
 		//	fbxobj_creature[AnimationType::SWING_DOWN]->ResetAnimation();
 		//}
@@ -793,35 +796,193 @@ void Enemy::CalcTackle(DirectX::XMFLOAT3& pPos)
 	DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(pPos, m_pos);
 	eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
 
-	//飛ぶ前
-	if (m_animationTimer < c_MaxTackleTimer)
+	//突進前
+	if (m_animationTimer < C_MAX_TACKLE_TIMER)
 	{
 		m_deg = atan2(eDirection.x, eDirection.z);
 		OgaJHelper::ConvertToDegree(m_deg);
 		m_animationTimer++;
-		if (m_animationTimer >= c_MaxTackleTimer)
+		if (m_animationTimer >= C_MAX_TACKLE_TIMER)
 		{
 			m_tackleDirection = eDirection;
 		}
 	}
 	else
 	{
-		//仮
-		if (m_animationTimer < 150)
+		m_pos.x += -m_tackleDirection.x * C_MAX_TACKLE_SPEED;
+		m_pos.z += -m_tackleDirection.z * C_MAX_TACKLE_SPEED;
+
+		float l_dist = OgaJHelper::CalcDist(m_pos, pPos);
+		//突進中
+		if (!m_isTackleRange)
 		{
-			m_pos.x += -m_tackleDirection.x * c_tackleSpeed;
-			m_pos.y += -m_tackleDirection.y * c_tackleSpeed;
-			m_pos.z += -m_tackleDirection.z * c_tackleSpeed;
-			m_animationTimer++;
+			//範囲外(追従)
+			if (l_dist > C_CALC_TACKLE_RANGE)
+			{
+				m_deg = atan2(eDirection.x, eDirection.z);
+				OgaJHelper::ConvertToDegree(m_deg);
+				m_tackleDirection = eDirection;
+			}
+			//範囲内
+			else
+			{
+				m_isCalc = true;
+
+				m_isTackleRange = true;
+				m_tackleDirection = eDirection;
+			}
+		}
+
+		//突進後,範囲外
+		if (m_isTackleRange && l_dist > C_MAX_TACKLE_RANGE)
+		{
+			m_tackleCount++;
+			m_animationTimer = 0;
+			m_isTackleRange = false;
+
+			//何回突進するか
+			if (m_tackleCount >= C_MAX_TACKLE_COUNT)
+			{
+				m_isTackleEnd = true;
+			}
+		}
+
+		//判定外
+		if (l_dist > C_CALC_TACKLE_RANGE)
+		{
+			m_isCalc = false;
+		}
+	}
+}
+
+void Enemy::CalcExplosion()
+{
+	//パーティクル(解放前)
+	const int l_randPosRange = 501;
+	const float l_halfRandPosRange = l_randPosRange * 0.5f;	//-この値から+この値までが範囲になる。
+
+	const int l_createAddFrame = 15;						//何フレーム毎に生成される個数が増えるか。
+	const float l_emitPosY = 100.0f;						//吸収される高さ
+	const float l_power = 1.0f;
+	const float l_addPower = 1.1f;
+	const float l_scale = 2.0f;
+	const float l_colorR = 0.9f;
+	const float l_colorG = 0.9f;
+	const float l_colorB = 0.2f;
+
+	//パーティクル(解放後)
+	const int l_randPowerRange = 81;						//baseに加算される値の範囲,/10.0fされて加算
+	const int l_randScaleRange = 101;						//baseに加算される値の範囲,/10.0fされて加算
+	const int l_randColorRangeR = 21;						//baseに加算される値の範囲,/100.0fされて加算
+	const int l_randColorRangeG = 51;						//baseに加算される値の範囲,/100.0fされて加算
+	const float l_basePower = 3.0f;							//最低値
+	const float l_baseScale = 5.0f;							//最低値
+	const float l_baseColorR = 0.7f;						//最低値
+	const float l_baseColorG = 0.4f;						//最低値
+	const float l_baseColorB = 0.2f;						//最低値
+
+	for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
+	{
+		if (!m_isExplosion)
+		{
+			if (!pManager_Ex.IsMove(i))
+			{
+				DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
+					rand() % l_randPosRange - l_halfRandPosRange,
+					rand() % l_randPosRange - l_halfRandPosRange,
+					rand() % l_randPosRange - l_halfRandPosRange);
+				DirectX::XMFLOAT3 l_pos2 = m_pos;
+				l_pos2.y = l_emitPosY;
+				DirectX::XMFLOAT3 l_vec =
+					OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos, l_pos2));
+
+				pManager_Ex.SetPosition(i, l_pos);
+				pManager_Ex.SetVec(i, l_vec);
+				pManager_Ex.SetPower(i, DirectX::XMFLOAT3(l_power, l_power, l_power));
+				pManager_Ex.SetScale(i, DirectX::XMFLOAT3(l_scale, l_scale, l_scale));
+				pManager_Ex.SetColor(i, DirectX::XMFLOAT4(l_colorR, l_colorG, l_colorB, 1.0f));
+			}
+
+			else
+			{
+				DirectX::XMFLOAT3 l_power = pManager_Ex.GetPower(i);
+				l_power.x *= l_addPower;
+				l_power.y *= l_addPower;
+				l_power.z *= l_addPower;
+				pManager_Ex.SetPower(i, l_power);
+			}
 		}
 		else
 		{
-			m_animationTimer = 0;
-			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
-			float l_dist = OgaJHelper::CalcDist(l_pos, pPos);
-			//JudgAnimationType(l_dist);
+			pManager_Ex.SetIsCreateStop(true);
+
+			if (pManager_Ex.IsMove(i))
+			{
+				if (pManager_Ex.GetNowPosition(i).y < 0)
+				{
+					pManager_Ex.SetNowScale(i, DirectX::XMFLOAT3(0, 0, 0));
+				}
+			}
 		}
 	}
+
+	if (!m_isExplosion &&
+		m_pPowerCount < C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+	{
+		if (m_pPowerCount % l_createAddFrame == 0)
+		{
+			m_createCount++;
+			pManager_Ex.SetCreateNum(m_createCount);
+		}
+		if (m_pPowerCount == C_EXPLOSION_COLLISION_TIMER)
+		{
+			pManager_Ex.SetIsCreateStop(true);
+		}
+		if (m_pPowerCount >= C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY)
+		{
+			m_isExplosion = true;
+			pManager_Ex.SetCreateNum(pManager_Ex.GetMaxParticle());
+			pManager_Ex.SetIsCreateStop(false);
+			pManager_Ex.ResetLifeParticle();
+
+			for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
+			{
+				DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
+					rand() % l_randPosRange - l_halfRandPosRange,
+					rand() % l_randPosRange - l_halfRandPosRange + l_emitPosY,
+					rand() % l_randPosRange - l_halfRandPosRange);
+				DirectX::XMFLOAT3 l_pos2 = m_pos;
+				l_pos2.y = l_emitPosY;
+				DirectX::XMFLOAT3 l_vec =
+					OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos2, l_pos));
+
+				pManager_Ex.SetPosition(i, l_pos2);
+				pManager_Ex.SetVec(i, l_vec);
+				pManager_Ex.SetPower(i, DirectX::XMFLOAT3(
+					l_basePower + (rand() % l_randPowerRange / 10.0f),
+					l_basePower + (rand() % l_randPowerRange / 10.0f),
+					l_basePower + (rand() % l_randPowerRange / 10.0f)));
+				pManager_Ex.SetScale(i, DirectX::XMFLOAT3(
+					l_baseScale + (rand() % l_randScaleRange / 10.0f),
+					l_baseScale + (rand() % l_randScaleRange / 10.0f),
+					l_baseScale + (rand() % l_randScaleRange / 10.0f)));
+				pManager_Ex.SetColor(i, DirectX::XMFLOAT4(
+					l_baseColorR + (rand() % l_randColorRangeR / 100.0f),
+					l_baseColorG + (rand() % l_randColorRangeG / 100.0f),
+					l_baseColorB, 1.0f));
+			}
+		}
+	}
+	else if (m_isExplosion)
+	{
+		if (m_pPowerCount >
+			C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+		{
+			m_isExplosion = false;
+			pManager_Ex.SetIsCreateStop(true);
+		}
+	}
+	m_pPowerCount++;
 }
 
 void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
@@ -928,109 +1089,11 @@ void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
 	}
 	else if (m_animationType == EXPLOSION)
 	{
+		CalcExplosion();
+
 		fbxobj_creature[AnimationType::EXPLOSION]->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
 		fbxobj_creature[AnimationType::EXPLOSION]->SetPosition(m_pos);
 		fbxobj_creature[AnimationType::EXPLOSION]->Update();
-
-		//パーティクル
-		for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
-		{
-			if (!m_isExplosion)
-			{
-				if (!pManager_Ex.IsMove(i))
-				{
-					DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
-						rand() % 501 - 250.0f,
-						rand() % 501 - 250.0f,
-						rand() % 501 - 250.0f);
-					DirectX::XMFLOAT3 l_pos2 = m_pos;
-					l_pos2.y = 100.0f;
-					DirectX::XMFLOAT3 l_vec =
-						OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos, l_pos2));
-
-					pManager_Ex.SetPosition(i, l_pos);
-					pManager_Ex.SetVec(i, l_vec);
-					pManager_Ex.SetPower(i, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
-					pManager_Ex.SetScale(i, DirectX::XMFLOAT3(2.0f, 2.0f, 2.0f));
-					pManager_Ex.SetColor(i, DirectX::XMFLOAT4(0.9f, 0.9f, 0.2f, 1.0f));
-				}
-
-				else
-				{
-					DirectX::XMFLOAT3 l_power = pManager_Ex.GetPower(i);
-					l_power.x *= 1.1f;
-					l_power.y *= 1.1f;
-					l_power.z *= 1.1f;
-					pManager_Ex.SetPower(i, l_power);
-				}
-			}
-			else
-			{
-				if (pManager_Ex.IsMove(i))
-				{
-					pManager_Ex.SetIsCreateStop(true);
-					break;
-				}
-			}
-		}
-
-		if (!m_isExplosion &&
-			m_pPowerCount < C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
-		{
-			if (m_pPowerCount % 15 == 0)
-			{
-				m_createCount++;
-				pManager_Ex.SetCreateNum(m_createCount);
-			}
-			if (m_pPowerCount == C_EXPLOSION_COLLISION_TIMER)
-			{
-				pManager_Ex.SetIsCreateStop(true);
-			}
-			if (m_pPowerCount >= C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY)
-			{
-				m_isExplosion = true;
-				pManager_Ex.SetCreateNum(pManager_Ex.GetMaxParticle());
-				pManager_Ex.SetIsCreateStop(false);
-				pManager_Ex.ResetLifeParticle();
-
-				for (int i = 0; i < pManager_Ex.GetMaxParticle(); i++)
-				{
-					DirectX::XMFLOAT3 l_pos = m_pos + DirectX::XMFLOAT3(
-						rand() % 21 - 10.0f,
-						rand() % 21 - 10.0f + 100.0f,
-						rand() % 21 - 10.0f);
-					DirectX::XMFLOAT3 l_pos2 = m_pos;
-					l_pos2.y = 100.0f;
-					DirectX::XMFLOAT3 l_vec =
-						OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(l_pos2, l_pos));
-
-					pManager_Ex.SetPosition(i, l_pos2);
-					pManager_Ex.SetVec(i, l_vec);
-					pManager_Ex.SetPower(i, DirectX::XMFLOAT3(
-						3.0f + (rand() % 81 / 10.0f),
-						3.0f + (rand() % 81 / 10.0f),
-						3.0f + (rand() % 81 / 10.0f)));
-					pManager_Ex.SetScale(i, DirectX::XMFLOAT3(
-						5.0f + (rand() % 101 / 10.0f),
-						5.0f + (rand() % 101 / 10.0f),
-						5.0f + (rand() % 101 / 10.0f)));
-					pManager_Ex.SetColor(i, DirectX::XMFLOAT4(
-						0.7f + (rand() % 21 / 100.0f),
-						0.4f + (rand() % 51 / 100.0f),
-						0.2f, 1.0f));
-				}
-			}
-		}
-		else if (m_isExplosion)
-		{
-			if (m_pPowerCount >
-				C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
-			{
-				m_isExplosion = false;
-				pManager_Ex.SetIsCreateStop(true);
-			}
-		}
-		m_pPowerCount++;
 
 		if (fbxobj_creature[AnimationType::EXPLOSION]->IsAnimationEnd())
 		{
@@ -1060,10 +1123,8 @@ void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
 		fbxobj_creature[AnimationType::TACKLE]->SetPosition(m_pos);
 		fbxobj_creature[AnimationType::TACKLE]->Update();
 
-		if (fbxobj_creature[AnimationType::TACKLE]->IsAnimationEnd())
+		if (m_isTackleEnd)
 		{
-			fbxobj_creature[AnimationType::RUN]->SetPosition(m_pos);
-			fbxobj_creature[AnimationType::RUN]->Update();
 			m_isAttack = false;
 			CalcNearAngle(pPos, fbxobj_creature[AnimationType::TACKLE]->GetRotation().y);
 		}
@@ -1264,15 +1325,28 @@ void Enemy::HitAttack(int damage)
 	OutputDebugStringA("Hit!\n");
 }
 
-OBB& Enemy::GetAttackOBB()
+std::vector<OBB> Enemy::GetAttackOBBs()
 {
+	std::vector<OBB> l_obb;
 	if (m_animationType == KICK)
 	{
-		return m_obbs[9];
+		l_obb = { m_obbs[9] };
+		return l_obb;
+	}
+	else if (m_animationType == PUNCH)
+	{
+		l_obb = { m_obbs[3] };
+		return l_obb;
+	}
+	else if (m_animationType == R_BACK ||
+		m_animationType == L_BACK)
+	{
+		l_obb = { m_obbs[3],m_obbs[5] };
+		return l_obb;
 	}
 	else
 	{
-		return m_obbs[3];
+		return m_obbs;
 	}
 }
 

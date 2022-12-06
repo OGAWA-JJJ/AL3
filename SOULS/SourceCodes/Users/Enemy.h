@@ -108,8 +108,14 @@ private:
 	bool m_isChange;
 
 	DirectX::XMFLOAT3 m_tackleDirection = {};
-	const int c_MaxTackleTimer = 60;
-	const float c_tackleSpeed = 10.0f;
+	const int C_MAX_TACKLE_TIMER = 60;
+	const int C_MAX_TACKLE_COUNT = 3;
+	const float C_MAX_TACKLE_SPEED = 5.0f;
+	const float C_MAX_TACKLE_RANGE = 200.0f;
+	const float C_CALC_TACKLE_RANGE = 100.0f;
+	int m_tackleCount = 0;
+	bool m_isTackleRange = false;
+	bool m_isTackleEnd = false;
 
 	int m_pPowerCount = 0;
 	int m_createCount = 1;
@@ -147,6 +153,7 @@ public:
 	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
 	void LuminanceDraw();
+	bool BeforeBattleScene();
 
 private:
 	void CalcOBB();
@@ -157,6 +164,7 @@ private:
 	void CalcRise(DirectX::XMFLOAT3& pPos);
 	void CalcSwingDown(DirectX::XMFLOAT3& pPos);
 	void CalcTackle(DirectX::XMFLOAT3& playerPos);
+	void CalcExplosion();
 
 	void OtherUpdate(DirectX::XMFLOAT3& pPos);
 	void SetImgui();
@@ -183,7 +191,7 @@ public:	//Setter
 
 public:	//ŒÄ‚Ô‚â‚Â
 	void HitAttack(int damage);
-	OBB& GetAttackOBB();
+	std::vector<OBB> GetAttackOBBs();
 	bool IsDead();
 	bool IsFighting();
 };
