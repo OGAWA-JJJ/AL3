@@ -303,18 +303,13 @@ void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
 	model->Draw(cmdList, drawSkip);
 }
 
-void FbxObjects::PlayAnimation()
-{
-	m_isPlay = true;
-}
-
 void FbxObjects::UpdateAnimation()
 {
-	m_isAnimationEndTrigger = false;
-	if (!m_isPlay) { return; }
+	animationDatas[m_currentAnimationIndex].m_isAnimationEndTrigger = false;
+	if (!animationDatas[m_currentAnimationIndex].m_isPlay) { return; }
 
 	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
-	const FbxModels::Animation& animation = animations.at(current_animation_index);
+	const FbxModels::Animation& animation = animations.at(m_currentAnimationIndex);
 
 	if (!m_isBlend)
 	{
@@ -324,10 +319,11 @@ void FbxObjects::UpdateAnimation()
 		{
 			const FbxModels::Keyframe& keyframe0 = keyframes.at(keyIndex);
 			const FbxModels::Keyframe& keyframe1 = keyframes.at(keyIndex + 1);
-			if (current_animation_seconds >= keyframe0.seconds &&
-				current_animation_seconds < keyframe1.seconds)
+			if (animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds >= keyframe0.seconds &&
+				animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds < keyframe1.seconds)
 			{
-				float rate = (current_animation_seconds - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
+				float rate = (animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds -
+					keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
 				int nodeCount = static_cast<int>(nodes.size());
 				for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
@@ -360,23 +356,26 @@ void FbxObjects::UpdateAnimation()
 
 	if (!m_isAddTimerEase)
 	{
-		current_animation_seconds += animation.add_time * m_rate;
+		animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds +=
+			animation.add_time;
 	}
 	else
 	{
-		current_animation_seconds = animation.seconds_length * m_addSpeed;
+		animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds =
+			animation.seconds_length * animationDatas[m_currentAnimationIndex].m_addSpeed;
 	}
 
-	if (current_animation_seconds >= animation.seconds_length)
+	if (animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds >= animation.seconds_length)
 	{
-		m_isAnimationEndTrigger = true;
-		if (animation_loop_flag == true)
+		animationDatas[m_currentAnimationIndex].m_isAnimationEndTrigger = true;
+		if (animationDatas[m_currentAnimationIndex].m_animationLoopFlag == true)
 		{
-			current_animation_seconds -= animation.seconds_length;
+			animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds -=
+				animation.seconds_length;
 		}
 		else
 		{
-			m_isPlay = false;
+			animationDatas[m_currentAnimationIndex].m_isPlay = false;
 		}
 	}
 }
@@ -469,7 +468,7 @@ void FbxObjects::UpdateTransform()
 	std::copy(localMatRots.begin(), localMatRots.end(), std::back_inserter(matRots));
 }
 
-void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlend)
+void FbxObjects::BlendAnimation(int startIndex, int endIndex, float rate, bool isBlend)
 {
 	m_isBlend = isBlend;
 	if (!m_isBlend)
@@ -478,16 +477,14 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 	}
 
 	//補間前のアニメーション
-	const std::vector<FbxModels::Animation>& startAnimations =
-		startObject->model->GetAnimations();
+	const std::vector<FbxModels::Animation>& animations =
+		model->GetAnimations();
 	const FbxModels::Animation& startAnimation =
-		startAnimations.at(startObject->current_animation_index);
+		animations.at(startIndex);
 
 	//補間後のアニメーション
-	const std::vector<FbxModels::Animation>& endAnimations =
-		model->GetAnimations();
 	const FbxModels::Animation& endAnimation =
-		endAnimations.at(current_animation_index);
+		animations.at(endIndex);
 
 	//補間前のキーフレーム
 	const std::vector<FbxModels::Keyframe>& startKeyframes = startAnimation.keyframes;
@@ -510,14 +507,14 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 		const FbxModels::Keyframe& startKeyframe1 = startKeyframes.at(keyIndex + 1);
 
 		//補間前計算
-		if (startObject->current_animation_seconds >= startKeyframe0.seconds &&
-			startObject->current_animation_seconds < startKeyframe1.seconds)
+		if (animationDatas[startIndex].m_currentAnimationSeconds >= startKeyframe0.seconds &&
+			animationDatas[startIndex].m_currentAnimationSeconds < startKeyframe1.seconds)
 		{
 			isStartCalc = true;
-			float rate = (startObject->current_animation_seconds - startKeyframe0.seconds) /
+			float rate = (animationDatas[startIndex].m_currentAnimationSeconds - startKeyframe0.seconds) /
 				(startKeyframe1.seconds - startKeyframe0.seconds);
 
-			int nodeCount = static_cast<int>(startObject->nodes.size());
+			int nodeCount = static_cast<int>(nodes.size());
 
 			for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			{
@@ -541,12 +538,12 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 	}
 	if (!isStartCalc)
 	{
-		int nodeCount = static_cast<int>(startObject->nodes.size());
+		int nodeCount = static_cast<int>(nodes.size());
 		for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 		{
-			startScales.push_back(DirectX::XMLoadFloat3(&startObject->nodes[nodeIndex].scale));
-			startRotates.push_back(DirectX::XMLoadFloat4(&startObject->nodes[nodeIndex].rotate));
-			startTranslates.push_back(DirectX::XMLoadFloat3(&startObject->nodes[nodeIndex].translate));
+			startScales.push_back(DirectX::XMLoadFloat3(&nodes[nodeIndex].scale));
+			startRotates.push_back(DirectX::XMLoadFloat4(&nodes[nodeIndex].rotate));
+			startTranslates.push_back(DirectX::XMLoadFloat3(&nodes[nodeIndex].translate));
 		}
 	}
 
@@ -565,11 +562,11 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 		const FbxModels::Keyframe& endKeyframe1 = endKeyframes.at(keyIndex + 1);
 
 		//補間後計算
-		if (current_animation_seconds >= endKeyframe0.seconds &&
-			current_animation_seconds < endKeyframe1.seconds)
+		if (animationDatas[endIndex].m_currentAnimationSeconds >= endKeyframe0.seconds &&
+			animationDatas[endIndex].m_currentAnimationSeconds < endKeyframe1.seconds)
 		{
 			isEndCalc = true;
-			float rate = (current_animation_seconds - endKeyframe0.seconds) /
+			float rate = (animationDatas[endIndex].m_currentAnimationSeconds - endKeyframe0.seconds) /
 				(endKeyframe1.seconds - endKeyframe0.seconds);
 
 			int nodeCount = static_cast<int>(nodes.size());
@@ -622,24 +619,22 @@ void FbxObjects::BlendAnimation(FbxObjects* startObject, float rate, bool isBlen
 	}
 }
 
-void FbxObjects::SetAnimationTimerMax()
-{
-	const std::vector<FbxModels::Animation>& animations = model->GetAnimations();
-	const FbxModels::Animation& animation = animations.at(current_animation_index);
-	const std::vector<FbxModels::Keyframe>& keyframes = animation.keyframes;
-
-	const int endKeyCount = static_cast<int>(keyframes.size());
-	const FbxModels::Keyframe& keyframe = keyframes.at(endKeyCount - 3);
-
-	current_animation_seconds = keyframe.seconds;
-}
-
-void FbxObjects::SetAnimationSpeed(float addSpeed, bool isSet)
+void FbxObjects::SetCurrentAnimationSpeed(float addSpeed, bool isSet)
 {
 	m_isAddTimerEase = isSet;
 	if (!m_isAddTimerEase)
 	{
 		return;
 	}
-	m_addSpeed = addSpeed;
+	animationDatas[m_currentAnimationIndex].m_addSpeed = addSpeed;
+}
+
+void FbxObjects::SetAnimationSpeed(int animationIndex, float addSpeed, bool isSet)
+{
+	m_isAddTimerEase = isSet;
+	if (!m_isAddTimerEase)
+	{
+		return;
+	}
+	animationDatas[animationIndex].m_addSpeed = addSpeed;
 }

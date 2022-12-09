@@ -110,7 +110,7 @@ private:
 	DirectX::XMFLOAT3 m_tackleDirection = {};
 	const int C_MAX_TACKLE_TIMER = 60;
 	const int C_MAX_TACKLE_COUNT = 3;
-	const float C_MAX_TACKLE_SPEED = 5.0f;
+	const float C_MAX_TACKLE_SPEED = 6.0f;
 	const float C_MAX_TACKLE_RANGE = 200.0f;
 	const float C_CALC_TACKLE_RANGE = 100.0f;
 	int m_tackleCount = 0;
@@ -140,7 +140,8 @@ private:	//オブジェクト(Draw用)
 		0,0
 	};
 
-	std::array<FbxObjects*, 13> fbxobj_creature = { nullptr };
+	//std::array<FbxObjects*, 13> fbxobj_creature = { nullptr };
+	FbxObjects* fbxobj_creature = nullptr;
 	const int C_CREATURE_NUM = 13;
 
 	Object* obj_circle = nullptr;

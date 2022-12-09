@@ -7,6 +7,7 @@
 #include "../Math/OBBCollision.h"
 #include "SpriteManager.h"
 #include "../Input/Input.h"
+#include "ModelManager.h"
 
 GameScene::GameScene()
 {

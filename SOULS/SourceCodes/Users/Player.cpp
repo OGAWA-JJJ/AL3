@@ -70,96 +70,57 @@ Player::Player()
 	obj_Helmet->SetPosition(DirectX::XMFLOAT3(0.0f, 3.03f, 0.0f));
 
 	//Fbx
-	fbxobj_miku[STAND] = FbxObjects::Create(ModelManager::fbxmodel_standMiku);
-	fbxobj_miku[STAND]->PlayAnimation();
+	fbxobj_miku = FbxObjects::Create(ModelManager::fbxmodel_mikus);
+	fbxobj_miku->PlayAnimation(STAND);
+	fbxobj_miku->PlayAnimation(SLOWRUN);
+	fbxobj_miku->PlayAnimation(RUN);
+	fbxobj_miku->PlayAnimation(BACK_RUN);
+	fbxobj_miku->PlayAnimation(R_RUN);
+	fbxobj_miku->PlayAnimation(L_RUN);
 
-	fbxobj_miku[SLOWRUN] = FbxObjects::Create(ModelManager::fbxmodel_slowRunMiku);
-	fbxobj_miku[SLOWRUN]->PlayAnimation();
+	fbxobj_miku->StopAnimation(NORMAL_ATTACK_1);
+	fbxobj_miku->SetLoopAnimation(NORMAL_ATTACK_1, false);
 
-	fbxobj_miku[RUN] = FbxObjects::Create(ModelManager::fbxmodel_fastRunMiku);
-	fbxobj_miku[RUN]->PlayAnimation();
+	fbxobj_miku->StopAnimation(NORMAL_ATTACK_2);
+	fbxobj_miku->SetLoopAnimation(NORMAL_ATTACK_2, false);
 
-	fbxobj_miku[BACK_RUN] = FbxObjects::Create(ModelManager::fbxmodel_backRunMiku);
-	fbxobj_miku[BACK_RUN]->PlayAnimation();
+	fbxobj_miku->StopAnimation(NORMAL_ATTACK_3);
+	fbxobj_miku->SetLoopAnimation(NORMAL_ATTACK_3, false);
 
-	fbxobj_miku[R_RUN] = FbxObjects::Create(ModelManager::fbxmodel_rightRunMiku);
-	fbxobj_miku[R_RUN]->PlayAnimation();
+	fbxobj_miku->StopAnimation(DIE);
+	fbxobj_miku->PlayAnimation(DAMAGED);
 
-	fbxobj_miku[L_RUN] = FbxObjects::Create(ModelManager::fbxmodel_leftRunMiku);
-	fbxobj_miku[L_RUN]->PlayAnimation();
+	fbxobj_miku->StopAnimation(ROLLING);
+	fbxobj_miku->SetLoopAnimation(ROLLING, false);
 
-	fbxobj_miku[NORMAL_ATTACK_1] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack);
-	fbxobj_miku[NORMAL_ATTACK_1]->PlayAnimation();
-	fbxobj_miku[NORMAL_ATTACK_1]->StopAnimation();
-
-	fbxobj_miku[NORMAL_ATTACK_2] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack2);
-	fbxobj_miku[NORMAL_ATTACK_2]->PlayAnimation();
-	fbxobj_miku[NORMAL_ATTACK_2]->StopAnimation();
-	fbxobj_miku[NORMAL_ATTACK_2]->SetLoopAnimation(false);
-
-	fbxobj_miku[NORMAL_ATTACK_3] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack3);
-	fbxobj_miku[NORMAL_ATTACK_3]->PlayAnimation();
-	fbxobj_miku[NORMAL_ATTACK_3]->StopAnimation();
-	fbxobj_miku[NORMAL_ATTACK_3]->SetLoopAnimation(false);
-
-	fbxobj_miku[DIE] = FbxObjects::Create(ModelManager::fbxmodel_dieMiku);
-	fbxobj_miku[DIE]->PlayAnimation();
-
-	fbxobj_miku[DAMAGED] = FbxObjects::Create(ModelManager::fbxmodel_impactMiku);
-	fbxobj_miku[DAMAGED]->PlayAnimation();
-
-	fbxobj_miku[ROLLING] = FbxObjects::Create(ModelManager::fbxmodel_rollingMiku);
-	fbxobj_miku[ROLLING]->PlayAnimation();
-	fbxobj_miku[ROLLING]->SetLoopAnimation(false);
-
-	fbxobj_miku[HEAL] = FbxObjects::Create(ModelManager::fbxmodel_drinkingMiku);
-	fbxobj_miku[HEAL]->PlayAnimation();
+	fbxobj_miku->PlayAnimation(HEAL);
 
 	//Fbx(Shadow)
-	fbxobj_shadowMiku[STAND] = FbxObjects::Create(ModelManager::fbxmodel_standMiku);
-	fbxobj_shadowMiku[STAND]->PlayAnimation();
+	fbxobj_shadowMiku = FbxObjects::Create(ModelManager::fbxmodel_mikus);
 
-	fbxobj_shadowMiku[SLOWRUN] = FbxObjects::Create(ModelManager::fbxmodel_slowRunMiku);
-	fbxobj_shadowMiku[SLOWRUN]->PlayAnimation();
+	fbxobj_shadowMiku->PlayAnimation(STAND);
+	fbxobj_shadowMiku->PlayAnimation(SLOWRUN);
+	fbxobj_shadowMiku->PlayAnimation(RUN);
+	fbxobj_shadowMiku->PlayAnimation(BACK_RUN);
+	fbxobj_shadowMiku->PlayAnimation(R_RUN);
+	fbxobj_shadowMiku->PlayAnimation(L_RUN);
 
-	fbxobj_shadowMiku[RUN] = FbxObjects::Create(ModelManager::fbxmodel_fastRunMiku);
-	fbxobj_shadowMiku[RUN]->PlayAnimation();
+	fbxobj_shadowMiku->StopAnimation(NORMAL_ATTACK_1);
+	fbxobj_shadowMiku->SetLoopAnimation(NORMAL_ATTACK_1, false);
 
-	fbxobj_shadowMiku[BACK_RUN] = FbxObjects::Create(ModelManager::fbxmodel_backRunMiku);
-	fbxobj_shadowMiku[BACK_RUN]->PlayAnimation();
+	fbxobj_shadowMiku->StopAnimation(NORMAL_ATTACK_2);
+	fbxobj_shadowMiku->SetLoopAnimation(NORMAL_ATTACK_2, false);
 
-	fbxobj_shadowMiku[R_RUN] = FbxObjects::Create(ModelManager::fbxmodel_rightRunMiku);
-	fbxobj_shadowMiku[R_RUN]->PlayAnimation();
+	fbxobj_shadowMiku->StopAnimation(NORMAL_ATTACK_3);
+	fbxobj_shadowMiku->SetLoopAnimation(NORMAL_ATTACK_3, false);
 
-	fbxobj_shadowMiku[L_RUN] = FbxObjects::Create(ModelManager::fbxmodel_leftRunMiku);
-	fbxobj_shadowMiku[L_RUN]->PlayAnimation();
+	fbxobj_shadowMiku->StopAnimation(DIE);
+	fbxobj_shadowMiku->StopAnimation(DAMAGED);
 
-	fbxobj_shadowMiku[NORMAL_ATTACK_1] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack);
-	fbxobj_shadowMiku[NORMAL_ATTACK_1]->PlayAnimation();
-	fbxobj_shadowMiku[NORMAL_ATTACK_1]->StopAnimation();
+	fbxobj_shadowMiku->StopAnimation(ROLLING);
+	fbxobj_shadowMiku->SetLoopAnimation(ROLLING, false);
 
-	fbxobj_shadowMiku[NORMAL_ATTACK_2] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack2);
-	fbxobj_shadowMiku[NORMAL_ATTACK_2]->PlayAnimation();
-	fbxobj_shadowMiku[NORMAL_ATTACK_2]->StopAnimation();
-	fbxobj_shadowMiku[NORMAL_ATTACK_2]->SetLoopAnimation(false);
-
-	fbxobj_shadowMiku[NORMAL_ATTACK_3] = FbxObjects::Create(ModelManager::fbxmodel_oneSwrordAttack3);
-	fbxobj_shadowMiku[NORMAL_ATTACK_3]->PlayAnimation();
-	fbxobj_shadowMiku[NORMAL_ATTACK_3]->StopAnimation();
-	fbxobj_shadowMiku[NORMAL_ATTACK_3]->SetLoopAnimation(false);
-
-	fbxobj_shadowMiku[DIE] = FbxObjects::Create(ModelManager::fbxmodel_dieMiku);
-	fbxobj_shadowMiku[DIE]->PlayAnimation();
-
-	fbxobj_shadowMiku[DAMAGED] = FbxObjects::Create(ModelManager::fbxmodel_impactMiku);
-	fbxobj_shadowMiku[DAMAGED]->PlayAnimation();
-
-	fbxobj_shadowMiku[ROLLING] = FbxObjects::Create(ModelManager::fbxmodel_rollingMiku);
-	fbxobj_shadowMiku[ROLLING]->PlayAnimation();
-	fbxobj_shadowMiku[ROLLING]->SetLoopAnimation(false);
-
-	fbxobj_shadowMiku[HEAL] = FbxObjects::Create(ModelManager::fbxmodel_drinkingMiku);
-	fbxobj_shadowMiku[HEAL]->PlayAnimation();
+	fbxobj_shadowMiku->PlayAnimation(HEAL);
 
 #pragma endregion
 
@@ -173,34 +134,31 @@ Player::Player()
 	obj_ShadowSword->SetScale(XMFLOAT3(Sword_Scale, Sword_Scale, Sword_Scale));
 
 	//Fbx
-	for (int i = 0; i < C_MIKU_NUM; i++)
-	{
-		fbxobj_miku[i]->SetPosition(XMFLOAT3(0, 0, 0));
-		fbxobj_miku[i]->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
-		fbxobj_miku[i]->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxobj_miku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_miku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_miku->SetRotation(XMFLOAT3(0, 0, 0));
 
-		fbxobj_shadowMiku[i]->SetPosition(XMFLOAT3(0, 0, 0));
-		fbxobj_shadowMiku[i]->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
-		fbxobj_shadowMiku[i]->SetRotation(XMFLOAT3(0, 0, 0));
+	fbxobj_shadowMiku->SetPosition(XMFLOAT3(0, 0, 0));
+	fbxobj_shadowMiku->SetScale(XMFLOAT3(Miku_Scale, Miku_Scale, Miku_Scale));
+	fbxobj_shadowMiku->SetRotation(XMFLOAT3(0, 0, 0));
 
-		fbxobj_miku[i]->SetDrawSkipNum(3);
-		fbxobj_miku[i]->SetDrawSkipNum(4);
-		fbxobj_miku[i]->SetDrawSkipNum(5);
-		fbxobj_miku[i]->SetDrawSkipNum(6);
-		fbxobj_miku[i]->SetDrawSkipNum(7);
-		fbxobj_miku[i]->SetDrawSkipNum(10);
-		fbxobj_miku[i]->SetDrawSkipNum(12);
-		fbxobj_miku[i]->SetDrawSkipNum(14);
+	fbxobj_miku->SetDrawSkipNum(3);
+	fbxobj_miku->SetDrawSkipNum(4);
+	fbxobj_miku->SetDrawSkipNum(5);
+	fbxobj_miku->SetDrawSkipNum(6);
+	fbxobj_miku->SetDrawSkipNum(7);
+	fbxobj_miku->SetDrawSkipNum(10);
+	fbxobj_miku->SetDrawSkipNum(12);
+	fbxobj_miku->SetDrawSkipNum(14);
 
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(3);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(4);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(5);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(6);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(7);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(10);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(12);
-		fbxobj_shadowMiku[i]->SetDrawSkipNum(14);
-	}
+	fbxobj_shadowMiku->SetDrawSkipNum(3);
+	fbxobj_shadowMiku->SetDrawSkipNum(4);
+	fbxobj_shadowMiku->SetDrawSkipNum(5);
+	fbxobj_shadowMiku->SetDrawSkipNum(6);
+	fbxobj_shadowMiku->SetDrawSkipNum(7);
+	fbxobj_shadowMiku->SetDrawSkipNum(10);
+	fbxobj_shadowMiku->SetDrawSkipNum(12);
+	fbxobj_shadowMiku->SetDrawSkipNum(14);
 
 #pragma endregion
 }
@@ -218,11 +176,8 @@ Player::~Player()
 
 	delete obj_SwordBox;
 
-	for (int i = 0; i < C_MIKU_NUM; i++)
-	{
-		delete fbxobj_miku[i];
-		delete fbxobj_shadowMiku[i];
-	}
+	delete fbxobj_miku;
+	delete fbxobj_shadowMiku;
 }
 
 void Player::Init()
@@ -236,12 +191,6 @@ void Player::Init()
 		310.0f,
 		300.0f,
 		310.0f));
-
-	//Miku
-	for (int i = 0; i < C_MIKU_NUM; i++)
-	{
-		fbxobj_miku[i]->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-	}
 
 	m_cameraY = 50.0f;
 
@@ -326,16 +275,16 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 {
 	if (IsDead())
 	{
-		if (fbxobj_miku[AnimationType::DIE]->IsAnimationEnd())
+		if (fbxobj_miku->IsAnimationEnd(AnimationType::DIE))
 		{
-			fbxobj_miku[AnimationType::DIE]->StopAnimation();
-			fbxobj_shadowMiku[AnimationType::DIE]->StopAnimation();
+			fbxobj_miku->StopAnimation(AnimationType::DIE);
+			fbxobj_shadowMiku->StopAnimation(AnimationType::DIE);
 		}
 
-		fbxobj_miku[AnimationType::DIE]->SetPosition(m_pos);
-		fbxobj_shadowMiku[AnimationType::DIE]->SetPosition(m_pos);
-		fbxobj_miku[AnimationType::DIE]->Update();
-		fbxobj_shadowMiku[AnimationType::DIE]->Update();
+		fbxobj_miku->SetPosition(m_pos);
+		fbxobj_shadowMiku->SetPosition(m_pos);
+		fbxobj_miku->Update();
+		fbxobj_shadowMiku->Update();
 		return;
 	}
 
@@ -346,11 +295,11 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	XMFLOAT3 targetPos = Camera::GetTarget();
 
 	XMFLOAT3 enemyToPlayer =
-		OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_miku[m_animationType]->GetPosition());
+		OgaJHelper::CalcDirectionVec3(enemyPos, fbxobj_miku->GetPosition());
 	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
 
 	m_cameraToPlayer =
-		OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_miku[m_animationType]->GetPosition());
+		OgaJHelper::CalcDirectionVec3(Camera::GetEye(), fbxobj_miku->GetPosition());
 	m_cameraToPlayer = OgaJHelper::CalcNormalizeVec3(m_cameraToPlayer);
 
 	//ターゲット非固定時処理
@@ -407,11 +356,8 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					Camera::SetEye(cameraPos);
 					Camera::SetTarget(targetPos);
 
-					for (int i = 0; i < C_MIKU_NUM; i++)
-					{
-						fbxobj_miku[i]->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-						fbxobj_shadowMiku[i]->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
-					}
+					fbxobj_miku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+					fbxobj_shadowMiku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 				}
 			}
 
@@ -430,7 +376,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 #pragma region Camera
 			//仮カメラターゲット処理
 			//自分にセット
-			DirectX::XMFLOAT3 pos = fbxobj_miku[STAND]->GetPosition();
+			DirectX::XMFLOAT3 pos = fbxobj_miku->GetPosition();
 			pos.y = Camera::GetEye().y;
 			DirectX::XMFLOAT3 cameraToPlayer = OgaJHelper::CalcDirectionVec3(Camera::GetEye(), pos);
 			cameraToPlayer = OgaJHelper::CalcNormalizeVec3(cameraToPlayer);
@@ -438,7 +384,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			cameraToPlayer.x *= dist;
 			cameraToPlayer.y *= dist;
 			cameraToPlayer.z *= dist;
-			m_cameraTarget = fbxobj_miku[STAND]->GetPosition() + cameraToPlayer;
+			m_cameraTarget = fbxobj_miku->GetPosition() + cameraToPlayer;
 			if (!m_isEase)
 			{
 				Camera::SetTarget(m_cameraTarget);
@@ -450,7 +396,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			{
 				//ここをどうにかしたい,targetは最悪補完かける
 				XMFLOAT3 playerToCamera = OgaJHelper::CalcDirectionVec3(
-					fbxobj_miku[AnimationType::STAND]->GetPosition(),
+					fbxobj_miku->GetPosition(),
 					Camera::GetEye());
 				playerToCamera = OgaJHelper::CalcNormalizeVec3(playerToCamera);
 
@@ -882,31 +828,27 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			Camera::SetEye(GoalCameraEye);
 		}
 
-		//向き
-		float pRadian = atan2(
-			cosf(fbxobj_miku[AnimationType::STAND]->GetRotation().z),
-			sinf(fbxobj_miku[AnimationType::STAND]->GetRotation().x));
-		OgaJHelper::ConvertToDegree(pRadian);
-		float cRadian = atan2(m_cameraToPlayer.z, m_cameraToPlayer.x);
-		OgaJHelper::ConvertToDegree(cRadian);
-		float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
-		float diff = 0;
-		if (fbxobj_miku[AnimationType::STAND]->GetRotation().y - rot > 0) { diff = 0.2f; }
-		else if (fbxobj_miku[AnimationType::STAND]->GetRotation().y - rot < 0) { diff = -0.2f; }
-
-		DirectX::XMFLOAT3 l_rot = {
-			fbxobj_miku[AnimationType::STAND]->GetRotation().x,
-			rot + diff,
-			fbxobj_miku[AnimationType::STAND]->GetRotation().z
-		};
-
-		for (int i = 0; i < C_MIKU_NUM; i++)
+		if (m_animationType != ROLLING)
 		{
-			if (i != AnimationType::ROLLING)
-			{
-				fbxobj_miku[i]->SetRotation(l_rot);
-				fbxobj_shadowMiku[i]->SetRotation(l_rot);
-			}
+			//向き
+			float pRadian = atan2(
+				cosf(fbxobj_miku->GetRotation().z),
+				sinf(fbxobj_miku->GetRotation().x));
+			OgaJHelper::ConvertToDegree(pRadian);
+			float cRadian = atan2(m_cameraToPlayer.z, m_cameraToPlayer.x);
+			OgaJHelper::ConvertToDegree(cRadian);
+			float rot = OgaJHelper::RotateEarliestArc(pRadian, cRadian) * -1;
+			float diff = 0;
+			if (fbxobj_miku->GetRotation().y - rot > 0) { diff = 0.2f; }
+			else if (fbxobj_miku->GetRotation().y - rot < 0) { diff = -0.2f; }
+
+			DirectX::XMFLOAT3 l_rot = {
+				fbxobj_miku->GetRotation().x,
+				rot + diff,
+				fbxobj_miku->GetRotation().z
+			};
+			fbxobj_miku->SetRotation(l_rot);
+			fbxobj_shadowMiku->SetRotation(l_rot);
 		}
 	}
 
@@ -985,15 +927,9 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 
 void Player::Draw()
 {
-	if (IsDead())
-	{
-		fbxobj_miku[AnimationType::DIE]->Draw(PipelineManager::fbx_normal);
-		return;
-	}
-
 	if (ImguiControl::Imgui_isPlayerDraw)
 	{
-		fbxobj_miku[m_animationType]->Draw(PipelineManager::fbx_normal);
+		fbxobj_miku->Draw(PipelineManager::fbx_normal);
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
@@ -1038,15 +974,9 @@ void Player::LuminanceDraw()
 
 void Player::ShadowDraw()
 {
-	if (IsDead())
-	{
-		fbxobj_shadowMiku[AnimationType::DIE]->Draw(PipelineManager::fbx_shadow);
-		return;
-	}
-
 	if (ImguiControl::Imgui_isPlayerDraw)
 	{
-		fbxobj_shadowMiku[m_animationType]->Draw(PipelineManager::fbx_shadow);
+		fbxobj_shadowMiku->Draw(PipelineManager::fbx_shadow);
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
@@ -1147,11 +1077,8 @@ void Player::Input()
 
 void Player::Setter()
 {
-	for (int i = 0; i < C_MIKU_NUM; i++)
-	{
-		fbxobj_miku[i]->SetPosition(m_pos);
-		fbxobj_shadowMiku[i]->SetPosition(m_pos);
-	}
+	fbxobj_miku->SetPosition(m_pos);
+	fbxobj_shadowMiku->SetPosition(m_pos);
 }
 
 void Player::CalcOBB()
@@ -1186,7 +1113,7 @@ void Player::CalcOBB()
 			obj_SwordBox->GetMatWorld().r[3].m128_f32[2] };
 
 		swordOBB.pos = pos;
-		swordOBB.matrix = fbxobj_miku[m_animationType]->GetMatrix();
+		swordOBB.matrix = fbxobj_miku->GetMatrix();
 		swordOBB.length = obj_SwordBox->GetScale();
 		m_obb = swordOBB;
 	}
@@ -1211,79 +1138,81 @@ void Player::CalcOBB()
 
 void Player::OtherUpdate()
 {
+	//Update
+	fbxobj_miku->SetAnimationIndex(m_animationType);
+	fbxobj_shadowMiku->SetAnimationIndex(m_animationType);
+
+	fbxobj_miku->Update();
+	fbxobj_shadowMiku->Update(true);
+
 	//Current
-	if (m_animationType == STAND)
+	switch (m_animationType)
+	{
+	case STAND:
 	{
 		ImguiControl::Imgui_playerAniType = "STAND";
+		break;
 	}
-	else if (m_animationType == SLOWRUN)
+	case SLOWRUN:
 	{
 		ImguiControl::Imgui_playerAniType = "SLOWRUN";
+		break;
 	}
-	else if (m_animationType == RUN)
+	case RUN:
 	{
 		ImguiControl::Imgui_playerAniType = "RUN";
+		break;
 	}
-	else if (m_animationType == BACK_RUN)
+	case BACK_RUN:
 	{
 		ImguiControl::Imgui_playerAniType = "BACK_RUN";
+		break;
 	}
-	else if (m_animationType == R_RUN)
+	case R_RUN:
 	{
 		ImguiControl::Imgui_playerAniType = "R_RUN";
+		break;
 	}
-	else if (m_animationType == L_RUN)
+	case L_RUN:
 	{
 		ImguiControl::Imgui_playerAniType = "L_RUN";
+		break;
 	}
-	else if (m_animationType >= NORMAL_ATTACK_1 &&
-		m_animationType <= NORMAL_ATTACK_3)
+	case NORMAL_ATTACK_1:
 	{
-		//攻撃力
-		m_power = C_MAX_POWER[m_animationType - 3];
+		CalcAttack();
 
-		//最大までのフレーム数
-		float l_frame = fbxobj_miku[m_animationType]->GetEndTime() / fbxobj_miku[m_animationType]->GetAddTime();
-		fbxobj_miku[m_animationType]->SetAnimationSpeed(OgaJEase::easeInSine(m_attackEase), true);
-		fbxobj_shadowMiku[m_animationType]->SetAnimationSpeed(OgaJEase::easeInSine(m_attackEase), true);
-		if (m_attackEase < 1.0f)
-		{
-			m_attackEase += 1.0f / l_frame;
-		}
-		else
-		{
-			m_attackEase = 1.0f;
-		}
-
-		//攻撃アニメーション中断ローリング
-		if (!m_isAccept)
-		{
-			if (fbxobj_miku[m_animationType]->GetNowTime() >=
-				fbxobj_miku[m_animationType]->GetAddTime() * C_ATTACK_COLLISION_ENDTIMER)
-			{
-				m_isAttack = false;
-				m_isAccept = true;
-				m_isHeal = true;
-			}
-		}
-
-		if (fbxobj_miku[m_animationType]->IsAnimationEnd())
-		{
-			m_isAnimation = false;
-			m_isAttack = false;
-		}
+		ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_1";
+		break;
 	}
-	else if (m_animationType == DAMAGED)
+	case NORMAL_ATTACK_2:
+	{
+		CalcAttack();
+
+		ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_2";
+		break;
+	}
+	case NORMAL_ATTACK_3:
+	{
+		CalcAttack();
+
+		ImguiControl::Imgui_playerAniType = "NORMAL_ATTACK_3";
+		break;
+	}
+	case DAMAGED:
 	{
 		if (m_isAttack) { m_isAttack = false; }
 
-		if (fbxobj_miku[AnimationType::DAMAGED]->IsAnimationEnd())
+		if (fbxobj_miku->IsAnimationEnd(m_animationType))
 		{
 			m_isAnimation = false;
 			m_isInvincible = false;
 		}
+
+		ImguiControl::Imgui_playerAniType = "DAMAGED";
+		break;
 	}
-	else if (m_animationType == ROLLING)
+	case ROLLING:
 	{
 		float l_addPosX = m_rollingAngle.x * C_MAX_MOVE_SPEED;
 		float l_addPosZ = m_rollingAngle.z * C_MAX_MOVE_SPEED;
@@ -1299,36 +1228,40 @@ void Player::OtherUpdate()
 			Camera::SetTarget(m_cameraTarget);
 		}
 
-		fbxobj_miku[AnimationType::ROLLING]->SetPosition(m_pos);
-		fbxobj_shadowMiku[AnimationType::ROLLING]->SetPosition(m_pos);
+		fbxobj_miku->SetPosition(m_pos);
+		fbxobj_shadowMiku->SetPosition(m_pos);
 
-		if (fbxobj_miku[AnimationType::ROLLING]->IsAnimationEnd())
+		if (fbxobj_miku->IsAnimationEnd(m_animationType))
 		{
 			m_isAnimation = false;
 			m_isInvincible = false;
 		}
+
+		ImguiControl::Imgui_playerAniType = "ROLLING";
+		break;
 	}
-	else if (m_animationType == HEAL)
+	case HEAL:
 	{
 		if (!m_isEstus)
 		{
 			CalcHeal();
 		}
 
-		if (fbxobj_miku[AnimationType::HEAL]->IsAnimationEnd())
+		if (fbxobj_miku->IsAnimationEnd(m_animationType))
 		{
 			m_isAnimation = false;
 		}
-	}
 
-	fbxobj_miku[m_animationType]->Update();
-	fbxobj_shadowMiku[m_animationType]->Update(true);
+		ImguiControl::Imgui_playerAniType = "HEAL";
+		break;
+	}
+	}
 
 	//Imgui
 	SetImgui();
 
-	bones = fbxobj_miku[m_animationType]->GetAffineTrans();
-	matRot = fbxobj_miku[m_animationType]->GetMatRots();
+	bones = fbxobj_miku->GetAffineTrans();
+	matRot = fbxobj_miku->GetMatRots();
 	int i = 0;
 	int l_eraseCount = 0;
 	while (1)
@@ -1353,41 +1286,37 @@ void Player::OtherUpdate()
 	{
 		if (ImguiControl::isHel)
 		{
-			for (int i = 0; i < C_MIKU_NUM; i++)
-			{
-				fbxobj_miku[i]->SetDrawSkipNum(3);
-				fbxobj_miku[i]->SetDrawSkipNum(4);
-				fbxobj_miku[i]->SetDrawSkipNum(5);
-				fbxobj_miku[i]->SetDrawSkipNum(6);
-				fbxobj_miku[i]->SetDrawSkipNum(7);
-				fbxobj_miku[i]->SetDrawSkipNum(10);
-				fbxobj_miku[i]->SetDrawSkipNum(12);
-				fbxobj_miku[i]->SetDrawSkipNum(14);
+			fbxobj_miku->SetDrawSkipNum(3);
+			fbxobj_miku->SetDrawSkipNum(4);
+			fbxobj_miku->SetDrawSkipNum(5);
+			fbxobj_miku->SetDrawSkipNum(6);
+			fbxobj_miku->SetDrawSkipNum(7);
+			fbxobj_miku->SetDrawSkipNum(10);
+			fbxobj_miku->SetDrawSkipNum(12);
+			fbxobj_miku->SetDrawSkipNum(14);
 
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(3);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(4);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(5);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(6);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(7);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(10);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(12);
-				fbxobj_shadowMiku[i]->SetDrawSkipNum(14);
-			}
+			fbxobj_shadowMiku->SetDrawSkipNum(3);
+			fbxobj_shadowMiku->SetDrawSkipNum(4);
+			fbxobj_shadowMiku->SetDrawSkipNum(5);
+			fbxobj_shadowMiku->SetDrawSkipNum(6);
+			fbxobj_shadowMiku->SetDrawSkipNum(7);
+			fbxobj_shadowMiku->SetDrawSkipNum(10);
+			fbxobj_shadowMiku->SetDrawSkipNum(12);
+			fbxobj_shadowMiku->SetDrawSkipNum(14);
 		}
 		else
 		{
-			for (int i = 0; i < C_MIKU_NUM; i++)
-			{
-				fbxobj_miku[i]->ResetDrawSkipNum();
-				fbxobj_shadowMiku[i]->ResetDrawSkipNum();
-			}
+
+			fbxobj_miku->ResetDrawSkipNum();
+			fbxobj_shadowMiku->ResetDrawSkipNum();
+
 		}
 	}
 	m_isHelmet = ImguiControl::isHel;
 
 	obj_Helmet->MultiMatrix(bones[2].second);
-	obj_Sword->MultiMatrix(fbxobj_miku[m_animationType]->GetMatrix());
-	obj_ShadowSword->MultiMatrix(fbxobj_miku[m_animationType]->GetMatrix());
+	obj_Sword->MultiMatrix(fbxobj_miku->GetMatrix());
+	obj_ShadowSword->MultiMatrix(fbxobj_miku->GetMatrix());
 
 	obj_Helmet->Update();
 	obj_Sword->Update();
@@ -1404,8 +1333,10 @@ void Player::CalcBlendAnimation()
 		m_blendTimer = 0.0f;
 		m_isChange = true;
 		m_keepAnimationType = m_animationType;
-		fbxobj_miku[m_animationType]->ResetAnimation();
-		fbxobj_shadowMiku[m_animationType]->ResetAnimation();
+		fbxobj_miku->ResetAnimation(m_animationType);
+		fbxobj_shadowMiku->ResetAnimation(m_animationType);
+		fbxobj_miku->SetAnimationSpeed(0, 0, false);
+		fbxobj_shadowMiku->SetAnimationSpeed(0, 0, false);
 	}
 
 	//補間計算
@@ -1415,17 +1346,15 @@ void Player::CalcBlendAnimation()
 		if (m_animationType != m_keepAnimationType)
 		{
 			m_blendTimer = 0.0f;
-			//m_oldAnimationType = m_animationType;
 			m_keepAnimationType = m_animationType;
-			fbxobj_miku[m_animationType]->ResetAnimation();
-			fbxobj_shadowMiku[m_animationType]->ResetAnimation();
+			fbxobj_miku->ResetAnimation(m_animationType);
+			fbxobj_shadowMiku->ResetAnimation(m_animationType);
 		}
 
 		//タイマー計算
 		else if (m_blendTimer < 1.0f)
 		{
 			m_blendTimer += C_MAX_BLEND_TIMER;
-			//fbxobj_creature[m_oldAnimationType]->Update();
 			if (m_blendTimer > 1.0f)
 			{
 				m_blendTimer = 1.0f;
@@ -1440,10 +1369,47 @@ void Player::CalcBlendAnimation()
 		}
 	}
 
-	fbxobj_miku[m_animationType]->
-		BlendAnimation(fbxobj_miku[m_oldAnimationType], OgaJEase::easeOutCubic(m_blendTimer), true);
-	fbxobj_shadowMiku[m_animationType]->
-		BlendAnimation(fbxobj_shadowMiku[m_oldAnimationType], OgaJEase::easeOutCubic(m_blendTimer), true);
+	fbxobj_miku->
+		BlendAnimation(m_oldAnimationType, m_animationType, OgaJEase::easeOutCubic(m_blendTimer), true);
+	fbxobj_shadowMiku->
+		BlendAnimation(m_oldAnimationType, m_animationType, OgaJEase::easeOutCubic(m_blendTimer), true);
+}
+
+void Player::CalcAttack()
+{
+	//攻撃力
+	m_power = C_MAX_POWER[m_animationType - 6];
+
+	//最大までのフレーム数
+	float l_frame = fbxobj_miku->GetEndTime(m_animationType) / fbxobj_miku->GetAddTime(m_animationType);
+	fbxobj_miku->SetAnimationSpeed(m_animationType, OgaJEase::easeInSine(m_attackEase), true);
+	fbxobj_shadowMiku->SetAnimationSpeed(m_animationType, OgaJEase::easeInSine(m_attackEase), true);
+	if (m_attackEase < 1.0f)
+	{
+		m_attackEase += 1.0f / l_frame;
+	}
+	else
+	{
+		m_attackEase = 1.0f;
+	}
+
+	//攻撃アニメーション中断ローリング
+	if (!m_isAccept)
+	{
+		if (fbxobj_miku->GetNowTime(m_animationType) >=
+			fbxobj_miku->GetAddTime(m_animationType) * C_ATTACK_COLLISION_ENDTIMER)
+		{
+			m_isAttack = false;
+			m_isAccept = true;
+			m_isHeal = true;
+		}
+	}
+
+	if (fbxobj_miku->IsAnimationEnd(m_animationType))
+	{
+		m_isAnimation = false;
+		m_isAttack = false;
+	}
 }
 
 void Player::CalcAttackTimer()
@@ -1451,7 +1417,7 @@ void Player::CalcAttackTimer()
 	if (m_animationType >= NORMAL_ATTACK_1 &&
 		m_animationType <= NORMAL_ATTACK_3)
 	{
-		int l_animationNum = m_animationType - 3;
+		int l_animationNum = m_animationType - NORMAL_ATTACK_1;
 		if (m_animationTimer < m_attackCollisionTimer[l_animationNum])
 		{
 			m_animationTimer++;
@@ -1503,8 +1469,8 @@ void Player::DoAttack(const int animationType)
 
 	m_oldAnimationType = m_animationType;
 	m_animationType = animationType;
-	fbxobj_miku[animationType]->ReplayAnimation();
-	fbxobj_shadowMiku[animationType]->ReplayAnimation();
+	fbxobj_miku->PlayAnimation(animationType);
+	fbxobj_shadowMiku->PlayAnimation(animationType);
 }
 
 void Player::CalcRolling()
@@ -1520,10 +1486,10 @@ void Player::CalcRolling()
 
 	m_oldAnimationType = m_animationType;
 	m_animationType = ROLLING;
-	fbxobj_miku[AnimationType::ROLLING]->ResetAnimation();
-	fbxobj_miku[AnimationType::ROLLING]->ReplayAnimation();
-	fbxobj_shadowMiku[AnimationType::ROLLING]->ResetAnimation();
-	fbxobj_shadowMiku[AnimationType::ROLLING]->ReplayAnimation();
+	fbxobj_miku->ResetAnimation(AnimationType::ROLLING);
+	fbxobj_miku->PlayAnimation(AnimationType::ROLLING);
+	fbxobj_shadowMiku->ResetAnimation(AnimationType::ROLLING);
+	fbxobj_shadowMiku->PlayAnimation(AnimationType::ROLLING);
 	m_isAnimation = true;
 	m_isStickReleaseTrigger = false;
 	m_isInvincible = true;
@@ -1542,20 +1508,20 @@ void Player::CalcRolling()
 
 		m_rollingAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
 		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-		fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-		fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_shadowMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
 	}
 	else
 	{
-		XMFLOAT3 l_deg = fbxobj_miku[AnimationType::STAND]->GetRotation();
+		XMFLOAT3 l_deg = fbxobj_miku->GetRotation();
 		OgaJHelper::ConvertToRadian(l_deg.y);
 		float l_radX = sinf(l_deg.y);
 		float l_radZ = cosf(l_deg.y);
 
 		m_rollingAngle = { l_radX,0,l_radZ };
 		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-		fbxobj_miku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
-		fbxobj_shadowMiku[AnimationType::ROLLING]->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		fbxobj_shadowMiku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
 	}
 }
 
@@ -1576,57 +1542,68 @@ void Player::CalcHeal()
 void Player::SetImgui()
 {
 	//Old
-	if (m_oldAnimationType == STAND)
+	switch (m_oldAnimationType)
+	{
+	case STAND:
 	{
 		ImguiControl::Imgui_playerOldAniType = "STAND";
+		break;
 	}
-	else if (m_oldAnimationType == SLOWRUN)
+	case SLOWRUN:
 	{
 		ImguiControl::Imgui_playerOldAniType = "SLOWRUN";
+		break;
 	}
-	else if (m_oldAnimationType == RUN)
+	case RUN:
 	{
 		ImguiControl::Imgui_playerOldAniType = "RUN";
+		break;
 	}
-	else if (m_oldAnimationType == BACK_RUN)
+	case BACK_RUN:
 	{
 		ImguiControl::Imgui_playerOldAniType = "BACK_RUN";
+		break;
 	}
-	else if (m_oldAnimationType == R_RUN)
+	case R_RUN:
 	{
 		ImguiControl::Imgui_playerOldAniType = "R_RUN";
+		break;
 	}
-	else if (m_oldAnimationType == L_RUN)
+	case L_RUN:
 	{
 		ImguiControl::Imgui_playerOldAniType = "L_RUN";
+		break;
 	}
-	else if (m_oldAnimationType >= NORMAL_ATTACK_1 &&
-		m_oldAnimationType <= NORMAL_ATTACK_3)
+	case NORMAL_ATTACK_1:
 	{
-		if (m_oldAnimationType == NORMAL_ATTACK_1)
-		{
-			ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_1";
-		}
-		else if (m_oldAnimationType == NORMAL_ATTACK_2)
-		{
-			ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_2";
-		}
-		else if (m_oldAnimationType == NORMAL_ATTACK_3)
-		{
-			ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_3";
-		}
+		ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_1";
+		break;
 	}
-	else if (m_oldAnimationType == DAMAGED)
+	case NORMAL_ATTACK_2:
+	{
+		ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_2";
+		break;
+	}
+	case NORMAL_ATTACK_3:
+	{
+		ImguiControl::Imgui_playerOldAniType = "NORMAL_ATTACK_3";
+		break;
+	}
+	case DAMAGED:
 	{
 		ImguiControl::Imgui_playerOldAniType = "DAMAGED";
+		break;
 	}
-	else if (m_oldAnimationType == ROLLING)
+	case ROLLING:
 	{
 		ImguiControl::Imgui_playerOldAniType = "ROLLING";
+		break;
 	}
-	else if (m_oldAnimationType == HEAL)
+	case HEAL:
 	{
 		ImguiControl::Imgui_playerOldAniType = "HEAL";
+		break;
+	}
 	}
 
 	if (m_isAccept)
@@ -1656,8 +1633,8 @@ void Player::SetImgui()
 		ImguiControl::Imgui_playerIsAttack = "FALSE";
 	}
 
-	ImguiControl::Imgui_playerCurrentAniTimer = fbxobj_miku[m_animationType]->GetNowTime();
-	ImguiControl::Imgui_playerOldAniTimer = fbxobj_miku[m_oldAnimationType]->GetNowTime();
+	ImguiControl::Imgui_playerCurrentAniTimer = fbxobj_miku->GetNowTime(m_animationType);
+	ImguiControl::Imgui_playerOldAniTimer = fbxobj_miku->GetNowTime(m_oldAnimationType);
 	ImguiControl::Imgui_playerBlendTimer = m_blendTimer;
 
 	for (int i = 0; i < C_BOX_NUM; i++)

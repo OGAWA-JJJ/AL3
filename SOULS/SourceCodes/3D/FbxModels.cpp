@@ -1002,6 +1002,7 @@ void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 {
 	FbxSkin* fbxSkin =
 		static_cast<FbxSkin*>(fbx_mesh->GetDeformer(0, FbxDeformer::eSkin));
+	if (fbxSkin == NULL) { return; }
 	int clusterCount = fbxSkin->GetClusterCount();
 	node_indices.resize(clusterCount);
 	offset_transforms.resize(clusterCount);
@@ -1103,30 +1104,12 @@ void FbxModels::AddAnimation(const std::string& modelname)
 
 	name = modelname;
 
-	FbxManager* fbx_manager = fbxsdk::FbxManager::Create();
-	assert(fbx_manager != nullptr);
-
-	FbxImporter* fbx_importer = FbxImporter::Create(fbx_manager, "");
-	if (fbx_importer == nullptr)
-	{
-		fbx_manager->Destroy();
-		assert(0);
-	}
-
-	FbxScene* fbxScene = FbxScene::Create(fbx_manager, "");
-	if (fbxScene == nullptr)
-	{
-		fbx_importer->Destroy();
-		fbx_manager->Destroy();
-		assert(0);
-	}
-
 	fbx_importer->Initialize(path.c_str());
 	fbx_importer->Import(fbxScene);
 
-	FbxGeometryConverter converter(fbx_manager);
-	converter.Triangulate(fbxScene, true);
-	converter.RemoveBadPolygonsFromMeshes(fbxScene);
+	//FbxGeometryConverter converter(fbx_manager);
+	//converter.Triangulate(fbxScene, true);
+	//converter.RemoveBadPolygonsFromMeshes(fbxScene);
 
 	//アニメーション抜き取り
 	FbxArray<FbxString*> animation_stack_names;

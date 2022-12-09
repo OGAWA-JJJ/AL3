@@ -368,6 +368,9 @@
     <ClInclude Include="SourceCodes\2D\ShadowMap.h">
       <Filter>SourceCodes\2D</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\d3dx12.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\SpriteShaderHeader.hlsli">

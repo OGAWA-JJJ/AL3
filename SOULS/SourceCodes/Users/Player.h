@@ -56,7 +56,7 @@ private:
 	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
 	const int C_HEAL_VOL = 5;						//1フレームのスタミナ回復量
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
-	const float C_MAX_MOVE_SPEED = 0.1f;			//自機の最大速度
+	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
 	const float C_MAX_BLEND_TIMER = 0.02f;
@@ -133,8 +133,11 @@ private:	//オブジェクト(Draw用)
 	Object* obj_SwordBox = nullptr;
 	Object* obj_Helmet = nullptr;
 
-	std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
-	std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
+	//std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
+	//std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
+	FbxObjects* fbxobj_miku = nullptr;
+	FbxObjects* fbxobj_shadowMiku = nullptr;
+
 	const int C_MIKU_NUM = 13;										//fbx増減時変更
 
 public:
@@ -153,6 +156,7 @@ private:
 	void CalcOBB();		//剣のOBB算出
 	void OtherUpdate();	//基本的にUpdateと剣の追従処理
 	void CalcBlendAnimation();
+	void CalcAttack();
 	void CalcAttackTimer();
 	void CheckAttackAnimationType();
 	void DoAttack(const int animationType);

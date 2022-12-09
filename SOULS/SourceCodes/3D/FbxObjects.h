@@ -52,15 +52,26 @@ private:
 		std::vector<Node*>	children;
 	};
 
+	struct AnimationDatas
+	{
+		float m_addSpeed = 0.0f;
+		float m_currentAnimationSeconds = 0.0f;
+		bool m_isPlay = false;
+		bool m_isAnimationEndTrigger = false;
+		bool m_animationLoopFlag = true;
+	};
+
 private:
 	std::vector<Node> nodes;
-	bool animation_loop_flag = true;
-	int current_animation_index = 0;
-	int m_animationCount = 0;
-	float current_animation_seconds = 0.0f;
+	std::vector<AnimationDatas> animationDatas;
+
+	int m_currentAnimationIndex = 0;
+	bool m_isBlend = false;
+	bool m_isAddTimerEase = false;
 
 public:
 	static FbxObjects* Create(FbxModels* model = nullptr);
+	void SetAnimationIndex(int animationIndex) { m_currentAnimationIndex = animationIndex; }
 
 public:
 	static void StaticInit(ID3D12Device* dev, ID3D12GraphicsCommandList* cmdList);
@@ -76,14 +87,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
-
-	bool m_isPlay = false;
-	bool m_isAnimationEndTrigger = false;
-
-	bool m_isBlend = false;
-	bool m_isAddTimerEase = false;
-	float m_addSpeed = 0.0f;
-	float m_rate = 1.0f;
 
 	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
@@ -104,7 +107,6 @@ public:
 	bool Init();
 	void Update(bool isShadowCamera = false);
 	void Draw(const FbxPipelineSet& pipelineSet);
-	void PlayAnimation(); //RePlayAnimationと同じ
 
 private:
 	void UpdateAnimation();
@@ -133,39 +135,52 @@ private:
 	}
 
 public:	//Setter
-	void SetModel(FbxModels* model) { this->model = model; }
+	void SetModel(FbxModels* model)
+	{
+		this->model = model;
+		animationDatas.resize(model->GetAnimations().size());
+	}
 
 	void SetScale(const DirectX::XMFLOAT3& scale) { this->scale = scale; }
 	void SetRotation(const DirectX::XMFLOAT3& rotation) { this->rotation = rotation; }
 	void SetPosition(const DirectX::XMFLOAT3& position) { this->position = position; }
 
-	void BlendAnimation(FbxObjects* startObject, float rate, bool isBlend);
+	void BlendAnimation(int startIndex, int endIndex, float rate, bool isBlend);
 
-	void BlendAnimation2(int startIndex, int endindex, float rate, bool isBlend);
+	void CurrentPlayAnimation() { animationDatas[m_currentAnimationIndex].m_isPlay = true; };
+	void PlayAnimation(int animationIndex) { animationDatas[animationIndex].m_isPlay = true; };
 
-	void StopAnimation() { m_isPlay = false; }
-	void ResetAnimation() { current_animation_seconds = 0; }
-	void ReplayAnimation() { m_isPlay = true; }
-	void SetLoopAnimation(bool isLoop) { animation_loop_flag = isLoop; }
-	void SetAnimationTimerMax();	//あんま意味ないかも
-	void SetAnimationSpeed(float addSpeed, bool isSet);	//0~1
-	void MultiAnimationSpeed(float rate) { m_rate = rate; }
+	void CurrentStopAnimation() { animationDatas[m_currentAnimationIndex].m_isPlay = false; }
+	void StopAnimation(int animationIndex) { animationDatas[animationIndex].m_isPlay = false; }
+
+	void CurrentResetAnimation() { animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds = 0.0f; }
+	void ResetAnimation(int animationIndex) { animationDatas[animationIndex].m_currentAnimationSeconds = 0.0f; }
+
+	void SetCurrentLoopAnimation(bool isLoop) { animationDatas[m_currentAnimationIndex].m_animationLoopFlag = isLoop; }
+	void SetLoopAnimation(int animationIndex, bool isLoop) { animationDatas[animationIndex].m_animationLoopFlag = isLoop; }
+
+	void SetCurrentAnimationSpeed(float addSpeed, bool isSet);				//0~1
+	void SetAnimationSpeed(int animationIndex, float addSpeed, bool isSet);	//0~1
 
 public:	//Getter
 	const DirectX::XMFLOAT3& GetScale() { return scale; }
 	const DirectX::XMFLOAT3& GetRotation() { return rotation; }
 	const DirectX::XMFLOAT3& GetPosition() { return position; }
 
-	const float GetAddTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].add_time; }
-	const float GetEndTime(int animationIndex = 0) { return model->GetAnimations()[animationIndex].seconds_length; }
-	const float GetNowTime(int animationIndex = 0) { return current_animation_seconds; }
+	const float GetCurrentAddTime() { return model->GetAnimations()[m_currentAnimationIndex].add_time; }
+	const float GetCurrentEndTime() { return model->GetAnimations()[m_currentAnimationIndex].seconds_length; }
+	const float GetCurrentNowTime() { return animationDatas[m_currentAnimationIndex].m_currentAnimationSeconds; }
+	const float GetAddTime(int animationIndex) { return model->GetAnimations()[animationIndex].add_time; }
+	const float GetEndTime(int animationIndex) { return model->GetAnimations()[animationIndex].seconds_length; }
+	const float GetNowTime(int animationIndex) { return animationDatas[animationIndex].m_currentAnimationSeconds; }
 
 	const std::vector<std::pair<std::string, DirectX::XMMATRIX>>
-		& GetAffineTrans() { return affineTrans; }	//スケール行列が入っている為、OBB描画に問題←治した
+		& GetAffineTrans() { return affineTrans; }		//スケール行列が入っている為、OBB描画に問題←治した
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//手固定
 
-	const bool IsAnimationEnd() { return m_isAnimationEndTrigger; }
+	const bool IsCurrentAnimationEnd() { return animationDatas[m_currentAnimationIndex].m_isAnimationEndTrigger; }
+	const bool IsAnimationEnd(int animationIndex) { return animationDatas[animationIndex].m_isAnimationEndTrigger; }
 
 private:
 	//仮
