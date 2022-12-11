@@ -299,6 +299,11 @@ void Enemy::LuminanceDraw()
 	pManager_Ex.Draw();
 }
 
+void Enemy::ShadowDraw()
+{
+	//Draw();
+}
+
 void Enemy::CalcOBB()
 {
 	//OBBŒvŽZ

@@ -37,8 +37,13 @@ float4 PSmain(VSOutput input) : SV_TARGET
     return shadecolor * texcolor;
 }
 
-float4 PSBlack() : SV_TARGET
+float4 PSBlack(PSOutput input) : SV_TARGET
 {
-    //return float4(input.svpos.z, input.svpos.z, input.svpos.z, 1.0f);
-    return float4(0.5f, 0.5f, 0.5f, 1.0f);
+    //return float4(input.posInLVP.z, 0.0f, 0.0f, input.posInLVP.w);
+    
+    float shadow = (input.posInLVP.z / 500.0f) ;
+    return float4(shadow, shadow, shadow, 1.0f);
+    
+    //return float4(0.5f, 0.5f, 0.5f, 1.0f);
+
 }

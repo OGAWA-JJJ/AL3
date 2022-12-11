@@ -11,7 +11,7 @@
 
 GameScene::GameScene()
 {
-	m_gameSceneType = TITLE;
+	m_gameSceneType = GAME;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -37,7 +37,7 @@ GameScene::~GameScene()
 {
 }
 
-void GameScene::Init(ID3D12Resource* texbuff)
+void GameScene::Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff)
 {
 	m_player->Init();
 	m_enemy->Init();
@@ -74,12 +74,10 @@ void GameScene::Update()
 	}
 	else if (m_gameSceneType == GAME)
 	{
-		DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
-		light->SetShadowLigitEye(DirectX::XMFLOAT3(
-			m_player->GetPos().x,
-			l_shadowCameraPos.y,
-			m_player->GetPos().z));
-		light->SetShadowLigitTarget(m_player->GetPos());
+		//DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
+		//light->SetShadowLigitEye(Camera::GetEye());
+		//light->SetShadowLigitTarget(Camera::GetTarget());
+		//light->SetShadowLigitUp(Camera::GetUp());
 
 		light->SetLightColor(
 			{
@@ -175,6 +173,7 @@ void GameScene::ShadowDraw()
 	if (m_gameSceneType == GAME)
 	{
 		m_player->ShadowDraw();
+		m_stage->ShadowDraw();
 	}
 }
 

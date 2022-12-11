@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "Stage.h"
 #include "StageObject.h"
+#include <wrl.h>
 
 class GameScene
 {
@@ -33,7 +34,7 @@ private:
 public:
 	GameScene();
 	~GameScene();
-	void Init(ID3D12Resource* texbuff = nullptr);
+	void Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff = nullptr);
 	void Update();
 	void Draw();
 	void LuminanceDraw();	//ãPìxíäèoóp

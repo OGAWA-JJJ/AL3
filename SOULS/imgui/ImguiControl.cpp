@@ -2,7 +2,7 @@
 #include "imgui.h"
 
 float ImguiControl::Imgui_fov = 60.0f;
-float ImguiControl::Imgui_far_z = 3000.0f;
+float ImguiControl::Imgui_far_z = 1000.0f;
 float ImguiControl::Imgui_lightColor_r = 0.4f;
 float ImguiControl::Imgui_lightColor_g = 0.4f;
 float ImguiControl::Imgui_lightColor_b = 0.4f;

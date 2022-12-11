@@ -31,9 +31,9 @@ private:
 	bool dirty = false;
 
 	//影用ライト座標
-	DirectX::XMFLOAT3 eye = { 0,100,0 };
+	DirectX::XMFLOAT3 eye = { 75,100,-75 };
 	DirectX::XMFLOAT3 target = { 0,0,0 };
-	DirectX::XMFLOAT3 up = { 0,0,-1 };
+	DirectX::XMFLOAT3 up = { 0,1,0 };
 
 public:
 	//静的初期化

@@ -1,7 +1,6 @@
 #include "ShadowMap.h"
 #include "../DirectX/ConstantBuffer.h"
 #include "../DirectX/Camera.h"
-#include "../../imgui/ImguiControl.h"
 
 #include "../DirectX/d3dx12.h"
 #include <d3dcompiler.h>
@@ -34,10 +33,14 @@ void ShadowMap::Init()
 	//頂点データ転送
 	VertexPosUv vertices[4];
 
+	//左上
 	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
-	vertices[1].pos = { -1.0f, 1.0, 0.0f };
-	vertices[2].pos = { 1.0, -1.0f , 0.0f };
-	vertices[3].pos = { 1.0, 1.0, 0.0f };
+	//左下
+	vertices[1].pos = { -1.0f, -0.2f, 0.0f };
+	//右上
+	vertices[2].pos = { -0.2f, -1.0f , 0.0f };
+	//右下
+	vertices[3].pos = { -0.2f, -0.2f, 0.0f };
 
 	vertices[0].uv = { 0.0f, 1.0f };
 	vertices[1].uv = { 0.0f, 0.0f };
@@ -59,9 +62,8 @@ void ShadowMap::Init()
 
 	//定数バッファの生成
 	constBuff = ConstantBuffer::CreateConstantBuffer(sizeof(ConstantBuffer_b0));
-	//constBuff_b0 = ConstantBuffer::CreateConstantBuffer(sizeof(ConstantBuffer_b0));
 
-	//テクスチャリソース設定←mipLevelsってなに
+	//テクスチャリソース設定←mipLevelsってなに←荒さ改善的なの
 	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		WINDOW_WIDTH,
@@ -116,7 +118,7 @@ void ShadowMap::Init()
 
 	//デスクリプタヒープにSRVを作成
 	DirectXImportant::dev->CreateShaderResourceView(
-		texbuff,	//ビューと関連付けるバッファ
+		texbuff.Get(),	//ビューと関連付けるバッファ
 		&srvDesc,
 		descHeapSRV->GetCPUDescriptorHandleForHeapStart()
 	);
@@ -134,14 +136,13 @@ void ShadowMap::Init()
 	assert(SUCCEEDED(result));
 	//RTVとSRVはデスクリプタ1つ辺りのデータサイズが異なる為、使い回すことができない。
 
-	//デスクリプタヒープにRTVを作成(本当はダブルバッファリングするべき)
 	DirectXImportant::dev->CreateRenderTargetView(
-		texbuff,
+		texbuff.Get(),
 		nullptr,
 		descHeapRTV->GetCPUDescriptorHandleForHeapStart()
 	);
 
-	//深度バッファリソース設定
+	//深度バッファ用リソース設定
 	CD3DX12_RESOURCE_DESC depthResDesc =
 		CD3DX12_RESOURCE_DESC::Tex2D(
 			DXGI_FORMAT_D32_FLOAT,
@@ -152,7 +153,7 @@ void ShadowMap::Init()
 			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
 		);
 
-	//深度バッファの生成
+	//深度バッファ生成
 	result = DirectXImportant::dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -187,16 +188,11 @@ void ShadowMap::Init()
 
 void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
 {
-	//光のCamera行列も用意する←した
-	//const XMMATRIX& matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-
 	HRESULT result = S_OK;
 
 	//定数バッファにデータ転送
 	ConstantBuffer_b0 data;
 	data.mat = DirectX::XMMatrixIdentity();
-	//data.viewproj = matViewProjection;
-	//data.lightViewproj = lightMatViewProjection;
 
 	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
 
@@ -210,17 +206,16 @@ void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
 	//頂点バッファの設定
 	cmdList->IASetVertexBuffers(0, 1, &this->vbView);
 
-	//ID3D12DescriptorHeap* ppHeaps[] = { descHeap.Get() };
 	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
 	//デスクリプタヒープをセット
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, this->constBuff->GetGPUVirtualAddress());
-	//cmdList->SetGraphicsRootConstantBufferView(2, this->constBuff_b0->GetGPUVirtualAddress());
 
 	//SRV
 	cmdList->SetGraphicsRootDescriptorTable(
 		1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
+
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
@@ -230,7 +225,7 @@ void ShadowMap::PreDraw(ID3D12GraphicsCommandList* cmdList)
 	//リソースバリアを変更
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff,
+		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			D3D12_RESOURCE_STATE_RENDER_TARGET)
 	);
@@ -267,7 +262,7 @@ void ShadowMap::PostDraw(ID3D12GraphicsCommandList* cmdList)
 {
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff,
+		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 	);
@@ -350,12 +345,17 @@ void ShadowMap::CreateGraphicsPipelineState()
 
 	//サンプルマスク
 	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; //標準設定
+
 	//ラスタライザステート
 	gpipeline.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
 	//デプスステンシルステート
 	gpipeline.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	gpipeline.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS; //常に上書きルール
+	gpipeline.DepthStencilState.DepthEnable = true;
+	gpipeline.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	gpipeline.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	gpipeline.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC blenddesc{};
@@ -375,9 +375,6 @@ void ShadowMap::CreateGraphicsPipelineState()
 
 	//ブレンドステートの設定
 	gpipeline.BlendState.RenderTarget[0] = blenddesc;
-
-	//深度バッファのフォーマット
-	gpipeline.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	//頂点レイアウトの設定
 	gpipeline.InputLayout.pInputElementDescs = inputLayout;
@@ -399,7 +396,7 @@ void ShadowMap::CreateGraphicsPipelineState()
 	CD3DX12_ROOT_PARAMETER rootparams[2] = {};
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
-	//rootparams[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//rootparams[2].InitAsDescriptorTable(2, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	//スタティックサンプラー
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc =

@@ -289,8 +289,6 @@ void Object::Update(bool isShadowCamera)
 		matWorld *= matrix;
 	}
 
-	//this->matRot = matRot;
-
 	if (isBillboard) {
 		const DirectX::XMMATRIX& matBillboard = Camera::BillboardMatrix();
 
@@ -307,10 +305,9 @@ void Object::Update(bool isShadowCamera)
 		matWorld *= parent->matWorld;
 	}
 
-	const DirectX::XMMATRIX matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	const DirectX::XMFLOAT3 cameraPos = Camera::GetEye();
+	DirectX::XMMATRIX matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
+	DirectX::XMFLOAT3 cameraPos = Camera::GetEye();
 
-	DirectX::XMMATRIX lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//影用
@@ -325,14 +322,14 @@ void Object::Update(bool isShadowCamera)
 			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
 			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
 
-		lightMatViewProjection = matView * lightMatPerspective;
+		matViewProjection = matView * lightMatPerspective;
+		cameraPos = light->GetShadowLigitEye();
 	}
 
 	// 定数バッファへデータ転送
 	ConstBufferDataB0* constMap = nullptr;
 	result = constBuffB0->Map(0, nullptr, (void**)&constMap);
-	if (isShadowCamera) { constMap->viewproj = lightMatViewProjection; }
-	else { constMap->viewproj = matViewProjection; }
+	constMap->viewproj = matViewProjection;
 	constMap->world = matWorld;
 	constMap->cameraPos = cameraPos;
 	constMap->color = color;

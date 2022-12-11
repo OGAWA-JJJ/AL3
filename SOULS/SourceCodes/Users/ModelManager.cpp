@@ -6,45 +6,17 @@ Model* ModelManager::model_box = nullptr;
 Model* ModelManager::model_box2 = nullptr;
 Model* ModelManager::model_helmet = nullptr;
 
-//FbxModels* ModelManager::fbxmodel_standMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_slowRunMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_fastRunMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_backRunMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_rightRunMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_leftRunMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_oneSwrordAttack = nullptr;
-//FbxModels* ModelManager::fbxmodel_oneSwrordAttack2 = nullptr;
-//FbxModels* ModelManager::fbxmodel_oneSwrordAttack3 = nullptr;
-//FbxModels* ModelManager::fbxmodel_dieMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_impactMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_rollingMiku = nullptr;
-//FbxModels* ModelManager::fbxmodel_drinkingMiku = nullptr;
-
 FbxModels* ModelManager::fbxmodel_mikus = nullptr;
 
 //Enemy
-//FbxModels* ModelManager::fbxmodel_idleCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_runCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_kickCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_punchCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_dieCreature = nullptr;
-//
-//FbxModels* ModelManager::fbxmodel_RTurnCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_LTurnCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_RBackCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_LBackCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_explosionCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_riseCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_swingDownCreature = nullptr;
-//FbxModels* ModelManager::fbxmodel_tackleCreature = nullptr;
-
 FbxModels* ModelManager::fbxmodel_creatures = nullptr;
 
 Model* ModelManager::model_circle = nullptr;
 
 //Stage
 Model* ModelManager::model_stage = nullptr;
-Model* ModelManager::model_sponza = nullptr;
+Model* ModelManager::model_arenaFront = nullptr;
+Model* ModelManager::model_arenaBack = nullptr;
 
 ModelManager::~ModelManager()
 {
@@ -53,38 +25,15 @@ ModelManager::~ModelManager()
 	delete model_box;
 	delete model_helmet;
 
-	/*delete fbxmodel_standMiku;
-	delete fbxmodel_slowRunMiku;
-	delete fbxmodel_fastRunMiku;
-	delete fbxmodel_oneSwrordAttack;
-	delete fbxmodel_oneSwrordAttack2;
-	delete fbxmodel_oneSwrordAttack3;
-	delete fbxmodel_dieMiku;
-	delete fbxmodel_impactMiku;
-	delete fbxmodel_rollingMiku;*/
-
 	delete fbxmodel_mikus;
 
 	//Enemy
-	/*delete fbxmodel_idleCreature;
-	delete fbxmodel_runCreature;
-	delete fbxmodel_kickCreature;
-	delete fbxmodel_punchCreature;
-	delete fbxmodel_dieCreature;
-
-	delete fbxmodel_RTurnCreature;
-	delete fbxmodel_LTurnCreature;
-	delete fbxmodel_RBackCreature;
-	delete fbxmodel_LBackCreature;
-	delete fbxmodel_explosionCreature;
-	delete fbxmodel_riseCreature;
-	delete fbxmodel_swingDownCreature;*/
-
 	delete fbxmodel_creatures;
 
 	//Stage
 	delete model_stage;
-	delete model_sponza;
+	delete model_arenaFront;
+	delete model_arenaBack;
 }
 
 void ModelManager::Init()
@@ -158,7 +107,8 @@ void ModelManager::Init()
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
-	model_sponza = Model::CreateFromObj("arena");
+	model_arenaFront = Model::CreateFromObj("arena_front");
+	model_arenaBack = Model::CreateFromObj("arena_back");
 
 	FbxModels::ReleaseModels();
 }

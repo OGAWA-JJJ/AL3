@@ -5,6 +5,9 @@ SamplerState smp : register(s0);
 
 float4 PSmain(VSOutput input) : SV_TARGET
 {
-    //float4 color = { 0.0f, 0.0f, 0.0f, 1.0f };
+    //float shadowMap = input.svpos.z / input.svpos.w;
+    //return float4(shadowMap, shadowMap, shadowMap, 1.0f);
+    //return input.svpos;
     return tex.Sample(smp, input.uv);
+
 }

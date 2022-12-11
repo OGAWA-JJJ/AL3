@@ -25,10 +25,8 @@ PSOutput VSShadowMain(float4 pos : POSITION, float3 normal : NORMAL, float2 uv :
     
     PSOutput output;
     output.svpos = mul(mul(viewproj, world), pos);
-    //output.worldpos = wpos;
     output.normal = wnormal.xyz;
     output.uv = uv;
-    //output.uv = 0.9f;
     
     output.posInLVP = mul(lightViewProj, wpos);
     

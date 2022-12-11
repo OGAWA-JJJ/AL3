@@ -1,0 +1,48 @@
+# Blender MTL File: 'arena.blend'
+# Material Count: 4
+
+newmtl Casted_Iron
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_albedo.dds
+
+newmtl Forge_iron2
+Ns 63.117921
+Ka 0.500000 0.500000 0.500000
+Kd 0.539000 0.337765 0.231231
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_header.dds
+
+newmtl Old_Iron
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_header.dds
+map_Ns C:\\Users\\K020G1408\\Documents\\Blender\\assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Roughness.jpeg
+refl C:\\Users\\K020G1408\\Documents\\Blender\\assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Metallic.jpeg
+
+newmtl Rust
+Ns 1000.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\rust_albedo.dds

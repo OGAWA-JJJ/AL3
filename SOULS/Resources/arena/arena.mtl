@@ -1,5 +1,5 @@
 # Blender MTL File: 'arena.blend'
-# Material Count: 10
+# Material Count: 5
 
 newmtl Casted_Iron
 Ns 250.000000
@@ -9,19 +9,19 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
-illum 3
-map_Kd iron_albedo.dds
+illum 2
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_albedo.dds
 
 newmtl Forge_iron2
 Ns 63.117921
 Ka 0.500000 0.500000 0.500000
-Kd 0.500000 0.437116 0.391000
+Kd 0.539000 0.337765 0.231231
 Ks 1.000000 1.000000 1.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 3
-map_Kd iron_header.dds
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_header.dds
 
 newmtl Medieval_Tiles
 Ns 250.000000
@@ -32,80 +32,29 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd pave.dds
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\pave.dds
+map_Ns C:\\Users\\K020G1408\\Documents\\Blender\\assets\\materials\\medieval_tiles_8bb3af2e-2e2c-4d3d-b44b-dbec203e059b\\textures_2k\\Guedelon_podlaha_roughness.jpg
 
 newmtl Old_Iron
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.800000 0.800000
-Ks 0.500000 0.500000 0.500000
+Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
-illum 2
-map_Kd iron_header.dds
+illum 1
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\iron_header.dds
+map_Ns C:\\Users\\K020G1408\\Documents\\Blender\\assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Roughness.jpeg
+refl C:\\Users\\K020G1408\\Documents\\Blender\\assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Metallic.jpeg
 
 newmtl Rust
-Ns 250.000000
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.800000 0.800000
-Ks 0.518182 0.518182 0.518182
+Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
-illum 2
-map_Kd rust_albedo.dds
-
-newmtl dark
-Ns 63.117921
-Ka 0.500000 0.500000 0.500000
-Kd 0.539000 0.337765 0.231231
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-map_Kd iron_header.dds
-
-newmtl gold
-Ns 199.999995
-Ka 0.500000 0.500000 0.500000
-Kd 0.201299 0.089028 0.029591
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-map_Kd rust_albedo.dds
-
-newmtl lambert1
-Ns 199.999995
-Ka 1.000000 1.000000 1.000000
-Kd 0.500000 0.500000 0.500000
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-
-newmtl metal
-Ns 199.999995
-Ka 1.000000 1.000000 1.000000
-Kd 0.331169 0.331169 0.331169
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-map_Kd iron_albedo.dds
-
-newmtl red
-Ns 63.117921
-Ka 0.500000 0.500000 0.500000
-Kd 0.228000 0.026220 0.026220
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-map_Kd rust_albedo.dds
+illum 1
+map_Kd C:\\Users\\K020G1408\\Documents\\Blender\\rust_albedo.dds

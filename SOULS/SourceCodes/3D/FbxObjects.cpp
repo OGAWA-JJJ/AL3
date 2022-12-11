@@ -235,11 +235,10 @@ void FbxObjects::Update(bool isShadowCamera)
 	matWorld *= matRot;						//ワールド行列に回転を反映
 	matWorld *= matTrans;					//ワールド行列に平行移動を反映
 
-	const DirectX::XMMATRIX& matViewProjection =
+	DirectX::XMMATRIX& matViewProjection =
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	const DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
+	DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
 
-	DirectX::XMMATRIX lightMatViewProjection = Camera::ViewMatrix();
 	if (isShadowCamera)
 	{
 		//影用
@@ -254,7 +253,8 @@ void FbxObjects::Update(bool isShadowCamera)
 			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
 			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
 
-		lightMatViewProjection = matView * lightMatPerspective;
+		matViewProjection = matView * lightMatPerspective;
+		cameraPos = light->GetShadowLigitEye();
 	}
 
 	DirectX::XMMATRIX& modelTransform = model->GetModelTransform();
@@ -266,8 +266,7 @@ void FbxObjects::Update(bool isShadowCamera)
 	result = constBufferDataB0->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(result))
 	{
-		if (isShadowCamera) { constMap->viewproj = lightMatViewProjection; }
-		else { constMap->viewproj = matViewProjection; }
+		constMap->viewproj = matViewProjection;
 		constMap->world = modelTransform * matWorld;
 		constMap->cameraPos = cameraPos;
 		constBufferDataB0->Unmap(0, nullptr);

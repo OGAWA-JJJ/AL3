@@ -152,7 +152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Gamescene->Update();
 
-		luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
+		/*luminanceSprite->PreDrawScene(DirectXImportant::cmdList.Get(), luminanceData, WindowColor);
 		Gamescene->LuminanceDraw();
 		luminanceSprite->PostDrawScene(DirectXImportant::cmdList.Get());
 
@@ -166,7 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		copyToFrameBufferSprite->PreDrawScene(DirectXImportant::cmdList.Get(), spriteInitData, WindowColor);
 		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
-		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());
+		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());*/
 
 		shadow->PreDraw(DirectXImportant::cmdList.Get());
 		Gamescene->ShadowDraw();
@@ -180,10 +180,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//Gamescene->Draw();
 		//xBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		//yBlurSprite->Draw(DirectXImportant::cmdList.Get());
+
 		Gamescene->Draw();
-		copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
-		//shadow->Draw(DirectXImportant::cmdList.Get());
-		//Gamescene->Draw();
+		//copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
+		//Gamescene->ShadowDraw();
+		shadow->Draw(DirectXImportant::cmdList.Get());
+
+		//Gamescene->ShadowDraw();
 
 		/*----------DirextX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚Ü‚Å----------*/
 

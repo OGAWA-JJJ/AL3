@@ -955,7 +955,7 @@ void Player::Draw()
 
 	Object::PostDraw();
 
-	pManager.Draw();
+	//pManager.Draw();
 }
 
 void Player::LuminanceDraw()
@@ -969,7 +969,7 @@ void Player::LuminanceDraw()
 	obj_Sword->Draw(PipelineManager::obj_normal);
 	Object::PostDraw();
 
-	pManager.Draw();
+	//pManager.Draw();
 }
 
 void Player::ShadowDraw()

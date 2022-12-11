@@ -30,9 +30,7 @@ float4 PSmain(VSOutput input) : SV_TARGET
     shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
     shadecolor.a = m_alpha;
     
-    //return float4(0, 0, 0, 1);
     //シェーディングによる色で描画
-    //return texcolor;
     return shadecolor * texcolor * color;
 }
 
@@ -68,10 +66,14 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     return texcolor * color;
 }
 
-float4 PSBlack() : SV_TARGET
+float4 PSBlack(PSOutput input) : SV_TARGET
 {
-    //return float4(input.svpos.z, input.svpos.z, input.svpos.z, 1.0f);
-    return float4(0.5f, 0.5f, 0.5f, 1.0f);
+    //return float4(input.posInLVP.z, 0.0f, 0.0f, input.posInLVP.w);
+    
+    float shadow = (input.posInLVP.z / 500.0f) ;
+    return float4(shadow, shadow, shadow, 1.0f);
+    
+    //return float4(0.5f, 0.5f, 0.5f, 1.0f);
 }
 
 float4 PSTexture(VSOutput input) : SV_TARGET

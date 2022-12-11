@@ -10,44 +10,17 @@ public:	//Player
 	static Model* model_box2;
 	static Model* model_helmet;
 
-	/*static FbxModels* fbxmodel_standMiku;
-	static FbxModels* fbxmodel_slowRunMiku;
-	static FbxModels* fbxmodel_fastRunMiku;
-	static FbxModels* fbxmodel_backRunMiku;
-	static FbxModels* fbxmodel_rightRunMiku;
-	static FbxModels* fbxmodel_leftRunMiku;
-	static FbxModels* fbxmodel_oneSwrordAttack;
-	static FbxModels* fbxmodel_oneSwrordAttack2;
-	static FbxModels* fbxmodel_oneSwrordAttack3;
-	static FbxModels* fbxmodel_dieMiku;
-	static FbxModels* fbxmodel_impactMiku;
-	static FbxModels* fbxmodel_rollingMiku;
-	static FbxModels* fbxmodel_drinkingMiku;*/
-
 	static FbxModels* fbxmodel_mikus;
 
 public:	//Enemy
-	/*static FbxModels* fbxmodel_idleCreature;
-	static FbxModels* fbxmodel_runCreature;
-	static FbxModels* fbxmodel_kickCreature;
-	static FbxModels* fbxmodel_punchCreature;
-	static FbxModels* fbxmodel_dieCreature;
-
-	static FbxModels* fbxmodel_RTurnCreature;
-	static FbxModels* fbxmodel_LTurnCreature;
-	static FbxModels* fbxmodel_RBackCreature;
-	static FbxModels* fbxmodel_LBackCreature;
-	static FbxModels* fbxmodel_explosionCreature;
-	static FbxModels* fbxmodel_riseCreature;
-	static FbxModels* fbxmodel_swingDownCreature;
-	static FbxModels* fbxmodel_tackleCreature;*/
 	static FbxModels* fbxmodel_creatures;
 
 	static Model* model_circle;
 
 public:	//Stage
 	static Model* model_stage;
-	static Model* model_sponza;
+	static Model* model_arenaFront;
+	static Model* model_arenaBack;
 
 public:
 	~ModelManager();

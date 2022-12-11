@@ -154,6 +154,7 @@ public:
 	void Update(DirectX::XMFLOAT3 playerPos);
 	void Draw();
 	void LuminanceDraw();
+	void ShadowDraw();
 	bool BeforeBattleScene();
 
 private:
