@@ -16,7 +16,7 @@ private:
 	};
 
 private:
-	Light* light = nullptr;
+	std::shared_ptr<Light> light = nullptr;
 
 private:
 	std::unique_ptr<Player> m_player = std::make_unique<Player>();
@@ -34,7 +34,7 @@ private:
 public:
 	GameScene();
 	~GameScene();
-	void Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff = nullptr);
+	void Init();
 	void Update();
 	void Draw();
 	void LuminanceDraw();	//ãPìxíäèoóp

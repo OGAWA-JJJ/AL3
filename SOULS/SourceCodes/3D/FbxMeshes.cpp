@@ -4,9 +4,9 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-ID3D12Device* FbxMeshes::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> FbxMeshes::device = nullptr;
 
-void FbxMeshes::StaticInit(ID3D12Device* dev)
+void FbxMeshes::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> dev)
 {
 	assert(!FbxMeshes::device);
 
@@ -29,7 +29,7 @@ void FbxMeshes::AddIndex(unsigned short index)
 	indices.emplace_back(index);
 }
 
-void FbxMeshes::SetMaterial(FbxMaterial* material)
+void FbxMeshes::SetMaterial(std::shared_ptr<FbxMaterial> material)
 {
 	this->material = material;
 }
@@ -90,14 +90,15 @@ void FbxMeshes::CreateBuffers()
 	ibView.SizeInBytes = sizeIB;
 }
 
-void FbxMeshes::Draw(ID3D12GraphicsCommandList* cmdList, FbxMaterial* fbxMaterial)
+void FbxMeshes::Draw(
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList, std::shared_ptr<FbxMaterial> fbxMaterial)
 {
 	cmdList->IASetVertexBuffers(0, 1, &vbView);
 	cmdList->IASetIndexBuffer(&ibView);
 	cmdList->SetGraphicsRootDescriptorTable(1, fbxMaterial->GetGpuHandle());
 
 	//FbxMaterial‚ÌConstBuff
-	ID3D12Resource* constBuff = fbxMaterial->GetConstantBuffer();
+	ID3D12Resource* constBuff = fbxMaterial->GetConstantBuffer().Get();
 	cmdList->SetGraphicsRootConstantBufferView(4, constBuff->GetGPUVirtualAddress());
 
 	cmdList->DrawIndexedInstanced((UINT)indices.size(), 1, 0, 0, 0);

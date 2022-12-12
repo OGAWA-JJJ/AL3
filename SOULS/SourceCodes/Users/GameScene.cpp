@@ -37,11 +37,11 @@ GameScene::~GameScene()
 {
 }
 
-void GameScene::Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff)
+void GameScene::Init()
 {
 	m_player->Init();
 	m_enemy->Init();
-	m_stage->Init(texbuff);
+	m_stage->Init();
 
 	//Camera
 	DirectX::XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(m_enemy->GetPos(), m_player->GetPos());
@@ -74,11 +74,6 @@ void GameScene::Update()
 	}
 	else if (m_gameSceneType == GAME)
 	{
-		//DirectX::XMFLOAT3 l_shadowCameraPos = light->GetShadowLigitEye();
-		//light->SetShadowLigitEye(Camera::GetEye());
-		//light->SetShadowLigitTarget(Camera::GetTarget());
-		//light->SetShadowLigitUp(Camera::GetUp());
-
 		light->SetLightColor(
 			{
 				ImguiControl::Imgui_lightColor_r,

@@ -2,18 +2,18 @@
 #include "include/DirectXTex.h"
 #include <cassert>
 
-ID3D12Device* FbxMaterial::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> FbxMaterial::device = nullptr;
 
-void FbxMaterial::StaticInit(ID3D12Device* dev)
+void FbxMaterial::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> dev)
 {
 	assert(!FbxMaterial::device);
 
 	device = dev;
 }
 
-FbxMaterial* FbxMaterial::Create()
+std::shared_ptr<FbxMaterial> FbxMaterial::Create()
 {
-	FbxMaterial* instance = new FbxMaterial;
+	std::shared_ptr<FbxMaterial> instance = std::make_shared<FbxMaterial>();
 
 	instance->Init();
 
@@ -22,7 +22,8 @@ FbxMaterial* FbxMaterial::Create()
 
 void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
-	if (textureFilename.size() == 0) {
+	if (textureFilename.size() == 0)
+	{
 		textureFilename = "white1x1.png";
 	}
 
@@ -66,12 +67,12 @@ void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESC
 		&texresDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&texbuff));
+		IID_PPV_ARGS(&TexManager::GetBuffer()));
 	if (FAILED(result)) {
 		assert(0);
 	}
 
-	result = texbuff->WriteToSubresource(
+	result = TexManager::GetBuffer()->WriteToSubresource(
 		0,
 		nullptr,
 		img->pixels,
@@ -83,17 +84,19 @@ void FbxMaterial::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESC
 	}
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
+	D3D12_RESOURCE_DESC resDesc = TexManager::GetBuffer()->GetDesc();
 
 	srvDesc.Format = resDesc.Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(texbuff.Get(),
+	device->CreateShaderResourceView(TexManager::GetBuffer().Get(),
 		&srvDesc,
 		cpuDescHandleSRV
 	);
+
+	TexManager::AddOffsetSRV();
 }
 
 void FbxMaterial::Update()

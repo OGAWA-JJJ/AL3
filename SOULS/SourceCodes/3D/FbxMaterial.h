@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <wrl.h>
 #include <string>
+#include "../2D/TexManager.h"
 
 #pragma warning(push)
 #pragma warning(disable:26451)
@@ -26,7 +27,7 @@ public:
 	};
 
 private:
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 
 public:
 	DirectX::XMFLOAT3 ambient;
@@ -38,20 +39,19 @@ private:
 	std::string name;
 	std::string textureFilename;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> texbuff;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV;
 
 public:
-	static void StaticInit(ID3D12Device* dev);
-	static FbxMaterial* Create();
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> dev);
+	static std::shared_ptr<FbxMaterial> Create();
 
 public:
 	void LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle);
 	void Update();
 
-private:
+public:
 	FbxMaterial() {
 		ambient = { 0.8f, 0.8f, 0.8f };
 		diffuse = { 0.8f, 0.8f, 0.8f };
@@ -64,7 +64,7 @@ private:
 	void CreateConstantBuffer();
 
 public:
-	ID3D12Resource* GetConstantBuffer() { return constBuff.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12Resource> GetConstantBuffer() { return constBuff.Get(); }
 
 	const CD3DX12_CPU_DESCRIPTOR_HANDLE& GetCpuHandle() { return cpuDescHandleSRV; }
 	const CD3DX12_GPU_DESCRIPTOR_HANDLE& GetGpuHandle() { return gpuDescHandleSRV; }

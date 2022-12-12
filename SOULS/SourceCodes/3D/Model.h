@@ -11,7 +11,7 @@ private:
 
 private:
 	//デバイス
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//デスクリプタのサイズ
 	static UINT descriptorHandleIncrementSize;
 
@@ -19,21 +19,21 @@ private:
 	//名前
 	std::string name;
 	//メッシュコンテナ
-	std::vector<Mesh*> meshes;
+	std::vector<std::shared_ptr<Mesh>> meshes;
 	//マテリアルコンテナ
-	std::unordered_map<std::string, Material*> materials;
+	std::unordered_map<std::string, std::shared_ptr<Material>> materials;
 	//デフォルトマテリアル
-	Material* defaultMaterial = nullptr;
-	//デスクリプタヒープ
-	ID3D12DescriptorHeap* descHeap = nullptr;
+	std::shared_ptr<Material> defaultMaterial = nullptr;
 	//最大サイズの取得用(Scaleは未考慮)
 	DirectX::XMFLOAT3 size = { 0,0,0 };
 
 public:
 	//静的初期化
-	static void StaticInit(ID3D12Device* device);
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
 	//メッシュ生成
-	static Model* CreateFromObj(const std::string& modelname, bool smoothing = false);
+	static std::shared_ptr<Model> CreateFromObj(
+		const std::string& modelname,
+		bool smoothing = false);
 
 public:
 	Model();
@@ -42,15 +42,9 @@ public:
 	//初期化
 	void Init(const std::string& modelname, bool smoothing);
 	//描画
-	void Draw(ID3D12GraphicsCommandList* cmdList,
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv = nullptr,
-		UINT rootParamIndex = 0,
-		bool isAddTexture = false
-	);
+	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
 	//メッシュコンテナの取得
-	inline const std::vector<Mesh*>& GetMeshes() { return meshes; }
-	//デスクリプタヒープを取得
-	ID3D12DescriptorHeap* GetDescHeap() { return descHeap; }
+	inline const std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return meshes; }
 	//最大サイズの取得用(Scaleは未考慮)
 	DirectX::XMFLOAT3 GetModelSize() { return size; }
 
@@ -58,9 +52,7 @@ private:
 	//マテリアル読込
 	void LoadMaterial(const std::string& directoryPath, const std::string& filename);
 	//マテリアル登録
-	void AddMaterial(Material* material);
-	//デスクリプタヒープ生成
-	void CreateDescriptorHeap();
+	void AddMaterial(std::shared_ptr<Material> material);
 	//テクスチャ読込
 	void LoadTextures();
 };

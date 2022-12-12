@@ -11,12 +11,12 @@ Stage::Stage()
 	obj_arenaBack = Object::Create(ModelManager::model_arenaBack);
 
 	obj_shadowArenaFront = Object::Create(ModelManager::model_arenaFront);
-	obj_shadowArenaBack = Object::Create(ModelManager::model_stage);
+	obj_shadowArenaBack = Object::Create(ModelManager::model_arenaBack);
 
 	const float Stage_Scale = 2000.0f;
 	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 200.0f, Stage_Scale, Stage_Scale));
 
-	const float arenaScale = 30.0f;
+	const float arenaScale = 1000.0f;
 	obj_arenaFront->SetScale(
 		DirectX::XMFLOAT3(arenaScale, arenaScale, arenaScale));
 	obj_arenaBack->SetScale(
@@ -30,23 +30,13 @@ Stage::Stage()
 
 Stage::~Stage()
 {
-	delete obj_Stage;
-	delete obj_arenaFront;
-	delete obj_arenaBack;
-
-	delete obj_shadowArenaFront;
-	delete obj_shadowArenaBack;
 }
 
-void Stage::Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff)
+void Stage::Init()
 {
-	//obj_Stage->AddTexture(texbuff, ModelManager::model_stage->GetDescHeap());
 	obj_Stage->SetPosition(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	obj_Stage->SetRotation(DirectX::XMFLOAT3(0, 90, 0));
 	obj_Stage->SetColor(DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f));
-
-	//obj_arenaFront->AddTexture(texbuff, ModelManager::model_arenaFront->GetDescHeap());
-	//obj_arenaBack->AddTexture(texbuff, ModelManager::model_arenaBack->GetDescHeap());
 }
 
 void Stage::Update()
@@ -75,8 +65,8 @@ void Stage::Draw()
 	}
 	else
 	{
-		//obj_arenaFront->Draw(PipelineManager::obj_normal);
-		//obj_arenaBack->Draw(PipelineManager::obj_normal);
+		obj_arenaFront->Draw(PipelineManager::obj_normal);
+		obj_arenaBack->Draw(PipelineManager::obj_normal);
 	}
 
 	Object::PostDraw();
@@ -85,7 +75,7 @@ void Stage::Draw()
 void Stage::ShadowDraw()
 {
 	Object::PreDraw(DirectXImportant::cmdList.Get());
-	//obj_shadowArenaFront->Draw(PipelineManager::obj_shadow);
+	obj_shadowArenaFront->Draw(PipelineManager::obj_shadow);
 	obj_shadowArenaBack->Draw(PipelineManager::obj_shadow);
 	Object::PostDraw();
 }

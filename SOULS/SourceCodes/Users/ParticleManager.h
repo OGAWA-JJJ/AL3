@@ -21,12 +21,12 @@ public:
 	};
 
 private:
-	ParticleData m_particleData;
-	Object* m_object = nullptr;
-	int m_life;
-	int m_createFrame;
-	int m_loopNum;
-	bool m_isDraw;
+	ParticleData m_particleData = {};
+	std::shared_ptr<Object> m_object = nullptr;
+	int m_life = 0;
+	int m_createFrame = 0;
+	int m_loopNum = 0;
+	bool m_isDraw = false;
 
 	//‰¼
 	DirectX::XMFLOAT3 m_scale = { 0,0,0 };
@@ -55,7 +55,7 @@ public:
 	void ResetLifeParticle();
 
 public:
-	Object* GetModel() { return m_object; }
+	std::shared_ptr<Object> GetModel() { return m_object; }
 	bool GetIsDraw() { return m_isDraw; }
 	DirectX::XMFLOAT3& GetPower() { return m_particleData.power; }
 
@@ -73,14 +73,14 @@ private:
 
 private:
 	std::vector<Particle> m_particles;
-	int m_maxParticle;
-	int m_createTimer;
-	int m_maxCreateTimer;
-	int m_createNum;
-	int m_createCount;
-	bool m_isCreate;
-	bool m_isCreateStop;
-	bool m_isArrivalCreateNum;
+	int m_maxParticle = 0;
+	int m_createTimer = 0;
+	int m_maxCreateTimer = 0;
+	int m_createNum = 0;
+	int m_createCount = 0;
+	bool m_isCreate = false;
+	bool m_isCreateStop = false;
+	bool m_isArrivalCreateNum = false;
 
 public:
 	void Init();

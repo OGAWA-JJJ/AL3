@@ -23,31 +23,31 @@ bool SpriteManager::m_playerDamaged = false;
 bool SpriteManager::m_isStart = false;
 bool SpriteManager::m_isSceneChangeEnd = false;
 
-Sprite* SpriteManager::tex_numbers[] = { nullptr };
-Sprite* SpriteManager::tex_enemy_hp_red = nullptr;
-Sprite* SpriteManager::tex_enemy_hp_yellow = nullptr;
-Sprite* SpriteManager::tex_enemy_hp_back = nullptr;
-Sprite* SpriteManager::tex_enemy_hp_flame = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_numbers[] = { nullptr };
+std::shared_ptr<Sprite> SpriteManager::tex_enemy_hp_red = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_enemy_hp_yellow = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_enemy_hp_back = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_enemy_hp_flame = nullptr;
 
-Sprite* SpriteManager::tex_enemy_name = nullptr;
-Sprite* SpriteManager::tex_died = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_enemy_name = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_died = nullptr;
 
-Sprite* SpriteManager::tex_player_hp_red = nullptr;
-Sprite* SpriteManager::tex_player_hp_yellow = nullptr;
-Sprite* SpriteManager::tex_player_hp_back = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_hp_red = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_hp_yellow = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_hp_back = nullptr;
 
-Sprite* SpriteManager::tex_player_mp_blue = nullptr;
-Sprite* SpriteManager::tex_player_mp_yellow = nullptr;
-Sprite* SpriteManager::tex_player_mp_back = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_mp_blue = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_mp_yellow = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_mp_back = nullptr;
 
-Sprite* SpriteManager::tex_player_stamina_green = nullptr;
-Sprite* SpriteManager::tex_player_stamina_yellow = nullptr;
-Sprite* SpriteManager::tex_player_stamina_back = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_stamina_green = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_stamina_yellow = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_player_stamina_back = nullptr;
 
-Sprite* SpriteManager::tex_title = nullptr;
-Sprite* SpriteManager::tex_title_press_a = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_title = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_title_press_a = nullptr;
 
-Sprite* SpriteManager::tex_estus = nullptr;
+std::shared_ptr<Sprite> SpriteManager::tex_estus = nullptr;
 
 void SpriteManager::Init()
 {

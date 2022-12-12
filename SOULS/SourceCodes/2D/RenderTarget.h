@@ -1,11 +1,10 @@
 #pragma once
 #include "../DirectX/DirectXImportant.h"
-#include "../2D/Texture.h"
 
 class RenderTarget
 {
 private:
-	Texture m_renderTargetTexture;
+	//Texture m_renderTargetTexture;
 	ID3D12Resource* m_renderTargetTextureDx12 = nullptr;	//レンダリングターゲットとなるテクスチャ。
 	ID3D12Resource* m_depthStencilTexture = nullptr;		//深度ステンシルバッファとなるテクスチャ。
 	ID3D12DescriptorHeap* m_rtvHeap = nullptr;				//RTV用のディスクリプタヒープ。
@@ -57,10 +56,10 @@ public:
 	{
 		return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
-	Texture& GetRenderTargetTexture()
-	{
-		return m_renderTargetTexture;
-	}
+	//Texture& GetRenderTargetTexture()
+	//{
+		//return m_renderTargetTexture;
+	//}
 	bool IsExsitDepthStencilBuffer() const
 	{
 		return m_depthStencilTexture;
@@ -69,7 +68,7 @@ public:
 	int GetHeight() const { return m_height; }
 	DXGI_FORMAT GetColorBufferFormat() const
 	{
-		return m_renderTargetTexture.GetFormat();
+		//return m_renderTargetTexture.GetFormat();
 	}
 	const float* GetRTVClearColor() const { return m_rtvClearColor; }
 	float GetDSVClearValue() const { return m_dsvClearValue; }

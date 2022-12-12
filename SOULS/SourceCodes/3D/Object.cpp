@@ -5,18 +5,16 @@
 #include <string>
 #include <vector>
 #include "../DirectX/Camera.h"
-#include "../Math/BaseCollider.h"
-#include "../Math/CollisionManager.h"
 #include "../../imgui/ImguiControl.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-ID3D12Device* Object::device = nullptr;
-ID3D12GraphicsCommandList* Object::cmdList = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Object::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> Object::cmdList = nullptr;
 ObjPipelineSet Object::pipelineSet;
-Light* Object::light = nullptr;
+std::shared_ptr<Light> Object::light = nullptr;
 
-void Object::StaticInit(ID3D12Device* device)
+void Object::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 {
 	//再初期化チェック
 	assert(!Object::device);
@@ -25,9 +23,6 @@ void Object::StaticInit(ID3D12Device* device)
 	assert(device);
 
 	Object::device = device;
-
-	//グラフィックパイプラインの生成
-	//CreateGraphicsPipeline(objectInitData);
 
 	//モデルの静的初期化
 	Model::StaticInit(device);
@@ -45,7 +40,7 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 		L"Resources/Shaders/ObjVS.hlsl",					//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
-		objectInitData.m_vsEntryPoint,
+		objectInitData.m_vsEntryPoint.c_str(),
 		"vs_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
@@ -69,7 +64,7 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 		L"Resources/Shaders/ObjPS.hlsl",					//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード可能にする
-		objectInitData.m_psEntryPoint,
+		objectInitData.m_psEntryPoint.c_str(),
 		"ps_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,	//デバッグ用設定
 		0,
@@ -182,7 +177,7 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 		assert(0);
 	}
 
-	gpipeline.pRootSignature = pipelineSet.rootsignature;
+	gpipeline.pRootSignature = pipelineSet.rootsignature.Get();
 
 	//グラフィックスパイプラインの生成
 	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineSet.pipelinestate));
@@ -194,7 +189,7 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 	return pipelineSet;
 }
 
-void Object::PreDraw(ID3D12GraphicsCommandList* cmdList)
+void Object::PreDraw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
 {
 	//PreDrawとPostDrawがペアで呼ばれていなければエラー
 	assert(Object::cmdList == nullptr);
@@ -212,18 +207,16 @@ void Object::PostDraw()
 	Object::cmdList = nullptr;
 }
 
-Object* Object::Create(Model* model)
+std::shared_ptr<Object> Object::Create(std::shared_ptr<Model> model)
 {
 	//3Dオブジェクトのインスタンスを生成
-	Object* object = new Object();
-	//std::shared_ptr<Object> object = std::make_shared<Object>();
+	std::shared_ptr<Object> object = std::make_shared<Object>();
 	if (object == nullptr) {
 		return nullptr;
 	}
 
 	// 初期化
 	if (!object->Init()) {
-		//delete object;
 		assert(0);
 	}
 
@@ -236,10 +229,6 @@ Object* Object::Create(Model* model)
 
 Object::~Object()
 {
-	if (collider) {
-		CollisionManager::GetInstance()->RemoveCollider(collider);
-		delete collider;
-	}
 }
 
 bool Object::Init()
@@ -256,9 +245,6 @@ bool Object::Init()
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&constBuffB0));
-
-	//クラス名
-	name = typeid(*this).name();
 
 	return true;
 }
@@ -334,11 +320,6 @@ void Object::Update(bool isShadowCamera)
 	constMap->cameraPos = cameraPos;
 	constMap->color = color;
 	constBuffB0->Unmap(0, nullptr);
-
-	//当たり判定更新
-	if (collider) {
-		collider->Update();
-	}
 }
 
 void Object::Draw(const ObjPipelineSet& pipelineSet)
@@ -353,9 +334,9 @@ void Object::Draw(const ObjPipelineSet& pipelineSet)
 	}
 
 	//パイプラインステートの設定
-	cmdList->SetPipelineState(pipelineSet.pipelinestate);
+	cmdList->SetPipelineState(pipelineSet.pipelinestate.Get());
 	//ルートシグネチャの設定
-	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature);
+	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature.Get());
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, constBuffB0->GetGPUVirtualAddress());
 
@@ -363,58 +344,5 @@ void Object::Draw(const ObjPipelineSet& pipelineSet)
 	light->Draw(cmdList, 3);
 
 	//モデル描画
-	model->Draw(cmdList, modelDescHeap, 4, isAddTexture);
-}
-
-void Object::SetCollider(BaseCollider* collider)
-{
-	collider->SetObject(this);
-	this->collider = collider;
-	//Managerに登録
-	CollisionManager::GetInstance()->AddCollider(collider);
-	//更新
-	collider->Update();
-}
-
-void Object::AddTexture(ID3D12Resource* texbuff, ID3D12DescriptorHeap* srv)
-{
-	isAddTexture = true;
-	//1枚のみ対応
-	//HRESULT result;
-	modelDescHeap = srv;
-	if (srv == nullptr) { assert(0); }
-
-	//D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
-	//srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	//srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	//srvDescHeapDesc.NumDescriptors = 1;
-
-	//SRV用デスクリプタヒープを作成
-	//result = DirectXImportant::dev->CreateDescriptorHeap(
-		//&srvDescHeapDesc,
-		//IID_PPV_ARGS(&modelDescHeap));
-
-	//assert(SUCCEEDED(result));
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
-	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
-
-	srvDesc.Format = resDesc.Format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = 1;
-
-	/*device->CreateShaderResourceView(
-		texbuff,
-		&srvDesc,
-		modelDescHeap->GetCPUDescriptorHandleForHeapStart());*/
-
-	device->CreateShaderResourceView(
-		texbuff,
-		&srvDesc,
-		CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			modelDescHeap->GetCPUDescriptorHandleForHeapStart(),
-			50,
-			device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-		));
+	model->Draw(cmdList);
 }

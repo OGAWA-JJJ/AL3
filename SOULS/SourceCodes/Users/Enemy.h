@@ -126,7 +126,7 @@ private:	//変数(ステータス関係)
 	int m_hp;
 
 private:	//オブジェクト(Draw用)
-	std::array<Object*, 10> obj_Box = { nullptr };
+	std::array<std::shared_ptr<Object>, 10> obj_Box = { nullptr };
 	const int C_BOX_NUM = 10;
 
 	std::array<bool, 37> boxes = {
@@ -141,10 +141,10 @@ private:	//オブジェクト(Draw用)
 	};
 
 	//std::array<FbxObjects*, 13> fbxobj_creature = { nullptr };
-	FbxObjects* fbxobj_creature = nullptr;
+	std::shared_ptr<FbxObjects> fbxobj_creature = nullptr;
 	const int C_CREATURE_NUM = 13;
 
-	Object* obj_circle = nullptr;
+	std::shared_ptr<Object> obj_circle = nullptr;
 
 public:
 	Enemy();
@@ -177,7 +177,6 @@ private:
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	//const int GetBoneCount() { return m_boneCount; }
 	const int GetPower() { return C_MAX_POWER; }
 	const int GetExplosionPower() { return C_MAX_EXPLOSION_POWER; }
 	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }

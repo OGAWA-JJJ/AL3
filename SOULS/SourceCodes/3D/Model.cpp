@@ -2,11 +2,12 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include "../2D/TexManager.h"
+#include "../DirectX/DirectXImportant.h"
 
 const std::string Model::baseDirectory = "Resources/";
-ID3D12Device* Model::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Model::device = nullptr;
 UINT Model::descriptorHandleIncrementSize = 0;
-//ID3D12DescriptorHeap* Model::descHeap;
 
 Model::Model()
 {
@@ -14,18 +15,9 @@ Model::Model()
 
 Model::~Model()
 {
-	for (auto m : meshes) {
-		delete m;
-	}
-	meshes.clear();
-
-	for (auto m : materials) {
-		delete m.second;
-	}
-	materials.clear();
 }
 
-void Model::StaticInit(ID3D12Device* device)
+void Model::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 {
 	// 再初期化チェック
 	assert(!Model::device);
@@ -36,11 +28,10 @@ void Model::StaticInit(ID3D12Device* device)
 	Mesh::StaticInit(device);
 }
 
-Model* Model::CreateFromObj(const std::string& modelname, bool smoothing)
+std::shared_ptr<Model> Model::CreateFromObj(const std::string& modelname, bool smoothing)
 {
 	//メモリ確保
-	Model* instance = new Model();
-	//std::shared_ptr<Model> instance = std::make_shared<Model>();
+	std::shared_ptr<Model> instance = std::make_shared<Model>();
 	instance->Init(modelname, smoothing);
 
 	return instance;
@@ -51,33 +42,33 @@ void Model::Init(const std::string& modelname, bool smoothing)
 	const std::string filename = modelname + ".obj";
 	const std::string directoryPath = baseDirectory + modelname + "/";
 
-	// ファイルストリーム
+	//ファイルストリーム
 	std::ifstream file;
-	// .objファイルを開く
+	//.objファイルを開く
 	file.open(directoryPath + filename);
-	// ファイルオープン失敗をチェック
+	//ファイルオープン失敗をチェック
 	if (file.fail()) {
 		assert(0);
 	}
 
 	name = modelname;
 
-	// メッシュ生成
-	Mesh* mesh = new Mesh;
+	//メッシュ生成
+	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 	int indexCountTex = 0;
 	int indexCountNoTex = 0;
 
-	std::vector<DirectX::XMFLOAT3> positions;	// 頂点座標
-	std::vector<DirectX::XMFLOAT3> normals;	// 法線ベクトル
-	std::vector<DirectX::XMFLOAT2> texcoords;	// テクスチャUV
-	// 1行ずつ読み込む
+	std::vector<DirectX::XMFLOAT3> positions;	//頂点座標
+	std::vector<DirectX::XMFLOAT3> normals;		//法線ベクトル
+	std::vector<DirectX::XMFLOAT2> texcoords;	//テクスチャUV
+	//1行ずつ読み込む
 	std::string line;
 	while (getline(file, line)) {
 
-		// 1行分の文字列をストリームに変換して解析しやすくする
+		//1行分の文字列をストリームに変換して解析しやすくする
 		std::istringstream line_stream(line);
 
-		// 半角スペース区切りで行の先頭文字列を取得
+		//半角スペース区切りで行の先頭文字列を取得
 		std::string key;
 		getline(line_stream, key, ' ');
 
@@ -101,7 +92,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 				// コンテナに登録
 				meshes.emplace_back(mesh);
 				// 次のメッシュ生成
-				mesh = new Mesh;
+				mesh = std::make_shared<Mesh>();
 				indexCountTex = 0;
 			}
 
@@ -176,7 +167,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 				// 頂点番号
 				index_stream >> indexPosition;
 
-				Material* material = mesh->GetMaterial();
+				std::shared_ptr<Material> material = mesh->GetMaterial();
 				index_stream.seekg(1, std::ios_base::cur); // スラッシュを飛ばす
 				// マテリアル、テクスチャがある場合
 				if (material && material->textureFilename.size() > 0) {
@@ -254,7 +245,7 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		mesh->CalculateSmoothedVertexNormals();
 	}
 
-	// コンテナに登録
+	//コンテナに登録
 	meshes.emplace_back(mesh);
 
 	// メッシュのマテリアルチェック
@@ -272,42 +263,29 @@ void Model::Init(const std::string& modelname, bool smoothing)
 		}
 	}
 
-	// メッシュのバッファ生成
+	//メッシュのバッファ生成
 	for (auto& m : meshes) {
 		m->CreateBuffers();
 	}
 
-	// マテリアルの数値を定数バッファに反映
+	//マテリアルの数値を定数バッファに反映
 	for (auto& m : materials) {
 		m.second->Update();
 	}
 
-	// デスクリプタヒープ生成
-	CreateDescriptorHeap();
+	descriptorHandleIncrementSize =
+		DirectXImportant::dev->
+		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	// テクスチャの読み込み
+	//テクスチャの読み込み
 	LoadTextures();
 }
 
-void Model::Draw(ID3D12GraphicsCommandList* cmdList,
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srv,
-	UINT rootParamIndex,
-	bool isAddTexture
-)
+void Model::Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
 {
 	//デスクリプタヒープの配列
-	if (descHeap) {
-		ID3D12DescriptorHeap* ppHeaps[] = { descHeap };
-		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	}
-
-	if (isAddTexture) {
-		cmdList->SetGraphicsRootDescriptorTable(rootParamIndex,
-			CD3DX12_GPU_DESCRIPTOR_HANDLE(
-				srv->GetGPUDescriptorHandleForHeapStart(),
-				50,
-				descriptorHandleIncrementSize));
-	}
+	ID3D12DescriptorHeap* ppHeaps[] = { TexManager::GetHeapAdressSRV() };
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	//全メッシュを描画
 	for (auto& mesh : meshes)
@@ -327,7 +305,7 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 		assert(0);
 	}
 
-	Material* material = nullptr;
+	std::shared_ptr<Material> material = nullptr;
 
 	//1行ずつ読み込む←fgetsにした方が軽い??
 	std::string line;
@@ -404,58 +382,48 @@ void Model::LoadMaterial(const std::string& directoryPath, const std::string& fi
 	}
 }
 
-void Model::AddMaterial(Material* material)
+void Model::AddMaterial(std::shared_ptr<Material> material)
 {
 	//コンテナに登録
 	materials.emplace(material->name, material);
 }
 
-void Model::CreateDescriptorHeap()
-{
-	HRESULT result = S_FALSE;
-
-	//マテリアルの数
-	size_t count = materials.size();
-
-	//デスクリプタヒープを生成(1つにまとめた方が楽！0~100が定数バッファ,101~200がSRV...)←cmdListを呼ぶ回数が減る
-	if (count > 0) {
-		D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
-		descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;	//シェーダから見えるように
-		descHeapDesc.NumDescriptors = 60;						//シェーダーリソースビューの数
-		result = device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeap));//生成
-		if (FAILED(result)) {
-			assert(0);
-		}
-	}
-
-	//デスクリプタサイズを取得
-	descriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-}
-
 void Model::LoadTextures()
 {
-	int textureIndex = 0;
 	std::string directoryPath = baseDirectory + name + "/";
 
 	for (auto& m : materials) {
-		Material* material = m.second;
+		std::weak_ptr<Material> material = m.second;
 
 		//テクスチャあり
-		if (material->textureFilename.size() > 0) {
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
+		if (material.lock()->textureFilename.size() > 0) {
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV =
+				CD3DX12_CPU_DESCRIPTOR_HANDLE(
+					TexManager::GetCpuHeapStartSRV(),
+					TexManager::GetOffsetSRV(),
+					descriptorHandleIncrementSize);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV =
+				CD3DX12_GPU_DESCRIPTOR_HANDLE(
+					TexManager::GetGpuHeapStartSRV(),
+					TexManager::GetOffsetSRV(),
+					descriptorHandleIncrementSize);
 			//マテリアルにテクスチャ読み込み
-			material->LoadTexture(directoryPath, cpuDescHandleSRV, gpuDescHandleSRV);
-			textureIndex++;
+			material.lock()->LoadTexture(directoryPath, cpuDescHandleSRV, gpuDescHandleSRV);
 		}
 		//テクスチャなし
 		else {
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV = CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV = CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(), textureIndex, descriptorHandleIncrementSize);
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV =
+				CD3DX12_CPU_DESCRIPTOR_HANDLE(
+					TexManager::GetCpuHeapStartSRV(),
+					TexManager::GetOffsetSRV(),
+					descriptorHandleIncrementSize);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV =
+				CD3DX12_GPU_DESCRIPTOR_HANDLE(
+					TexManager::GetGpuHeapStartSRV(),
+					TexManager::GetOffsetSRV(),
+					descriptorHandleIncrementSize);
 			//マテリアルにテクスチャ読み込み
-			material->LoadTexture(baseDirectory, cpuDescHandleSRV, gpuDescHandleSRV);
-			textureIndex++;
+			material.lock()->LoadTexture(baseDirectory, cpuDescHandleSRV, gpuDescHandleSRV);
 		}
 	}
 }

@@ -124,7 +124,7 @@ bool RenderTarget::CreateRenderTargetTexture(ID3D12Device*& d3dDevice, int w, in
 		//作成に失敗。
 		return false;
 	}
-	m_renderTargetTexture.InitFromD3DResource(m_renderTargetTextureDx12);
+	//m_renderTargetTexture.InitFromD3DResource(m_renderTargetTextureDx12);
 	return true;
 
 }
@@ -169,7 +169,7 @@ void RenderTarget::CreateDescriptor(ID3D12Device*& d3dDevice)
 {
 	//カラーテクスチャのディスクリプタを作成。
 	auto rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dDevice->CreateRenderTargetView(m_renderTargetTexture.Get(), nullptr, rtvHandle);
+	//d3dDevice->CreateRenderTargetView(m_renderTargetTexture.Get(), nullptr, rtvHandle);
 	if (m_depthStencilTexture) {
 		//深度テクスチャのディスクリプタを作成
 		auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();

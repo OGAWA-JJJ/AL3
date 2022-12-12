@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 #include "FbxMaterial.h"
 
 class FbxMeshes
@@ -26,7 +27,7 @@ public:
 	};
 
 private:
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 
 private:
 	std::string name;
@@ -36,11 +37,11 @@ private:
 	D3D12_INDEX_BUFFER_VIEW ibView = {};
 	std::vector<VertexPosNormalUv> vertices;
 	std::vector<unsigned short> indices;
-	FbxMaterial* material = nullptr;
+	std::shared_ptr<FbxMaterial> material = nullptr;
 	std::unordered_map<unsigned short, std::vector<unsigned short>> smoothData;
 
 public:
-	static void StaticInit(ID3D12Device* dev);
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> dev);
 
 public:
 	FbxMeshes() {}
@@ -49,9 +50,9 @@ public:
 	void SetName(const std::string& name);
 	void AddVertex(const VertexPosNormalUv& vertex);
 	void AddIndex(unsigned short index);
-	void SetMaterial(FbxMaterial* material);
+	void SetMaterial(std::shared_ptr<FbxMaterial> material);
 	void CreateBuffers();
-	void Draw(ID3D12GraphicsCommandList* cmdList, FbxMaterial* material);
+	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList, std::shared_ptr<FbxMaterial> material);
 	void AddSmoothData(unsigned short indexPosition, unsigned short indexVertex);
 	void CalculateSmoothedVertexNormals();
 
@@ -61,7 +62,7 @@ public:
 public:
 	const std::string& GetName() { return name; }
 	inline size_t GetVertexCount() { return vertices.size(); }
-	FbxMaterial* GetMaterial() { return material; }
+	std::shared_ptr<FbxMaterial> GetMaterial() { return material; }
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBView() { return vbView; }
 	const D3D12_INDEX_BUFFER_VIEW& GetIBView() { return ibView; }
 	inline std::vector<VertexPosNormalUv>& GetVertices() { return vertices; }

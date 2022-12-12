@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <wrl.h>
 #include <string>
+#include <memory>
 
 class Material
 {
@@ -34,9 +35,7 @@ public:
 
 private:
 	//デバイス
-	static ID3D12Device* device;
-	//テクスチャバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> texbuff;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//定数バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff;
 	//シェーダリソースビューのハンドル(CPU)
@@ -46,24 +45,27 @@ private:
 
 public:
 	//静的初期化
-	static void StaticInit(ID3D12Device* device);
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
 	//マテリアル生成
-	static Material* Create();
+	static std::shared_ptr<Material> Create();
 
 public:
 	//テクスチャ読み込み
-	void LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle);
+	void LoadTexture(
+		const std::string& directoryPath,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle,
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle);
 	//更新
 	void Update();
 
 public:
 	//定数バッファの取得
-	ID3D12Resource* GetConstantBuffer() { return constBuff.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12Resource> GetConstantBuffer() { return constBuff.Get(); }
 
 	const CD3DX12_CPU_DESCRIPTOR_HANDLE& GetCpuHandle() { return cpuDescHandleSRV; }
 	const CD3DX12_GPU_DESCRIPTOR_HANDLE& GetGpuHandle() { return gpuDescHandleSRV; }
 
-private:
+public:
 	Material() {
 		ambient = { 0.4f, 0.4f, 0.4f };
 		diffuse = { 0.8f, 0.8f, 0.8f };

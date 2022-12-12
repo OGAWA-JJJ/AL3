@@ -16,7 +16,7 @@ public:
 
 private:
 	//デバイス
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 
 private:
 	//名前
@@ -34,13 +34,13 @@ private:
 	//頂点インデックス配列
 	std::vector<unsigned short> indices;
 	//マテリアル
-	Material* material = nullptr;
+	std::shared_ptr<Material> material = nullptr;
 	//頂点法線スムーシング用データ
 	std::unordered_map<unsigned short, std::vector<unsigned short>> smoothData;
 
 public:
 	//静的初期化
-	static void StaticInit(ID3D12Device* device);
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
 
 public:
 	Mesh();
@@ -53,11 +53,11 @@ public:
 	//頂点インデックスの追加
 	void AddIndex(unsigned short index);
 	//マテリアルの割り当て
-	void SetMaterial(Material* material);
+	void SetMaterial(std::shared_ptr<Material> material);
 	//バッファの生成
 	void CreateBuffers();
 	//描画
-	void Draw(ID3D12GraphicsCommandList* cmdList);
+	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
 	//エッジ平滑化データの追加
 	void AddSmoothData(unsigned short indexPosition, unsigned short indexVertex);
 	//平滑化された頂点法線の計算
@@ -69,7 +69,7 @@ public:
 	//頂点データの数を取得
 	inline size_t GetVertexCount() { return vertices.size(); }
 	//マテリアルの取得
-	Material* GetMaterial() { return material; }
+	std::shared_ptr<Material> GetMaterial() { return material; }
 	//頂点バッファ取得
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBView() { return vbView; }
 	//インデックスバッファ取得

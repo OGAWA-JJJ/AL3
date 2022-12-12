@@ -3,9 +3,9 @@
 #include "../../imgui/ImguiControl.h"
 #include "../DirectX/Camera.h"
 
-ID3D12Device* Light::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Light::device = nullptr;
 
-void Light::StaticInit(ID3D12Device* device)
+void Light::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 {
 	//再初期化チェック
 	assert(!Light::device);
@@ -15,11 +15,10 @@ void Light::StaticInit(ID3D12Device* device)
 	Light::device = device;
 }
 
-Light* Light::Create()
+std::shared_ptr<Light> Light::Create()
 {
 	//3Dオブジェクトのインスタンスを生成
-	Light* instance = new Light();
-	//std::shared_ptr<Light> instance = std::make_shared<Light>();
+	std::shared_ptr<Light> instance = std::make_shared<Light>();
 	//初期化
 	instance->Init();
 	//生成したインスタンスを返す
@@ -92,7 +91,9 @@ void Light::Update()
 	}
 }
 
-void Light::Draw(ID3D12GraphicsCommandList* cmdList, UINT rootParameterIndex)
+void Light::Draw(
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList,
+	UINT rootParameterIndex)
 {
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(

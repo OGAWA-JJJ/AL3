@@ -1,7 +1,6 @@
 #include "../imgui/Dx12Wrapper.h"
 #include "../imgui/ImguiControl.h"
 #include "2D/PostEffect.h"
-#include "2D/RenderTarget.h"
 #include "2D/ShadowMap.h"
 #include "3D/Light.h"
 #include "DirectX/DirectXBase.h"
@@ -9,6 +8,7 @@
 #include "Users/GameScene.h"
 #include "Users/ModelManager.h"
 #include "Users/SpriteManager.h"
+#include "2D/TexManager.h"
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -48,6 +48,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		return 1;
 	}
 	FbxObjects::StaticInit(DirectXImportant::dev.Get(), DirectXImportant::cmdList.Get());
+	PostEffect::StaticInit(DirectXImportant::cmdList.Get());
+	ShadowMap::StaticInit(DirectXImportant::cmdList.Get());
+
+	//デスクリプタヒープ生成
+	TexManager::StaticInit();
 
 	//モデルのロード
 	ModelManager::Init();
@@ -61,7 +66,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	const float gaussSigma = 8.0f;
 
 	//輝度抽出用
-	SpriteInitData luminanceData;
+	PostEffect::SpriteInitData luminanceData;
 	luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	luminanceData.m_psShaderName = L"Resources/Shaders/LuminancePS.hlsl";
 
@@ -72,7 +77,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	luminanceData.m_height = WINDOW_HEIGHT;
 
 	//横ブラー用のスプライトを初期化
-	SpriteInitData xBlurSpriteInitData;
+	PostEffect::SpriteInitData xBlurSpriteInitData;
 	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
@@ -85,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
 	//縦ブラー用のスプライトを初期化
-	SpriteInitData yBlurSpriteInitData;
+	PostEffect::SpriteInitData yBlurSpriteInitData;
 	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
 	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
@@ -98,7 +103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
 	//縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
-	SpriteInitData spriteInitData;
+	PostEffect::SpriteInitData spriteInitData;
 
 	spriteInitData.m_width = WINDOW_WIDTH;
 	spriteInitData.m_height = WINDOW_HEIGHT;
@@ -109,38 +114,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	spriteInitData.m_vsEntryPoint = "VSmain";
 	spriteInitData.m_psEntryPoint = "PSmain";
 
-	spriteInitData.m_alphaBlendMode = AlphaBlendMode::ALPHA_BLENDMODE_ADD;
+	spriteInitData.m_alphaBlendMode = PostEffect::AlphaBlendMode::ALPHA_BLENDMODE_ADD;
 #pragma endregion
 	/*----------宣言　ここまで----------*/
 
 
 	/*----------初期化　ここから----------*/
 #pragma region 初期化
-	PostEffect* luminanceSprite = nullptr;
-	luminanceSprite = new PostEffect();
+	std::unique_ptr<PostEffect> luminanceSprite = nullptr;
+	luminanceSprite = std::make_unique<PostEffect>();
 	luminanceSprite->Init(luminanceData);
 
-	PostEffect* xBlurSprite = nullptr;
-	xBlurSprite = new PostEffect();
-	xBlurSprite->Init(xBlurSpriteInitData);
+	std::unique_ptr<PostEffect> xBlurSprite = nullptr;
+	xBlurSprite = std::make_unique<PostEffect>();
+	//xBlurSprite->Init(xBlurSpriteInitData);
 
-	PostEffect* yBlurSprite = nullptr;
-	yBlurSprite = new PostEffect();
-	yBlurSprite->Init(yBlurSpriteInitData);
+	std::unique_ptr<PostEffect> yBlurSprite = nullptr;
+	yBlurSprite = std::make_unique<PostEffect>();
+	//yBlurSprite->Init(yBlurSpriteInitData);
 
-	PostEffect* copyToFrameBufferSprite = nullptr;
-	copyToFrameBufferSprite = new PostEffect();
-	copyToFrameBufferSprite->Init(spriteInitData);
+	std::unique_ptr<PostEffect> copyToFrameBufferSprite = nullptr;
+	copyToFrameBufferSprite = std::make_unique<PostEffect>();
+	//copyToFrameBufferSprite->Init(spriteInitData);
 
 	//影
-	ShadowMap* shadow = nullptr;
-	shadow = new ShadowMap();
+	std::unique_ptr<ShadowMap> shadow = nullptr;
+	shadow = std::make_unique<ShadowMap>();
 	shadow->Init();
 
 	//メイン
-	GameScene* Gamescene = nullptr;
-	Gamescene = new GameScene();
-	Gamescene->Init(shadow->GetTexbuffer());
+	std::unique_ptr<GameScene> Gamescene = nullptr;
+	Gamescene = std::make_unique<GameScene>();
+	Gamescene->Init();
 #pragma endregion
 	/*----------初期化　ここまで----------*/
 
@@ -168,9 +173,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		yBlurSprite->Draw(DirectXImportant::cmdList.Get());
 		copyToFrameBufferSprite->PostDrawScene(DirectXImportant::cmdList.Get());*/
 
-		shadow->PreDraw(DirectXImportant::cmdList.Get());
+		shadow->PreDraw();
 		Gamescene->ShadowDraw();
-		shadow->PostDraw(DirectXImportant::cmdList.Get());
+		shadow->PostDraw();
 
 		DirectXBase::BeforeDraw(WindowColor);
 
@@ -184,7 +189,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Gamescene->Draw();
 		//copyToFrameBufferSprite->Draw(DirectXImportant::cmdList.Get());
 		//Gamescene->ShadowDraw();
-		shadow->Draw(DirectXImportant::cmdList.Get());
+		shadow->Draw();
 
 		//Gamescene->ShadowDraw();
 

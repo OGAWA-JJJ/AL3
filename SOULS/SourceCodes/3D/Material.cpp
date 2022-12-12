@@ -2,10 +2,11 @@
 #include "include/DirectXTex.h"
 #include <cassert>
 #include <filesystem>
+#include "../2D/TexManager.h"
 
-ID3D12Device* Material::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Material::device = nullptr;
 
-void Material::StaticInit(ID3D12Device* device)
+void Material::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 {
 	//再初期化チェック
 	assert(!Material::device);
@@ -13,19 +14,23 @@ void Material::StaticInit(ID3D12Device* device)
 	Material::device = device;
 }
 
-Material* Material::Create()
+std::shared_ptr<Material> Material::Create()
 {
-	Material* instance = new Material;
+	std::shared_ptr<Material> instance = std::make_shared<Material>();
 
 	instance->Init();
 
 	return instance;
 }
 
-void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle, CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle)
+void Material::LoadTexture(
+	const std::string& directoryPath,
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle,
+	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
 	//テクスチャなし
-	if (textureFilename.size() == 0) {
+	if (textureFilename.size() == 0)
+	{
 		textureFilename = "white1x1.png";
 	}
 
@@ -78,13 +83,13 @@ void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIP
 		&texresDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ, //テクスチャ用指定
 		nullptr,
-		IID_PPV_ARGS(&texbuff));
+		IID_PPV_ARGS(&TexManager::GetBuffer()));
 	if (FAILED(result)) {
 		assert(0);
 	}
 
 	//テクスチャバッファにデータ転送
-	result = texbuff->WriteToSubresource(
+	result = TexManager::GetBuffer()->WriteToSubresource(
 		0,
 		nullptr, //全領域へコピー
 		img->pixels,    //元データアドレス
@@ -97,35 +102,20 @@ void Material::LoadTexture(const std::string& directoryPath, CD3DX12_CPU_DESCRIP
 
 	//シェーダリソースビュー作成
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
-	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
+	D3D12_RESOURCE_DESC resDesc = TexManager::GetBuffer()->GetDesc();
 
 	srvDesc.Format = resDesc.Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(texbuff.Get(), //ビューと関連付けるバッファ
+	device->CreateShaderResourceView(TexManager::GetBuffer().Get(), //ビューと関連付けるバッファ
 		&srvDesc, //テクスチャ設定情報
 		cpuDescHandleSRV
 	);
-}
 
-//void Material::AddTexture(ID3D12Resource* texbuff)
-//{
-//	//シェーダリソースビュー作成
-//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
-//	D3D12_RESOURCE_DESC resDesc = texbuff->GetDesc();
-//
-//	srvDesc.Format = resDesc.Format;
-//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
-//	srvDesc.Texture2D.MipLevels = 1;
-//
-//	device->CreateShaderResourceView(texbuff, //ビューと関連付けるバッファ
-//		&srvDesc, //テクスチャ設定情報
-//		cpuDescHandleSRV
-//	);
-//}
+	TexManager::AddOffsetSRV();
+}
 
 void Material::Update()
 {

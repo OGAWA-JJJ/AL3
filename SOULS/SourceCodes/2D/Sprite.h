@@ -1,11 +1,9 @@
 #pragma once
-//#include "Texture.h"
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include <DirectXMath.h>
-
-//class Texture;
+#include <memory>
 
 class Sprite
 {
@@ -33,39 +31,35 @@ public:
 	//静的初期化
 	static bool StaticInitialize(ID3D12Device* device, int window_width, int window_height);
 	//テクスチャ読み込み
-	static bool LoadTexture(UINT texnumber, const wchar_t* filename);
+	static bool LoadTexture(UINT texNumber, const wchar_t* filename);
 	//描画前処理
 	static void PreDraw(ID3D12GraphicsCommandList* cmdList);
 	//描画後処理
 	static void PostDraw();
 	//スプライト生成
-	static Sprite* Create(UINT texNumber, XMFLOAT2 position, XMFLOAT4 color = { 1, 1, 1, 1 }, XMFLOAT2 anchorpoint = { 0.0f, 0.0f }, bool isFlipX = false, bool isFlipY = false);
-	//テクスチャのフォーマットを取得
-	//static DXGI_FORMAT GetFormat() { return m_textureDesc.Format; }
+	static std::shared_ptr<Sprite> Create(
+		UINT texNumber,
+		XMFLOAT2 position,
+		XMFLOAT4 color = { 1, 1, 1, 1 },
+		XMFLOAT2 anchorpoint = { 0.0f, 0.0f },
+		bool isFlipX = false,
+		bool isFlipY = false);
 
 protected:
-	//テクスチャの最大枚数
-	static const int srvCount = 512;
 	//頂点数
 	static const int vertNum = 4;
 	//デバイス
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//デスクリプタサイズ
 	static UINT descriptorHandleIncrementSize;
 	//コマンドリスト
-	static ID3D12GraphicsCommandList* cmdList;
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
 	//ルートシグネチャ
 	static ComPtr<ID3D12RootSignature> rootSignature;
 	//パイプラインステートオブジェクト
 	static ComPtr<ID3D12PipelineState> pipelineState;
 	//射影行列
 	static XMMATRIX matProjection;
-	//デスクリプタヒープ
-	static ComPtr<ID3D12DescriptorHeap> descHeap;
-	//テクスチャバッファ
-	static ComPtr<ID3D12Resource> texBuff[srvCount];
-	//テクスチャ情報
-	//static CD3DX12_RESOURCE_DESC m_textureDesc;
 
 public:
 	//コンストラクタ
@@ -104,7 +98,7 @@ protected:
 	//Z軸回りの回転角
 	float rotation = 0.0f;
 	//座標
-	XMFLOAT2 position{};
+	XMFLOAT2 position = {};
 	//スプライト幅、高さ
 	XMFLOAT2 size = { 100.0f, 100.0f };
 	//アンカーポイント

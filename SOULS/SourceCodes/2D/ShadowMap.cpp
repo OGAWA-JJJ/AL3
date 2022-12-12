@@ -1,10 +1,13 @@
 #include "ShadowMap.h"
 #include "../DirectX/ConstantBuffer.h"
 #include "../DirectX/Camera.h"
+#include "../2D/TexManager.h"
 
 #include "../DirectX/d3dx12.h"
 #include <d3dcompiler.h>
 #include <cassert>
+
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> ShadowMap::cmdList = nullptr;
 
 ShadowMap::ShadowMap()
 {
@@ -63,138 +66,30 @@ void ShadowMap::Init()
 	//定数バッファの生成
 	constBuff = ConstantBuffer::CreateConstantBuffer(sizeof(ConstantBuffer_b0));
 
-	//テクスチャリソース設定←mipLevelsってなに←荒さ改善的なの
-	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
-	);
-
-	//テクスチャバッファの生成
-	float color[] = { 1.0f,1.0f,1.0f,1.0f };
-	result = DirectXImportant::dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
-		D3D12_HEAP_FLAG_NONE,
-		&texresDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, color),
-		IID_PPV_ARGS(&texbuff)
-	);
-	assert(SUCCEEDED(result));
-
-	//テクスチャを仮想生成
-	const UINT pixelCount = WINDOW_WIDTH * WINDOW_HEIGHT;
-	//画像1行分のデータサイズ
-	const UINT rowPitch = sizeof(UINT) * WINDOW_WIDTH;
-	//画像全体のデータサイズ
-	const UINT depthPitch = rowPitch * WINDOW_HEIGHT;
-	//画像イメージ
-	UINT* img = new UINT[pixelCount];
-	for (int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
-
-	//テクスチャバッファにデータ転送
-	result = texbuff->WriteToSubresource(0, nullptr,
-		img, rowPitch, depthPitch);
-	assert(SUCCEEDED(result));
-	delete[] img;
-
-	//SRV用デスクリプタヒープ設定
-	D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
-	srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	srvDescHeapDesc.NumDescriptors = 1;
-	//SRV用デスクリプタヒープを作成
-	result = DirectXImportant::dev->CreateDescriptorHeap(&srvDescHeapDesc, IID_PPV_ARGS(&descHeapSRV));
-	assert(SUCCEEDED(result)
-	);
-
-	//SRV設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = 1;
-
-	//デスクリプタヒープにSRVを作成
-	DirectXImportant::dev->CreateShaderResourceView(
-		texbuff.Get(),	//ビューと関連付けるバッファ
-		&srvDesc,
-		descHeapSRV->GetCPUDescriptorHandleForHeapStart()
-	);
-
-	//RTV用デスクリプタヒープ設定
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescHeapDesc{};
-	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvDescHeapDesc.NumDescriptors = 1;
-
-	//RTV用デスクリプタヒープを生成
-	result = DirectXImportant::dev->CreateDescriptorHeap(
-		&rtvDescHeapDesc,
-		IID_PPV_ARGS(&descHeapRTV)
-	);
-	assert(SUCCEEDED(result));
-	//RTVとSRVはデスクリプタ1つ辺りのデータサイズが異なる為、使い回すことができない。
-
-	DirectXImportant::dev->CreateRenderTargetView(
-		texbuff.Get(),
-		nullptr,
-		descHeapRTV->GetCPUDescriptorHandleForHeapStart()
-	);
-
-	//深度バッファ用リソース設定
-	CD3DX12_RESOURCE_DESC depthResDesc =
-		CD3DX12_RESOURCE_DESC::Tex2D(
-			DXGI_FORMAT_D32_FLOAT,
-			WINDOW_WIDTH,
-			WINDOW_HEIGHT,
-			1, 0,
-			1, 0,
-			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
-		);
-
-	//深度バッファ生成
-	result = DirectXImportant::dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&depthResDesc,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
-		IID_PPV_ARGS(&depthbuff)
-	);
-	assert(SUCCEEDED(result));
-
-	//DSV用デスクリプタヒープ設定
-	D3D12_DESCRIPTOR_HEAP_DESC DescHeapDesc{};
-	DescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	DescHeapDesc.NumDescriptors = 1;
-	//DSV用デスクリプタヒープを作成
-	result = DirectXImportant::dev->CreateDescriptorHeap(
-		&DescHeapDesc,
-		IID_PPV_ARGS(&descHeapDSV)
-	);
-	assert(SUCCEEDED(result));
-
-	//デスクリプタヒープにDSV作成
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;	//深度値フォーマット
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	DirectXImportant::dev->CreateDepthStencilView(
-		depthbuff.Get(),
-		&dsvDesc,
-		descHeapDSV->GetCPUDescriptorHandleForHeapStart()
-	);
-}
-
-void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
-{
-	HRESULT result = S_OK;
-
 	//定数バッファにデータ転送
 	ConstantBuffer_b0 data;
 	data.mat = DirectX::XMMatrixIdentity();
 
 	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
+
+	incrementSizeRTV = DirectXImportant::dev->
+		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	incrementSizeDSV = DirectXImportant::dev->
+		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	//生成系
+	CreateTexBuff();
+
+	CreateSRV();
+
+	CreateRTV();
+
+	CreateDSV();
+}
+
+void ShadowMap::Draw()
+{
+	HRESULT result = S_OK;
 
 	//パイプラインステートの設定
 	cmdList->SetPipelineState(pipelineState.Get());
@@ -206,7 +101,7 @@ void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
 	//頂点バッファの設定
 	cmdList->IASetVertexBuffers(0, 1, &this->vbView);
 
-	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
+	ID3D12DescriptorHeap* ppHeaps[] = { TexManager::GetHeapAdressSRV() };
 	//デスクリプタヒープをセット
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//定数バッファビューをセット
@@ -214,28 +109,31 @@ void ShadowMap::Draw(ID3D12GraphicsCommandList* cmdList)
 
 	//SRV
 	cmdList->SetGraphicsRootDescriptorTable(
-		1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
+		1, TexManager::GetGpuHeapStartSRV());
 
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
 
-void ShadowMap::PreDraw(ID3D12GraphicsCommandList* cmdList)
+void ShadowMap::PreDraw()
 {
 	//リソースバリアを変更
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			TexManager::GetBuffer(srvIndex).Get(),
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			D3D12_RESOURCE_STATE_RENDER_TARGET)
 	);
 
 	//レンダーターゲットビュー用デスクリプタヒープのハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvH =
-		descHeapRTV->GetCPUDescriptorHandleForHeapStart();
+		TexManager::GetHeapAdressRTV()->GetCPUDescriptorHandleForHeapStart();
+	//rtvH.ptr += rtvIndex * incrementSizeRTV;
 	//深度ステンシルビュー用デスクリプタヒープのハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvH =
-		descHeapDSV->GetCPUDescriptorHandleForHeapStart();
+		TexManager::GetHeapAdressDSV()->GetCPUDescriptorHandleForHeapStart();
+	//dsvH.ptr += dsvIndex * incrementSizeDSV;
 	//レンダーターゲットをセット
 	cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
 
@@ -258,11 +156,12 @@ void ShadowMap::PreDraw(ID3D12GraphicsCommandList* cmdList)
 	cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
-void ShadowMap::PostDraw(ID3D12GraphicsCommandList* cmdList)
+void ShadowMap::PostDraw()
 {
 	cmdList->ResourceBarrier(
 		1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(texbuff.Get(),
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			TexManager::GetBuffer(srvIndex).Get(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 	);
@@ -423,4 +322,118 @@ void ShadowMap::CreateGraphicsPipelineState()
 	//グラフィックスパイプラインの生成
 	result = DirectXImportant::dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
+}
+
+void ShadowMap::CreateTexBuff()
+{
+	HRESULT result;
+
+	//テクスチャリソース設定←mipLevelsってなに←荒さ改善的なの
+	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT,
+		1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
+	);
+
+	//テクスチャバッファの生成
+	float color[] = { 1.0f,1.0f,1.0f,1.0f };
+	result = DirectXImportant::dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
+		D3D12_HEAP_FLAG_NONE,
+		&texresDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, color),
+		IID_PPV_ARGS(&TexManager::GetBuffer())
+	);
+	assert(SUCCEEDED(result));
+
+	//テクスチャを仮想生成
+	const UINT pixelCount = WINDOW_WIDTH * WINDOW_HEIGHT;
+	//画像1行分のデータサイズ
+	const UINT rowPitch = sizeof(UINT) * WINDOW_WIDTH;
+	//画像全体のデータサイズ
+	const UINT depthPitch = rowPitch * WINDOW_HEIGHT;
+	//画像イメージ
+	UINT* img = new UINT[pixelCount];
+	for (int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
+
+	//テクスチャバッファにデータ転送
+	result = TexManager::GetBuffer()->WriteToSubresource(0, nullptr,
+		img, rowPitch, depthPitch);
+	assert(SUCCEEDED(result));
+	delete[] img;
+}
+
+void ShadowMap::CreateSRV()
+{
+	//SRV設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = 1;
+
+	//デスクリプタヒープにSRVを作成
+	DirectXImportant::dev->CreateShaderResourceView(
+		TexManager::GetBuffer().Get(),	//ビューと関連付けるバッファ
+		&srvDesc,
+		TexManager::GetCpuHeapStartSRV()
+	);
+
+	srvIndex = TexManager::GetOffsetSRV();
+}
+
+void ShadowMap::CreateRTV()
+{
+	DirectXImportant::dev->CreateRenderTargetView(
+		TexManager::GetBuffer(srvIndex).Get(),
+		nullptr,
+		TexManager::GetCpuHeapStartRTV()
+	);
+
+	rtvIndex = TexManager::GetOffsetRTV();
+	TexManager::AddOffsetSRV();
+	TexManager::AddOffsetRTV();
+}
+
+void ShadowMap::CreateDSV()
+{
+	HRESULT result;
+
+	//深度バッファ用リソース設定
+	CD3DX12_RESOURCE_DESC depthResDesc =
+		CD3DX12_RESOURCE_DESC::Tex2D(
+			DXGI_FORMAT_D32_FLOAT,
+			WINDOW_WIDTH,
+			WINDOW_HEIGHT,
+			1, 0,
+			1, 0,
+			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
+		);
+
+	//深度バッファ生成
+	result = DirectXImportant::dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&depthResDesc,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
+		IID_PPV_ARGS(&TexManager::GetBuffer())
+	);
+	assert(SUCCEEDED(result));
+
+	//デスクリプタヒープにDSV作成
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;	//深度値フォーマット
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	DirectXImportant::dev->CreateDepthStencilView(
+		TexManager::GetBuffer().Get(),
+		&dsvDesc,
+		TexManager::GetCpuHeapStartDSV()
+	);
+
+	dsvIndex = TexManager::GetOffsetDSV();
+	TexManager::AddOffsetSRV();
+	TexManager::AddOffsetDSV();
 }

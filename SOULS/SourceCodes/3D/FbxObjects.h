@@ -7,23 +7,23 @@ class FbxObjects
 public:
 	struct FbxInitData
 	{
-		const char* m_vsEntryPoint = "VSmain";
-		const char* m_psEntryPoint = "PSmain";
+		std::string m_vsEntryPoint = "VSmain";
+		std::string m_psEntryPoint = "PSmain";
 	};
 
 	struct FbxPipelineSet
 	{
-		ID3D12RootSignature* rootsignature;
-		ID3D12PipelineState* pipelinestate;
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootsignature;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelinestate;
 	};
 
 private:
 	static const int MAX_BONES = 32;
 
-	static ID3D12Device* device;
-	static ID3D12GraphicsCommandList* cmdList;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
 	static FbxPipelineSet pipelineSet;
-	static Light* light;
+	static std::shared_ptr<Light> light;
 
 private:
 	struct ConstBufferDataB0
@@ -40,7 +40,8 @@ private:
 	};
 
 private:
-	struct Node {
+	struct Node
+	{
 		const char* name = {};
 		Node* parent = {};
 		DirectX::XMFLOAT3 scale = {};
@@ -70,16 +71,18 @@ private:
 	bool m_isAddTimerEase = false;
 
 public:
-	static FbxObjects* Create(FbxModels* model = nullptr);
+	static std::shared_ptr<FbxObjects> Create(std::shared_ptr<FbxModels> model = nullptr);
 	void SetAnimationIndex(int animationIndex) { m_currentAnimationIndex = animationIndex; }
 
 public:
-	static void StaticInit(ID3D12Device* dev, ID3D12GraphicsCommandList* cmdList);
+	static void StaticInit(
+		Microsoft::WRL::ComPtr<ID3D12Device> dev,
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
 	static FbxPipelineSet CreateGraphicsPipeline(const FbxInitData& fbxInitdata);
-	static void SetLight(Light* light) { FbxObjects::light = light; }
+	static void SetLight(std::shared_ptr<Light> light) { FbxObjects::light = light; }
 
 private:
-	FbxModels* model = nullptr;
+	std::shared_ptr<FbxModels> model = nullptr;
 	DirectX::XMFLOAT3 scale = { 1,1,1 };
 	DirectX::XMFLOAT3 rotation = { 0,0,0 };
 	DirectX::XMFLOAT3 position = { 0,0,0 };
@@ -88,7 +91,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBufferDataB0;
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffSkin;
 
-	ID3D12DescriptorHeap* fbxDescHeap = {};
 	//ボーンの名前と行列(Update後に更新)
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> affineTrans;
 	//手のワールド行列
@@ -135,7 +137,7 @@ private:
 	}
 
 public:	//Setter
-	void SetModel(FbxModels* model)
+	void SetModel(std::shared_ptr<FbxModels> model)
 	{
 		this->model = model;
 		animationDatas.resize(model->GetAnimations().size());

@@ -165,19 +165,6 @@ Player::Player()
 
 Player::~Player()
 {
-	delete obj_Sword;
-	delete obj_ShadowSword;
-	delete obj_Helmet;
-
-	for (int i = 0; i < 28; i++)
-	{
-		delete obj_Box[i];
-	}
-
-	delete obj_SwordBox;
-
-	delete fbxobj_miku;
-	delete fbxobj_shadowMiku;
 }
 
 void Player::Init()
@@ -955,7 +942,7 @@ void Player::Draw()
 
 	Object::PostDraw();
 
-	//pManager.Draw();
+	pManager.Draw();
 }
 
 void Player::LuminanceDraw()
@@ -969,7 +956,7 @@ void Player::LuminanceDraw()
 	obj_Sword->Draw(PipelineManager::obj_normal);
 	Object::PostDraw();
 
-	//pManager.Draw();
+	pManager.Draw();
 }
 
 void Player::ShadowDraw()

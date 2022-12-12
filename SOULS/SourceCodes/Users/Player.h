@@ -121,22 +121,22 @@ private:	//変数(ステータス関係)
 	int m_estus;
 
 private:	//オブジェクト(Draw用)
-	Object* obj_Sword = nullptr;
-	Object* obj_ShadowSword = nullptr;
+	std::shared_ptr<Object> obj_Sword = nullptr;
+	std::shared_ptr<Object> obj_ShadowSword = nullptr;
 
-	std::array<Object*, 10> obj_Box = { nullptr };
+	std::array<std::shared_ptr<Object>, 10> obj_Box = { nullptr };
 	const int C_BOX_NUM = 10;
 	std::array<bool, 28> boxes = {
 		1,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,1,0,0,0,1,0,1,1,0,1
 	};
 
-	Object* obj_SwordBox = nullptr;
-	Object* obj_Helmet = nullptr;
+	std::shared_ptr<Object> obj_SwordBox = nullptr;
+	std::shared_ptr<Object> obj_Helmet = nullptr;
 
 	//std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
 	//std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
-	FbxObjects* fbxobj_miku = nullptr;
-	FbxObjects* fbxobj_shadowMiku = nullptr;
+	std::shared_ptr<FbxObjects> fbxobj_miku = nullptr;
+	std::shared_ptr<FbxObjects> fbxobj_shadowMiku = nullptr;
 
 	const int C_MIKU_NUM = 13;										//fbx増減時変更
 

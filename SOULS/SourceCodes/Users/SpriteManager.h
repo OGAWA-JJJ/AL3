@@ -28,32 +28,32 @@ private:
 	static bool m_isSceneChangeEnd;
 
 private:
-	static Sprite* tex_numbers[10];
+	static std::shared_ptr<Sprite> tex_numbers[10];
 
-	static Sprite* tex_enemy_hp_red;
-	static Sprite* tex_enemy_hp_yellow;
-	static Sprite* tex_enemy_hp_back;
-	static Sprite* tex_enemy_hp_flame;
+	static std::shared_ptr<Sprite> tex_enemy_hp_red;
+	static std::shared_ptr<Sprite> tex_enemy_hp_yellow;
+	static std::shared_ptr<Sprite> tex_enemy_hp_back;
+	static std::shared_ptr<Sprite> tex_enemy_hp_flame;
 
-	static Sprite* tex_enemy_name;
-	static Sprite* tex_died;
+	static std::shared_ptr<Sprite> tex_enemy_name;
+	static std::shared_ptr<Sprite> tex_died;
 
-	static Sprite* tex_player_hp_red;
-	static Sprite* tex_player_hp_yellow;
-	static Sprite* tex_player_hp_back;
+	static std::shared_ptr<Sprite> tex_player_hp_red;
+	static std::shared_ptr<Sprite> tex_player_hp_yellow;
+	static std::shared_ptr<Sprite> tex_player_hp_back;
 
-	static Sprite* tex_player_mp_blue;
-	static Sprite* tex_player_mp_yellow;
-	static Sprite* tex_player_mp_back;
+	static std::shared_ptr<Sprite> tex_player_mp_blue;
+	static std::shared_ptr<Sprite> tex_player_mp_yellow;
+	static std::shared_ptr<Sprite> tex_player_mp_back;
 
-	static Sprite* tex_player_stamina_green;
-	static Sprite* tex_player_stamina_yellow;
-	static Sprite* tex_player_stamina_back;
+	static std::shared_ptr<Sprite> tex_player_stamina_green;
+	static std::shared_ptr<Sprite> tex_player_stamina_yellow;
+	static std::shared_ptr<Sprite> tex_player_stamina_back;
 
-	static Sprite* tex_title;
-	static Sprite* tex_title_press_a;
+	static std::shared_ptr<Sprite> tex_title;
+	static std::shared_ptr<Sprite> tex_title_press_a;
 
-	static Sprite* tex_estus;
+	static std::shared_ptr<Sprite> tex_estus;
 
 public:
 	static void Init();

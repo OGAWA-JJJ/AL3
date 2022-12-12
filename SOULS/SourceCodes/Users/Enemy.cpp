@@ -105,12 +105,6 @@ Enemy::Enemy()
 
 Enemy::~Enemy()
 {
-	for (int i = 0; i < 37; i++)
-	{
-		delete obj_Box[i];
-	}
-
-	delete fbxobj_creature;
 }
 
 void Enemy::Init()
@@ -301,7 +295,6 @@ void Enemy::LuminanceDraw()
 
 void Enemy::ShadowDraw()
 {
-	//Draw();
 }
 
 void Enemy::CalcOBB()

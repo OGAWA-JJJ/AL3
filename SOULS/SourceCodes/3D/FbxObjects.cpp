@@ -6,12 +6,14 @@
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-ID3D12Device* FbxObjects::device = nullptr;
-ID3D12GraphicsCommandList* FbxObjects::cmdList = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> FbxObjects::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> FbxObjects::cmdList = nullptr;
 FbxObjects::FbxPipelineSet FbxObjects::pipelineSet;
-Light* FbxObjects::light = nullptr;
+std::shared_ptr<Light> FbxObjects::light = nullptr;
 
-void FbxObjects::StaticInit(ID3D12Device* dev, ID3D12GraphicsCommandList* cmdList)
+void FbxObjects::StaticInit(
+	Microsoft::WRL::ComPtr<ID3D12Device> dev,
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
 {
 	assert(!FbxObjects::device);
 	assert(dev);
@@ -34,7 +36,7 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 		L"Resources/Shaders/FBXVS.hlsl",
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		fbxInitdata.m_vsEntryPoint,
+		fbxInitdata.m_vsEntryPoint.c_str(),
 		"vs_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
@@ -56,7 +58,7 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 		L"Resources/Shaders/FBXPS.hlsl",
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		fbxInitdata.m_psEntryPoint,
+		fbxInitdata.m_psEntryPoint.c_str(),
 		"ps_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
@@ -166,7 +168,7 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 		IID_PPV_ARGS(&pipelineSet.rootsignature));
 	if (FAILED(result)) { assert(0); }
 
-	gpipeline.pRootSignature = pipelineSet.rootsignature;
+	gpipeline.pRootSignature = pipelineSet.rootsignature.Get();
 
 	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineSet.pipelinestate));
 	if (FAILED(result)) { assert(0); }
@@ -174,10 +176,9 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 	return pipelineSet;
 }
 
-FbxObjects* FbxObjects::Create(FbxModels* model)
+std::shared_ptr<FbxObjects> FbxObjects::Create(std::shared_ptr<FbxModels> model)
 {
-	FbxObjects* object = new FbxObjects();
-	//std::shared_ptr<Object> object = std::make_shared<Object>();
+	std::shared_ptr<FbxObjects> object = std::make_shared<FbxObjects>();
 	if (object == nullptr) { return nullptr; }
 	if (!object->Init()) { assert(0); }
 	if (model) { object->SetModel(model); }
@@ -283,9 +284,9 @@ void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
 
 	if (model == nullptr) { return; }
 
-	cmdList->SetPipelineState(pipelineSet.pipelinestate);
+	cmdList->SetPipelineState(pipelineSet.pipelinestate.Get());
 
-	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature);
+	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature.Get());
 
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

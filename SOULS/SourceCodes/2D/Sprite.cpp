@@ -5,21 +5,16 @@
 #include "include/DirectXTex.h"
 
 #include "../DirectX/DirectXImportant.h"
+#include "../2D/TexManager.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-//using namespace DirectX;
-//using namespace Microsoft::WRL;
-
-ID3D12Device* Sprite::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Sprite::device = nullptr;
 UINT Sprite::descriptorHandleIncrementSize;
-ID3D12GraphicsCommandList* Sprite::cmdList = nullptr;
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> Sprite::cmdList = nullptr;
 Microsoft::WRL::ComPtr<ID3D12RootSignature> Sprite::rootSignature;
 Microsoft::WRL::ComPtr<ID3D12PipelineState> Sprite::pipelineState;
 DirectX::XMMATRIX Sprite::matProjection;
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Sprite::descHeap;
-Microsoft::WRL::ComPtr<ID3D12Resource> Sprite::texBuff[srvCount];
-//CD3DX12_RESOURCE_DESC Sprite::m_textureDesc;
 
 bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window_height)
 {
@@ -29,7 +24,8 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 	Sprite::device = device;
 
 	//デスクリプタサイズを取得
-	descriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorHandleIncrementSize =
+		device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	HRESULT result = S_FALSE;
 	ComPtr<ID3DBlob> vsBlob;	//頂点シェーダオブジェクト
@@ -124,9 +120,6 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 
-	//float factor[4] = { 0,0,0,0 };
-	//DirectXImportant::cmdList->OMSetBlendFactor(factor);
-
 	//ブレンドステートの設定
 	gpipeline.BlendState.RenderTarget[0] = blenddesc;
 
@@ -190,21 +183,10 @@ bool Sprite::StaticInitialize(ID3D12Device* device, int window_width, int window
 		(float)window_height, 0.0f,
 		0.0f, 1.0f);
 
-	//デスクリプタヒープを生成	
-	D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
-	descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダから見えるように
-	descHeapDesc.NumDescriptors = srvCount;
-	result = device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeap));//生成
-	if (FAILED(result)) {
-		assert(0);
-		return false;
-	}
-
 	return true;
 }
 
-bool Sprite::LoadTexture(UINT texnumber, const wchar_t* filename)
+bool Sprite::LoadTexture(UINT texNumber, const wchar_t* filename)
 {
 	//nullptrチェック
 	assert(device);
@@ -240,14 +222,14 @@ bool Sprite::LoadTexture(UINT texnumber, const wchar_t* filename)
 		&texresDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ, //テクスチャ用指定
 		nullptr,
-		IID_PPV_ARGS(&texBuff[texnumber]));
+		IID_PPV_ARGS(&TexManager::GetSpriteBuffer(texNumber)));
 	if (FAILED(result)) {
 		assert(0);
 		return false;
 	}
 
 	//テクスチャバッファにデータ転送
-	result = texBuff[texnumber]->WriteToSubresource(
+	result = TexManager::GetSpriteBuffer(texNumber)->WriteToSubresource(
 		0,
 		nullptr, //全領域へコピー
 		img->pixels,    //元データアドレス
@@ -261,17 +243,22 @@ bool Sprite::LoadTexture(UINT texnumber, const wchar_t* filename)
 
 	//シェーダリソースビュー作成
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
-	D3D12_RESOURCE_DESC resDesc = texBuff[texnumber]->GetDesc();
+	D3D12_RESOURCE_DESC resDesc = TexManager::GetSpriteBuffer()->GetDesc();
 
 	srvDesc.Format = resDesc.Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(texBuff[texnumber].Get(), //ビューと関連付けるバッファ
+	device->CreateShaderResourceView(TexManager::GetSpriteBuffer(texNumber).Get(), //ビューと関連付けるバッファ
 		&srvDesc, //テクスチャ設定情報
-		CD3DX12_CPU_DESCRIPTOR_HANDLE(descHeap->GetCPUDescriptorHandleForHeapStart(), texnumber, descriptorHandleIncrementSize)
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			TexManager::GetCpuHeapStartSRV(),
+			TexManager::GetSpriteOffset(),
+			descriptorHandleIncrementSize)
 	);
+
+	TexManager::AddSpriteOffset();
 
 	return true;
 }
@@ -298,28 +285,35 @@ void Sprite::PostDraw()
 	Sprite::cmdList = nullptr;
 }
 
-Sprite* Sprite::Create(UINT texNumber, XMFLOAT2 position, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY)
+std::shared_ptr<Sprite> Sprite::Create(UINT texNumber, XMFLOAT2 position, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY)
 {
-	//仮サイズ
-	XMFLOAT2 size = { 100.0f, 100.0f };
+	XMFLOAT2 size = { 1.0f,1.0f };
 
-	if (texBuff[texNumber])
+	if (TexManager::GetSpriteBuffer(texNumber))
 	{
 		//テクスチャ情報取得
-		D3D12_RESOURCE_DESC resDesc = texBuff[texNumber]->GetDesc();
+		D3D12_RESOURCE_DESC resDesc = TexManager::GetSpriteBuffer(texNumber)->GetDesc();
 		//スプライトのサイズをテクスチャのサイズに設定
 		size = { (float)resDesc.Width, (float)resDesc.Height };
 	}
 
 	//Spriteのインスタンスを生成
-	Sprite* sprite = new Sprite(texNumber, position, size, color, anchorpoint, isFlipX, isFlipY);
-	if (sprite == nullptr) {
+	std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>(
+		texNumber,
+		position,
+		size,
+		color,
+		anchorpoint,
+		isFlipX,
+		isFlipY);
+
+	if (sprite == nullptr)
+	{
 		return nullptr;
 	}
 
 	//初期化
 	if (!sprite->Init()) {
-		delete sprite;
 		assert(0);
 		return nullptr;
 	}
@@ -474,7 +468,7 @@ void Sprite::Draw()
 	//頂点バッファの設定
 	cmdList->IASetVertexBuffers(0, 1, &this->vbView);
 
-	ID3D12DescriptorHeap* ppHeaps[] = { descHeap.Get() };
+	ID3D12DescriptorHeap* ppHeaps[] = { TexManager::GetHeapAdressSRV() };
 	//デスクリプタヒープをセット
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//定数バッファビューをセット
@@ -482,8 +476,8 @@ void Sprite::Draw()
 	//シェーダリソースビューをセット
 	cmdList->SetGraphicsRootDescriptorTable(
 		1,
-		CD3DX12_GPU_DESCRIPTOR_HANDLE(descHeap->GetGPUDescriptorHandleForHeapStart(),
-			this->texNumber,
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(TexManager::GetGpuHeapStartSRV(),
+			this->texNumber + TexManager::GetSpriteStartIndex(),
 			descriptorHandleIncrementSize));
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
@@ -521,9 +515,9 @@ void Sprite::TransferVertices()
 	vertices[RT].pos = { right,	top,	0.0f }; //右上
 
 	//テクスチャ情報取得
-	if (texBuff[texNumber])
+	if (TexManager::GetSpriteBuffer(texNumber))
 	{
-		D3D12_RESOURCE_DESC resDesc = texBuff[texNumber]->GetDesc();
+		D3D12_RESOURCE_DESC resDesc = TexManager::GetSpriteBuffer(texNumber)->GetDesc();
 
 		float tex_left = texBase.x / resDesc.Width;
 		float tex_right = (texBase.x + texSize.x) / resDesc.Width;

@@ -4,21 +4,18 @@
 #include <d3d12.h>
 #include "../DirectX/d3dx12.h"
 
-//using namespace DirectX;
-//using namespace Microsoft::WRL;
-
 class Light
 {
 public:
 	struct ConstBufferData {
-		DirectX::XMVECTOR lightv; //ライトへの方向を表すベクトル
-		DirectX::XMFLOAT3 lightcolor; //ライトの色
+		DirectX::XMVECTOR lightv;		//ライトへの方向を表すベクトル
+		DirectX::XMFLOAT3 lightcolor;	//ライトの色
 		DirectX::XMMATRIX lightViewproj;
 	};
 
 private:
 	//デバイス
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 
 private:
 	//定数バッファ
@@ -31,15 +28,15 @@ private:
 	bool dirty = false;
 
 	//影用ライト座標
-	DirectX::XMFLOAT3 eye = { 75,100,-75 };
+	DirectX::XMFLOAT3 eye = { 150,200,-150 };
 	DirectX::XMFLOAT3 target = { 0,0,0 };
 	DirectX::XMFLOAT3 up = { 0,1,0 };
 
 public:
 	//静的初期化
-	static void StaticInit(ID3D12Device* device);
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
 	//インスタンス生成
-	static Light* Create();
+	static std::shared_ptr<Light> Create();
 
 public:
 	//ライト
@@ -53,7 +50,7 @@ public:
 	//更新
 	void Update();
 	//描画
-	void Draw(ID3D12GraphicsCommandList* cmdList, UINT rootParameterIndex);
+	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList, UINT rootParameterIndex);
 
 	//影用ライト座標をセット
 	void SetShadowLigitEye(DirectX::XMFLOAT3 eye) { this->eye = eye;  dirty = true; }

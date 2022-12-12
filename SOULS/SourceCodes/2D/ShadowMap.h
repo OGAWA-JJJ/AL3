@@ -19,21 +19,12 @@ private:
 	struct ConstantBuffer_b0
 	{
 		DirectX::XMMATRIX mat;			//変換行列
-		//DirectX::XMMATRIX viewproj;
-		//DirectX::XMMATRIX lightViewproj;
 	};
 
 private:
-	//テクスチャバッファ
-	ComPtr<ID3D12Resource> texbuff;
-	//SRV用デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeapSRV;
-	//深度バッファ
-	ComPtr<ID3D12Resource> depthbuff;
-	//RTV用デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeapRTV;
-	//DSV用デスクリプタヒープ
-	ComPtr<ID3D12DescriptorHeap> descHeapDSV;
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
+
+private:
 	//グラフィックスパイプライン
 	ComPtr<ID3D12PipelineState> pipelineState;
 	//ルートシグネチャ
@@ -45,20 +36,32 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vbView{};
 	//定数バッファ
 	ComPtr<ID3D12Resource> constBuff;
-	//定数バッファ（重み転送用）
-	//ComPtr<ID3D12Resource> constBuff_b0;
-	//色
-	//DirectX::XMFLOAT4 color = { 1, 1, 1, 1 };
+
+	UINT incrementSizeRTV = 0;
+	UINT incrementSizeDSV = 0;
+	UINT srvIndex = 0;
+	UINT rtvIndex = 0;
+	UINT dsvIndex = 0;
+
+public:
+	static void StaticInit(
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
+	{
+		ShadowMap::cmdList = cmdList;
+	}
 
 public:
 	ShadowMap();
 	~ShadowMap();
 	void Init();
-	void Draw(ID3D12GraphicsCommandList* cmdList);
-	void PreDraw(ID3D12GraphicsCommandList* cmdList);
-	void PostDraw(ID3D12GraphicsCommandList* cmdList);
-	ComPtr<ID3D12Resource> GetTexbuffer() { return texbuff; }
+	void Draw();
+	void PreDraw();
+	void PostDraw();
 
 private:
 	void CreateGraphicsPipelineState();
+	void CreateTexBuff();
+	void CreateSRV();
+	void CreateRTV();
+	void CreateDSV();
 };

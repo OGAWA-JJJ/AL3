@@ -4,17 +4,17 @@
 class Stage
 {
 private:	//オブジェクト(Draw用)
-	Object* obj_Stage = nullptr;
-	Object* obj_arenaFront = nullptr;
-	Object* obj_arenaBack = nullptr;
+	std::shared_ptr<Object> obj_Stage = nullptr;
+	std::shared_ptr<Object> obj_arenaFront = nullptr;
+	std::shared_ptr<Object> obj_arenaBack = nullptr;
 
-	Object* obj_shadowArenaFront = nullptr;
-	Object* obj_shadowArenaBack = nullptr;
+	std::shared_ptr<Object> obj_shadowArenaFront = nullptr;
+	std::shared_ptr<Object> obj_shadowArenaBack = nullptr;
 
 public:
 	Stage();
 	~Stage();
-	void Init(Microsoft::WRL::ComPtr<ID3D12Resource> texbuff);
+	void Init();
 	void Update();
 	void Draw();
 	void ShadowDraw();

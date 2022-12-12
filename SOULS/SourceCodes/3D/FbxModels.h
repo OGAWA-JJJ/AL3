@@ -75,7 +75,7 @@ public:
 	};
 
 private:
-	Node* meshNode = nullptr;
+	std::shared_ptr<Node> meshNode = nullptr;
 	std::vector<Node> nodes;
 	std::vector<Skin> skinVert;		//1‚Â‚µ‚©‘Î‰ž‚µ‚Ä‚È‚¢
 	std::vector<SubSet> subsets;	//1‚Â‚µ‚©‘Î‰ž‚µ‚Ä‚È‚¢
@@ -106,22 +106,21 @@ public:
 	std::vector<DirectX::XMMATRIX>& GetOffsetTransforms() { return offset_transforms; }
 	std::vector<uint64_t>& GetNodeIndices() { return node_indices; }
 	std::vector<Animation>& GetAnimations() { return animation_clips; }
-	void SetMeshNode(Node* meshNode) { this->meshNode = meshNode; }
+	void SetMeshNode(std::shared_ptr<Node> meshNode) { this->meshNode = meshNode; }
 	void AddAnimation(const std::string& modelname);
 
 private:
 	static const std::string baseDirectory;
 
 private:
-	static ID3D12Device* device;
+	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 	static UINT descriptorHandleIncrementSize;
 
 private:
 	std::string name;
-	std::vector<FbxMeshes*> meshes;
-	std::unordered_map<std::string, FbxMaterial*> materials;
-	FbxMaterial* defaultMaterial = nullptr;
-	ID3D12DescriptorHeap* descHeap = nullptr;
+	std::vector<std::shared_ptr<FbxMeshes>> meshes;
+	std::unordered_map<std::string, std::shared_ptr<FbxMaterial>> materials;
+	std::shared_ptr<FbxMaterial> defaultMaterial = nullptr;
 	DirectX::XMFLOAT3 size = { 0,0,0 };
 
 	FbxManager* fbx_manager = nullptr;
@@ -132,13 +131,9 @@ private:
 	std::vector<std::string> names;
 	std::string key;
 
-private:
-	static std::unordered_map<std::string, FbxModels*> models;
-
 public:
-	static void StaticInit(ID3D12Device* device);
-	static FbxModels* CreateFromFbx(const std::string& modelname, const std::string& key = "", bool smoothing = false);
-	static void ReleaseModels() { models.clear(); }
+	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
+	static std::shared_ptr<FbxModels> CreateFromFbx(const std::string& modelname, bool smoothing = false);
 
 public:
 	static void ConvertMatrixFromFbx(DirectX::XMMATRIX* dst, const FbxAMatrix& src)
@@ -156,26 +151,22 @@ public:
 	FbxModels();
 	~FbxModels();
 
-	void Init(const std::string& modelname, const std::string& key = "", bool smoothing = false);
-	void Draw(ID3D12GraphicsCommandList* cmdList, std::vector<int> drawSkips);
+	void Init(const std::string& modelname, bool smoothing = false);
+	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList, std::vector<int> drawSkips);
 
 private:
 	void LoadMaterial(const std::string& directoryPath, const std::string& filename, FbxSurfaceMaterial* fbx_material);
-	void AddMaterial(FbxMaterial* material);
+	void AddMaterial(std::shared_ptr<FbxMaterial> material);
 	void CreateDescriptorHeap();
 	void LoadTextures();
 
 	void CreateMesh(FbxMesh* fbx_mesh);
-	void FindKeyCreateMesh(FbxMesh* fbx_mesh, int mesh_num);
-	void LoadIndices(FbxMeshes* mesh_data, FbxMesh* mesh);
-	void LoadVertices(FbxMeshes* mesh_data, FbxMesh* mesh);
-	void LoadNormals(FbxMeshes* mesh_data, FbxMesh* mesh);
-	void LoadUV(FbxMeshes* mesh_data, FbxMesh* mesh);
-	void LoadColors(FbxMeshes* mesh_data, FbxMesh* mesh);
-	void SetMaterialName(FbxMeshes* mesh_data, FbxMesh* mesh);
-
-	void LoadNode(FbxMeshes* mesh_data, FbxNode* fbxNode, Node* parent = nullptr);
-	void LoadSkin(FbxMeshes* mesh_data, FbxMesh* mesh);
+	void LoadIndices(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
+	void LoadVertices(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
+	void LoadNormals(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
+	void LoadUV(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
+	void LoadColors(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
+	void SetMaterialName(std::shared_ptr<FbxMeshes> mesh_data, FbxMesh* mesh);
 
 	std::string LoadName(FbxFileTexture* texture);
 
@@ -183,8 +174,7 @@ private:
 	void Split(char split_char, char* buffer, std::vector<std::string>& out);
 
 public:
-	inline const std::vector<FbxMeshes*>& GetMeshes() { return meshes; }
-	ID3D12DescriptorHeap* GetDescHeap() { return descHeap; }
+	inline const std::vector<std::shared_ptr<FbxMeshes>>& GetMeshes() { return meshes; }
 	DirectX::XMFLOAT3 GetModelSize() { return size; }
 	FbxScene* GetFbxScene() { return fbxScene; }
 	DirectX::XMMATRIX& GetModelTransform() { return transform; }

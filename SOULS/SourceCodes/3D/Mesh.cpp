@@ -4,7 +4,7 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-ID3D12Device* Mesh::device = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Device> Mesh::device = nullptr;
 
 Mesh::Mesh()
 {
@@ -14,7 +14,7 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::StaticInit(ID3D12Device* device)
+void Mesh::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 {
 	//再初期化チェック
 	assert(!Mesh::device);
@@ -40,7 +40,7 @@ void Mesh::AddIndex(unsigned short index)
 	indices.emplace_back(index);
 }
 
-void Mesh::SetMaterial(Material* material)
+void Mesh::SetMaterial(std::shared_ptr<Material> material)
 {
 	this->material = material;
 }
@@ -105,7 +105,7 @@ void Mesh::CreateBuffers()
 	ibView.SizeInBytes = sizeIB;
 }
 
-void Mesh::Draw(ID3D12GraphicsCommandList* cmdList)
+void Mesh::Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
 {
 	//頂点バッファをセット
 	cmdList->IASetVertexBuffers(0, 1, &vbView);
@@ -115,7 +115,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* cmdList)
 	cmdList->SetGraphicsRootDescriptorTable(2, material->GetGpuHandle());
 
 	//マテリアルの定数バッファをセット
-	ID3D12Resource* constBuff = material->GetConstantBuffer();
+	ID3D12Resource* constBuff = material->GetConstantBuffer().Get();
 	cmdList->SetGraphicsRootConstantBufferView(1, constBuff->GetGPUVirtualAddress());
 
 	//描画コマンド
