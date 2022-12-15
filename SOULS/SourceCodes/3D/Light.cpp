@@ -46,15 +46,18 @@ void Light::TransferConstBuffer()
 {
 	//影用
 	DirectX::XMMATRIX matView = DirectX::XMMatrixLookAtLH(
-		XMLoadFloat3(&eye),
-		XMLoadFloat3(&target),
-		XMLoadFloat3(&up));
+		XMLoadFloat3(&shadowEye),
+		XMLoadFloat3(&shadowTarget),
+		XMLoadFloat3(&shadowUp));
 
-	float fov = ImguiControl::Imgui_fov;
-	DirectX::XMMATRIX lightMatPerspective = DirectX::XMMatrixPerspectiveFovLH(
-		DirectX::XMConvertToRadians(fov),
-		(float)WINDOW_WIDTH / WINDOW_HEIGHT,
-		0.1f, ImguiControl::Imgui_far_z); //前端、奥端
+	float l_width = static_cast<float>(WINDOW_WIDTH / 10);
+	float l_height = static_cast<float>(WINDOW_HEIGHT / 10);
+	float l_far = ImguiControl::Imgui_far_z;
+	DirectX::XMMATRIX lightMatPerspective =
+		DirectX::XMMatrixOrthographicOffCenterLH(
+			-l_width, l_width,
+			-l_height, l_height,
+			0.1f, l_far);
 
 	const DirectX::XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
 

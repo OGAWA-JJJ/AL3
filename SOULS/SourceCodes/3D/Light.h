@@ -28,9 +28,9 @@ private:
 	bool dirty = false;
 
 	//影用ライト座標
-	DirectX::XMFLOAT3 eye = { 150,200,-150 };
-	DirectX::XMFLOAT3 target = { 0,0,0 };
-	DirectX::XMFLOAT3 up = { 0,1,0 };
+	DirectX::XMFLOAT3 shadowEye = { 300,300,-300 };
+	DirectX::XMFLOAT3 shadowTarget = { 0,0,0 };
+	DirectX::XMFLOAT3 shadowUp = { 0,1,0 };
 
 public:
 	//静的初期化
@@ -53,12 +53,12 @@ public:
 	void Draw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList, UINT rootParameterIndex);
 
 	//影用ライト座標をセット
-	void SetShadowLigitEye(DirectX::XMFLOAT3 eye) { this->eye = eye;  dirty = true; }
-	void SetShadowLigitTarget(DirectX::XMFLOAT3 target) { this->target = target; dirty = true; }
-	void SetShadowLigitUp(DirectX::XMFLOAT3 up) { this->up = up; dirty = true; }
+	void SetShadowLigitEye(DirectX::XMFLOAT3 eye) { shadowEye = eye;  dirty = true; }
+	void SetShadowLigitTarget(DirectX::XMFLOAT3 target) { shadowTarget = target; dirty = true; }
+	void SetShadowLigitUp(DirectX::XMFLOAT3 up) { shadowUp = up; dirty = true; }
 
-	DirectX::XMFLOAT3 GetShadowLigitEye() { return eye; }
-	DirectX::XMFLOAT3 GetShadowLigitTarget() { return target; }
-	DirectX::XMFLOAT3 GetShadowLigitUp() { return up; }
+	DirectX::XMFLOAT3 GetShadowLigitEye() { return shadowEye; }
+	DirectX::XMFLOAT3 GetShadowLigitTarget() { return shadowTarget; }
+	DirectX::XMFLOAT3 GetShadowLigitUp() { return shadowUp; }
 };
 
