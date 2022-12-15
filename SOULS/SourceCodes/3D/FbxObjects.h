@@ -107,8 +107,8 @@ private:
 
 public:
 	bool Init();
-	void Update(bool isShadowCamera = false);
-	void Draw(const FbxPipelineSet& pipelineSet);
+	void Update();
+	void Draw(const FbxPipelineSet& pipelineSet, bool isShadow = true);
 
 private:
 	void UpdateAnimation();

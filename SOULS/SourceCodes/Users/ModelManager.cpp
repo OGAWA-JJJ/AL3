@@ -18,6 +18,9 @@ std::shared_ptr<Model> ModelManager::model_stage = nullptr;
 std::shared_ptr<Model> ModelManager::model_arenaFront = nullptr;
 std::shared_ptr<Model> ModelManager::model_arenaBack = nullptr;
 
+//StageObject
+std::shared_ptr<Model> ModelManager::model_sphere = nullptr;
+
 ModelManager::~ModelManager()
 {
 }
@@ -63,6 +66,10 @@ void ModelManager::Init()
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
-	model_arenaFront = Model::CreateFromObj("arena_front");
-	model_arenaBack = Model::CreateFromObj("arena_back");
+	model_arenaFront = Model::CreateFromObj("arena");
+	//model_arenaFront = Model::CreateFromObj("arena_front");
+	//model_arenaBack = Model::CreateFromObj("arena_back");
+
+	//StageObject
+	model_sphere = Model::CreateFromObj("sphere");
 }

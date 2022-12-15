@@ -37,11 +37,13 @@ private:
 	//定数バッファ
 	ComPtr<ID3D12Resource> constBuff;
 
+	UINT incrementSizeSRV = 0;
 	UINT incrementSizeRTV = 0;
 	UINT incrementSizeDSV = 0;
 	UINT srvIndex = 0;
 	UINT rtvIndex = 0;
 	UINT dsvIndex = 0;
+	UINT inDsvIndex = 0;
 
 public:
 	static void StaticInit(
@@ -60,6 +62,8 @@ public:
 
 private:
 	void CreateGraphicsPipelineState();
+	void CreateVBV();
+	void CreateConstBuff();
 	void CreateTexBuff();
 	void CreateSRV();
 	void CreateRTV();

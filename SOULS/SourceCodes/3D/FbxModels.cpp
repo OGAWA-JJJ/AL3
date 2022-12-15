@@ -698,17 +698,29 @@ void FbxModels::FetchAnimaton()
 		FbxAnimStack* animation_stack = fbxScene->FindMember<FbxAnimStack>(animation_clip.name.c_str());
 		fbxScene->SetCurrentAnimationStack(animation_stack);
 
+		//アニメーションのフレームレートモード取得
 		const FbxTime::EMode time_mode{ fbxScene->GetGlobalSettings().GetTimeMode() };
+
+		//1フレーム辺りの加算量(FbxTimeでの)
 		FbxTime one_second;
 		one_second.SetTime(0, 0, 1, 0, 0, time_mode);
+
+		//アニメーションのフレームレート算出
 		animation_clip.sampling_rate = static_cast<float>(one_second.GetFrameRate(time_mode));
 
-		const FbxTime sampling_interval = static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
+		//アニメーションの内部的な加算量??多分そんな重要じゃない
+		const FbxTime sampling_interval = 
+			static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
 		float fsamplng_interval = one_second.Get() / animation_clip.sampling_rate;
+
+		//アニメーションの名前から色んな情報取得(多分)
 		const FbxTakeInfo* take_info = fbxScene->GetTakeInfo(animation_clip.name.c_str());
+
+		//それらを元に計算(FbxTimeでの)
 		const FbxTime start_time = take_info->mLocalTimeSpan.GetStart();
 		const FbxTime stop_time = take_info->mLocalTimeSpan.GetStop();
 
+		//それらを元に計算(floatでの)
 		float stop = stop_time.GetFrameCount() / animation_clip.sampling_rate;
 		float start = start_time.GetFrameCount() / animation_clip.sampling_rate;
 		animation_clip.seconds_length = stop - start;
@@ -759,10 +771,6 @@ void FbxModels::AddAnimation(const std::string& modelname)
 	fbx_importer->Initialize(path.c_str());
 	fbx_importer->Import(fbxScene);
 
-	//FbxGeometryConverter converter(fbx_manager);
-	//converter.Triangulate(fbxScene, true);
-	//converter.RemoveBadPolygonsFromMeshes(fbxScene);
-
 	//アニメーション抜き取り
 	FbxArray<FbxString*> animation_stack_names;
 
@@ -783,7 +791,8 @@ void FbxModels::AddAnimation(const std::string& modelname)
 		one_second.SetTime(0, 0, 1, 0, 0, time_mode);
 		animation_clip.sampling_rate = static_cast<float>(one_second.GetFrameRate(time_mode));
 
-		const FbxTime sampling_interval = static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
+		const FbxTime sampling_interval = 
+			static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
 		float fsamplng_interval = one_second.Get() / animation_clip.sampling_rate;
 		const FbxTakeInfo* take_info = fbxScene->GetTakeInfo(animation_clip.name.c_str());
 		const FbxTime start_time = take_info->mLocalTimeSpan.GetStart();

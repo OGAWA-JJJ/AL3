@@ -42,6 +42,10 @@ float ImguiControl::Imgui_enemyOBBPos[12][3];
 float ImguiControl::Imgui_playerOBBScale[10][3];
 float ImguiControl::Imgui_enemyOBBScale[12][3];
 
+float ImguiControl::Imgui_shadowEye_x = 0.0f;
+float ImguiControl::Imgui_shadowEye_y = 0.0f;
+float ImguiControl::Imgui_shadowEye_z = 0.0f;
+
 //‰¼
 bool ImguiControl::isHel = false;
 
@@ -205,4 +209,8 @@ void ImguiControl::Update()
 
 	//‰¼
 	ImGui::Checkbox("IS_HELMET", &isHel);
+
+	ImGui::DragFloat("EYE_X", &Imgui_shadowEye_x);
+	ImGui::DragFloat("EYE_Y", &Imgui_shadowEye_y);
+	ImGui::DragFloat("EYE_Z", &Imgui_shadowEye_z);
 }

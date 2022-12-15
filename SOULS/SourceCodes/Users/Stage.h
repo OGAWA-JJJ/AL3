@@ -1,5 +1,5 @@
 #pragma once
-#include "../3D/Object.h"
+#include "StageObject.h"
 
 class Stage
 {
@@ -8,8 +8,9 @@ private:	//オブジェクト(Draw用)
 	std::shared_ptr<Object> obj_arenaFront = nullptr;
 	std::shared_ptr<Object> obj_arenaBack = nullptr;
 
-	std::shared_ptr<Object> obj_shadowArenaFront = nullptr;
-	std::shared_ptr<Object> obj_shadowArenaBack = nullptr;
+private:
+	std::unique_ptr<StageObject> m_stageObject =
+		std::make_unique<StageObject>();
 
 public:
 	Stage();
@@ -18,4 +19,6 @@ public:
 	void Update();
 	void Draw();
 	void ShadowDraw();
+	void LuminanceDraw();
+	void ShaftOfLightDraw();
 };

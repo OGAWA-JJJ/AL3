@@ -44,6 +44,10 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_playerOBBScale[10][3];
 	static float Imgui_enemyOBBScale[12][3];
 
+	static float Imgui_shadowEye_x;
+	static float Imgui_shadowEye_y;
+	static float Imgui_shadowEye_z;
+
 	//‰¼
 	static bool isHel;
 

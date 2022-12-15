@@ -14,6 +14,10 @@ UINT TexManager::m_offsetRTV = 0;
 UINT TexManager::m_offsetDSV = 0;
 UINT TexManager::m_spriteOffset = TexManager::SPRITE_START_INDEX;
 
+UINT TexManager::m_shadowInDsvIndex = 255;
+UINT TexManager::m_shadowDsvIndex = 255;
+UINT TexManager::m_incrementSizeSRV = 255;
+
 void TexManager::StaticInit()
 {
 	//SRV

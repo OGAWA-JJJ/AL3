@@ -22,6 +22,9 @@ public:	//Stage
 	static std::shared_ptr<Model> model_arenaFront;
 	static std::shared_ptr<Model> model_arenaBack;
 
+public:	//StageObject
+	static std::shared_ptr<Model> model_sphere;
+
 public:
 	~ModelManager();
 	static void Init();

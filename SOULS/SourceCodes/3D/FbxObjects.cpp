@@ -139,22 +139,25 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	gpipeline.SampleDesc.Count = 1;
 
-	CD3DX12_DESCRIPTOR_RANGE descRangeSRV;
-	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	CD3DX12_DESCRIPTOR_RANGE descRange[2] = {};
+	descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 
-	CD3DX12_ROOT_PARAMETER rootparams[5] = {};
+	CD3DX12_ROOT_PARAMETER rootparams[6] = {};
 
 	//どこで何使ってるか書け
 	//ワールド行列
 	rootparams[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	//マテリアルのテクスチャ
-	rootparams[1].InitAsDescriptorTable(1, &descRangeSRV, D3D12_SHADER_VISIBILITY_ALL);
+	rootparams[1].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_ALL);
 	//スキニング行列
 	rootparams[2].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
 	//ライト情報
 	rootparams[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
 	//マテリアル情報
 	rootparams[4].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//影
+	rootparams[5].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_ALL);
 
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 
@@ -220,7 +223,7 @@ bool FbxObjects::Init()
 	return true;
 }
 
-void FbxObjects::Update(bool isShadowCamera)
+void FbxObjects::Update()
 {
 	DirectX::XMMATRIX matRot, matScale, matTrans;
 
@@ -240,29 +243,12 @@ void FbxObjects::Update(bool isShadowCamera)
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 	DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
 
-	if (isShadowCamera)
-	{
-		//影用
-		DirectX::XMMATRIX matView = DirectX::XMMatrixLookAtLH(
-			XMLoadFloat3(&light->GetShadowLigitEye()),
-			XMLoadFloat3(&light->GetShadowLigitTarget()),
-			XMLoadFloat3(&light->GetShadowLigitUp()));
-
-		float fov = ImguiControl::Imgui_fov;
-		DirectX::XMMATRIX lightMatPerspective = DirectX::XMMatrixPerspectiveFovLH(
-			DirectX::XMConvertToRadians(fov),
-			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
-			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
-
-		matViewProjection = matView * lightMatPerspective;
-		cameraPos = light->GetShadowLigitEye();
-	}
+	HRESULT result;
 
 	DirectX::XMMATRIX& modelTransform = model->GetModelTransform();
 	modelTransform = DirectX::XMMatrixIdentity();
 
-	HRESULT result;
-
+	//他
 	ConstBufferDataB0* constMap = nullptr;
 	result = constBufferDataB0->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(result))
@@ -277,7 +263,7 @@ void FbxObjects::Update(bool isShadowCamera)
 	UpdateTransform();
 }
 
-void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
+void FbxObjects::Draw(const FbxPipelineSet& pipelineSet, bool isShadow)
 {
 	assert(device);
 	assert(FbxObjects::cmdList);
@@ -298,6 +284,15 @@ void FbxObjects::Draw(const FbxPipelineSet& pipelineSet)
 		2,
 		constBuffSkin->GetGPUVirtualAddress()
 	);
+
+	if (isShadow)
+	{
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			TexManager::GetGpuHeapStartSRV(),
+			TexManager::GetShadowInDsvIndex(),
+			TexManager::GetIncrementSizeSRV());
+		cmdList->SetGraphicsRootDescriptorTable(5, gpuHandle);
+	}
 
 	light->Draw(cmdList, 3);
 	model->Draw(cmdList, drawSkip);

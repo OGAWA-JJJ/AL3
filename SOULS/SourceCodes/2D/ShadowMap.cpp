@@ -19,72 +19,27 @@ ShadowMap::~ShadowMap()
 
 void ShadowMap::Init()
 {
-	HRESULT result;
+	//CreateGraphicsPipelineState();
 
-	CreateGraphicsPipelineState();
+	//CreateVBV();
 
-	//頂点バッファ生成
-	result = DirectXImportant::dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(VertexPosUv) * 4),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&vertBuff));
-	assert(SUCCEEDED(result));
+	CreateConstBuff();
 
-	//頂点データ転送
-	VertexPosUv vertices[4];
-
-	//左上
-	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
-	//左下
-	vertices[1].pos = { -1.0f, -0.2f, 0.0f };
-	//右上
-	vertices[2].pos = { -0.2f, -1.0f , 0.0f };
-	//右下
-	vertices[3].pos = { -0.2f, -0.2f, 0.0f };
-
-	vertices[0].uv = { 0.0f, 1.0f };
-	vertices[1].uv = { 0.0f, 0.0f };
-	vertices[2].uv = { 1.0f, 1.0f };
-	vertices[3].uv = { 1.0f, 0.0f };
-
-	//頂点バッファへのデータ転送
-	VertexPosUv* vertMap = nullptr;
-	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
-	if (SUCCEEDED(result)) {
-		memcpy(vertMap, vertices, sizeof(vertices));
-		vertBuff->Unmap(0, nullptr);
-	}
-
-	//頂点バッファビューの作成
-	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
-	vbView.SizeInBytes = sizeof(VertexPosUv) * 4;
-	vbView.StrideInBytes = sizeof(VertexPosUv);
-
-	//定数バッファの生成
-	constBuff = ConstantBuffer::CreateConstantBuffer(sizeof(ConstantBuffer_b0));
-
-	//定数バッファにデータ転送
-	ConstantBuffer_b0 data;
-	data.mat = DirectX::XMMatrixIdentity();
-
-	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
-
+	incrementSizeSRV = DirectXImportant::dev->
+		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	incrementSizeRTV = DirectXImportant::dev->
 		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	incrementSizeDSV = DirectXImportant::dev->
 		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//生成系
-	CreateTexBuff();
+	//CreateTexBuff();
+
+	CreateDSV();
 
 	CreateSRV();
 
-	CreateRTV();
-
-	CreateDSV();
+	//CreateRTV();
 }
 
 void ShadowMap::Draw()
@@ -108,8 +63,12 @@ void ShadowMap::Draw()
 	cmdList->SetGraphicsRootConstantBufferView(0, this->constBuff->GetGPUVirtualAddress());
 
 	//SRV
+	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+		TexManager::GetGpuHeapStartSRV(),
+		srvIndex,
+		incrementSizeSRV);
 	cmdList->SetGraphicsRootDescriptorTable(
-		1, TexManager::GetGpuHeapStartSRV());
+		1, gpuHandle);
 
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
@@ -121,21 +80,22 @@ void ShadowMap::PreDraw()
 	cmdList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
-			TexManager::GetBuffer(srvIndex).Get(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET)
+			TexManager::GetBuffer(inDsvIndex).Get(),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE)
 	);
 
 	//レンダーターゲットビュー用デスクリプタヒープのハンドルを取得
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvH =
-		TexManager::GetHeapAdressRTV()->GetCPUDescriptorHandleForHeapStart();
+	//D3D12_CPU_DESCRIPTOR_HANDLE rtvH =
+		//TexManager::GetHeapAdressRTV()->GetCPUDescriptorHandleForHeapStart();
 	//rtvH.ptr += rtvIndex * incrementSizeRTV;
+	// 
 	//深度ステンシルビュー用デスクリプタヒープのハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvH =
 		TexManager::GetHeapAdressDSV()->GetCPUDescriptorHandleForHeapStart();
-	//dsvH.ptr += dsvIndex * incrementSizeDSV;
-	//レンダーターゲットをセット
-	cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
+	dsvH.ptr += dsvIndex * incrementSizeDSV;
+	//セット
+	cmdList->OMSetRenderTargets(0, nullptr, false, &dsvH);
 
 	//ビューポートの設定
 	cmdList->RSSetViewports(
@@ -149,8 +109,8 @@ void ShadowMap::PreDraw()
 	);
 
 	//全画面クリア
-	float color[] = { 1.0f,1.0f,1.0f,1.0f };
-	cmdList->ClearRenderTargetView(rtvH, color, 0, nullptr);
+	//float color[] = { 1.0f,1.0f,1.0f,1.0f };
+	//cmdList->ClearRenderTargetView(rtvH, color, 0, nullptr);
 
 	//深度バッファのクリア
 	cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
@@ -161,9 +121,9 @@ void ShadowMap::PostDraw()
 	cmdList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
-			TexManager::GetBuffer(srvIndex).Get(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+			TexManager::GetBuffer(inDsvIndex).Get(),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			D3D12_RESOURCE_STATE_GENERIC_READ)
 	);
 }
 
@@ -324,6 +284,63 @@ void ShadowMap::CreateGraphicsPipelineState()
 	assert(SUCCEEDED(result));
 }
 
+void ShadowMap::CreateVBV()
+{
+	HRESULT result;
+
+	//頂点バッファ生成
+	result = DirectXImportant::dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(VertexPosUv) * 4),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&vertBuff));
+	assert(SUCCEEDED(result));
+
+	//頂点データ転送
+	VertexPosUv vertices[4];
+
+	//左上
+	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
+	//左下
+	vertices[1].pos = { -1.0f, -0.2f, 0.0f };
+	//右上
+	vertices[2].pos = { -0.2f, -1.0f , 0.0f };
+	//右下
+	vertices[3].pos = { -0.2f, -0.2f, 0.0f };
+
+	vertices[0].uv = { 0.0f, 1.0f };
+	vertices[1].uv = { 0.0f, 0.0f };
+	vertices[2].uv = { 1.0f, 1.0f };
+	vertices[3].uv = { 1.0f, 0.0f };
+
+	//頂点バッファへのデータ転送
+	VertexPosUv* vertMap = nullptr;
+	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
+	if (SUCCEEDED(result)) {
+		memcpy(vertMap, vertices, sizeof(vertices));
+		vertBuff->Unmap(0, nullptr);
+	}
+
+	//頂点バッファビューの作成
+	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
+	vbView.SizeInBytes = sizeof(VertexPosUv) * 4;
+	vbView.StrideInBytes = sizeof(VertexPosUv);
+}
+
+void ShadowMap::CreateConstBuff()
+{
+	//定数バッファの生成
+	constBuff = ConstantBuffer::CreateConstantBuffer(sizeof(ConstantBuffer_b0));
+
+	//定数バッファにデータ転送
+	ConstantBuffer_b0 data;
+	data.mat = DirectX::XMMatrixIdentity();
+
+	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
+}
+
 void ShadowMap::CreateTexBuff()
 {
 	HRESULT result;
@@ -368,31 +385,45 @@ void ShadowMap::CreateTexBuff()
 void ShadowMap::CreateSRV()
 {
 	//SRV設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartSRV(),
+		TexManager::GetOffsetSRV(),
+		incrementSizeSRV);
 
 	//デスクリプタヒープにSRVを作成
 	DirectXImportant::dev->CreateShaderResourceView(
-		TexManager::GetBuffer().Get(),	//ビューと関連付けるバッファ
+		TexManager::GetBuffer(inDsvIndex).Get(),
 		&srvDesc,
-		TexManager::GetCpuHeapStartSRV()
+		cpuHandle
 	);
 
 	srvIndex = TexManager::GetOffsetSRV();
+	TexManager::SetIncrementSizeSRV(incrementSizeSRV);
+
+	TexManager::AddOffsetSRV();
 }
 
 void ShadowMap::CreateRTV()
 {
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartRTV(),
+		TexManager::GetOffsetRTV(),
+		incrementSizeRTV);
+
 	DirectXImportant::dev->CreateRenderTargetView(
 		TexManager::GetBuffer(srvIndex).Get(),
 		nullptr,
-		TexManager::GetCpuHeapStartRTV()
+		cpuHandle
 	);
 
 	rtvIndex = TexManager::GetOffsetRTV();
+
 	TexManager::AddOffsetSRV();
 	TexManager::AddOffsetRTV();
 }
@@ -417,23 +448,30 @@ void ShadowMap::CreateDSV()
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&depthResDesc,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
 		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
 		IID_PPV_ARGS(&TexManager::GetBuffer())
 	);
 	assert(SUCCEEDED(result));
 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartDSV(),
+		TexManager::GetOffsetDSV(),
+		incrementSizeDSV);
+
 	//デスクリプタヒープにDSV作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;	//深度値フォーマット
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	DirectXImportant::dev->CreateDepthStencilView(
 		TexManager::GetBuffer().Get(),
 		&dsvDesc,
-		TexManager::GetCpuHeapStartDSV()
+		cpuHandle
 	);
 
 	dsvIndex = TexManager::GetOffsetDSV();
-	TexManager::AddOffsetSRV();
+	inDsvIndex = TexManager::GetOffsetSRV();
+	TexManager::SetShadowInDsvIndex(inDsvIndex);
+
 	TexManager::AddOffsetDSV();
 }

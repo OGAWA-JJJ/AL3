@@ -7,5 +7,3 @@ Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DirectXImportant::cmdAllocator;
 Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectXImportant::cmdList;
 //«ƒƒ“ƒ`ƒƒƒ“•K—v‚È‚¢‚©‚à
 Microsoft::WRL::ComPtr<ID3D12CommandQueue> DirectXImportant::cmdQueue;
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXImportant::rtvHeaps;
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXImportant::descHeap;

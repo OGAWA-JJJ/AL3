@@ -44,8 +44,6 @@ void Light::Init()
 
 void Light::TransferConstBuffer()
 {
-	//HRESULT result;
-
 	//‰e—p
 	DirectX::XMMATRIX matView = DirectX::XMMatrixLookAtLH(
 		XMLoadFloat3(&eye),

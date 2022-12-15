@@ -21,8 +21,18 @@ private:
 	static UINT m_offsetDSV;
 	static UINT m_spriteOffset;
 
+	static UINT m_shadowInDsvIndex;
+	static UINT m_shadowDsvIndex;
+	static UINT m_incrementSizeSRV;
+
 public:
 	static void StaticInit();
+
+	static void SetShadowInDsvIndex(UINT index) { m_shadowInDsvIndex = index; }
+	static void SetIncrementSizeSRV(UINT size) { m_incrementSizeSRV = size; }
+
+	static UINT GetShadowInDsvIndex() { return m_shadowInDsvIndex; }
+	static UINT GetIncrementSizeSRV() { return m_incrementSizeSRV; }
 
 public:
 	static UINT GetSpriteStartIndex() { return SPRITE_START_INDEX; }

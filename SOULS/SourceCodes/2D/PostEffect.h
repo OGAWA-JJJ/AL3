@@ -85,6 +85,7 @@ private:
 	//‰Šú‰»î•ñ
 	SpriteInitData spriteInitData;
 
+	UINT incrementSizeSRV = 0;
 	UINT incrementSizeRTV = 0;
 	UINT incrementSizeDSV = 0;
 	UINT srvIndex = 0;

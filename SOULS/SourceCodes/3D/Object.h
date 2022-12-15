@@ -47,7 +47,7 @@ private:
 	static std::shared_ptr<Light> light;
 
 protected:
-	//定数バッファ
+	//定数バッファb0
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffB0;
 	//色
 	DirectX::XMFLOAT4 color = { 1,1,1,1 };
@@ -98,10 +98,10 @@ public:
 	bool Init();
 
 	//毎フレーム処理
-	void Update(bool isShadowCamera = false);
+	void Update();
 
 	//描画
-	void Draw(const ObjPipelineSet& pipelineSet);
+	void Draw(const ObjPipelineSet& pipelineSet, bool isShadow = true);
 
 public:
 	//座標の取得

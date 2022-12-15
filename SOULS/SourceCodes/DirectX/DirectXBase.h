@@ -10,15 +10,15 @@ class DirectXBase
 private:
 	static HRESULT result;
 	static Microsoft::WRL::ComPtr<IDXGIAdapter> tmpAdapter;
-	static D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	static Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer;
-	static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
 	static Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	static UINT64 fenceVal;
-	static std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>backBuffers;
 	static D3D12_CPU_DESCRIPTOR_HANDLE rtvH;
 	static D3D12_CPU_DESCRIPTOR_HANDLE dsvH;
-	static UINT bbIndex;
+	static std::array<UINT, 2> bbIndex;
+	static UINT incrementSizeRTV;
+	static UINT incrementSizeDSV;
+	static UINT dsvIndex;
+	static UINT currentIndex;
 
 public:
 	//èâä˙âª
@@ -50,7 +50,7 @@ public:
 	static void Swap();
 
 public:
-	//DirectXBase();
+	static void CreateDevice();
 	static void Init(HWND hwnd);
 	static void BeforeDraw(float* ClearColor);
 	static void AfterDraw();

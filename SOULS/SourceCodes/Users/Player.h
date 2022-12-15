@@ -122,7 +122,6 @@ private:	//変数(ステータス関係)
 
 private:	//オブジェクト(Draw用)
 	std::shared_ptr<Object> obj_Sword = nullptr;
-	std::shared_ptr<Object> obj_ShadowSword = nullptr;
 
 	std::array<std::shared_ptr<Object>, 10> obj_Box = { nullptr };
 	const int C_BOX_NUM = 10;
@@ -136,7 +135,6 @@ private:	//オブジェクト(Draw用)
 	//std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
 	//std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
 	std::shared_ptr<FbxObjects> fbxobj_miku = nullptr;
-	std::shared_ptr<FbxObjects> fbxobj_shadowMiku = nullptr;
 
 	const int C_MIKU_NUM = 13;										//fbx増減時変更
 

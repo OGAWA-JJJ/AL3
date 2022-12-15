@@ -39,6 +39,7 @@ public:
 	void Draw();
 	void LuminanceDraw();	//輝度抽出用
 	void ShadowDraw();		//影描画用
+	void ShaftOfLightDraw();
 
 private:
 	void PlayerUpdate();

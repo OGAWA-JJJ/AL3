@@ -90,6 +90,8 @@ void PostEffect::Init(const SpriteInitData& spriteInitData)
 	);
 
 	//生成系
+	incrementSizeSRV = DirectXImportant::dev->
+		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	incrementSizeRTV = DirectXImportant::dev->
 		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	incrementSizeDSV = DirectXImportant::dev->
@@ -138,8 +140,13 @@ void PostEffect::Draw()
 	cmdList->SetGraphicsRootConstantBufferView(2, this->constBuff_b1->GetGPUVirtualAddress());
 
 	//SRV
+	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+		TexManager::GetGpuHeapStartSRV(),
+		srvIndex,
+		incrementSizeSRV);
 	cmdList->SetGraphicsRootDescriptorTable(
-		1, TexManager::GetGpuHeapStartSRV());
+		1, gpuHandle);
+
 	//描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 }
@@ -444,11 +451,16 @@ void PostEffect::CreateSRV()
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartSRV(),
+		TexManager::GetOffsetSRV(),
+		incrementSizeSRV);
+
 	//デスクリプタヒープにSRVを作成
 	DirectXImportant::dev->CreateShaderResourceView(
 		TexManager::GetBuffer().Get(),
 		&srvDesc,
-		TexManager::GetCpuHeapStartSRV()
+		cpuHandle
 	);
 
 	srvIndex = TexManager::GetOffsetSRV();
@@ -456,10 +468,15 @@ void PostEffect::CreateSRV()
 
 void PostEffect::CreateRTV()
 {
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartRTV(),
+		TexManager::GetOffsetRTV(),
+		incrementSizeRTV);
+
 	DirectXImportant::dev->CreateRenderTargetView(
 		TexManager::GetBuffer().Get(),
 		nullptr,
-		TexManager::GetCpuHeapStartRTV()
+		cpuHandle
 	);
 
 	rtvIndex = TexManager::GetOffsetRTV();
@@ -493,6 +510,11 @@ void PostEffect::CreateDSV()
 	);
 	assert(SUCCEEDED(result));
 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+		TexManager::GetCpuHeapStartDSV(),
+		TexManager::GetOffsetDSV(),
+		incrementSizeDSV);
+
 	//デスクリプタヒープにDSV作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;	//深度値フォーマット
@@ -500,7 +522,7 @@ void PostEffect::CreateDSV()
 	DirectXImportant::dev->CreateDepthStencilView(
 		TexManager::GetBuffer().Get(),
 		&dsvDesc,
-		TexManager::GetCpuHeapStartDSV()
+		cpuHandle
 	);
 
 	dsvIndex = TexManager::GetOffsetDSV();

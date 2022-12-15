@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "../2D/TexManager.h"
 #include <d3dcompiler.h>
 #include <cassert>
 

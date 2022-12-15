@@ -121,11 +121,11 @@
     <ClCompile Include="SourceCodes\3D\Mesh.cpp" />
     <ClCompile Include="SourceCodes\3D\Model.cpp" />
     <ClCompile Include="SourceCodes\3D\Object.cpp" />
+    <ClCompile Include="SourceCodes\3D\TrailRenderer.cpp" />
     <ClCompile Include="SourceCodes\DirectX\Camera.cpp" />
     <ClCompile Include="SourceCodes\DirectX\ConstantBuffer.cpp" />
     <ClCompile Include="SourceCodes\DirectX\DirectXBase.cpp" />
     <ClCompile Include="SourceCodes\DirectX\DirectXImportant.cpp" />
-    <ClCompile Include="SourceCodes\DirectX\GraphicsPipeline.cpp" />
     <ClCompile Include="SourceCodes\Input\Input.cpp" />
     <ClCompile Include="SourceCodes\main.cpp" />
     <ClCompile Include="SourceCodes\Math\OBBCollision.cpp" />
@@ -166,12 +166,12 @@
     <ClInclude Include="SourceCodes\3D\Mesh.h" />
     <ClInclude Include="SourceCodes\3D\Model.h" />
     <ClInclude Include="SourceCodes\3D\Object.h" />
+    <ClInclude Include="SourceCodes\3D\TrailRenderer.h" />
     <ClInclude Include="SourceCodes\DirectX\Camera.h" />
     <ClInclude Include="SourceCodes\DirectX\ConstantBuffer.h" />
     <ClInclude Include="SourceCodes\DirectX\d3dx12.h" />
     <ClInclude Include="SourceCodes\DirectX\DirectXBase.h" />
     <ClInclude Include="SourceCodes\DirectX\DirectXImportant.h" />
-    <ClInclude Include="SourceCodes\DirectX\GraphicsPipeline.h" />
     <ClInclude Include="SourceCodes\Input\Input.h" />
     <ClInclude Include="SourceCodes\Math\Easing.h" />
     <ClInclude Include="SourceCodes\Math\OBBCollision.h" />

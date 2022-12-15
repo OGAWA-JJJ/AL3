@@ -1,18 +1,19 @@
 #include "DirectXBase.h"
+#include "../2D/TexManager.h"
 #include <string>
 #include "d3dx12.h"
 
 HRESULT DirectXBase::result;
 Microsoft::WRL::ComPtr<IDXGIAdapter> DirectXBase::tmpAdapter = nullptr;
-D3D12_DESCRIPTOR_HEAP_DESC DirectXBase::heapDesc{};
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBase::depthBuffer;
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXBase::dsvHeap;
 Microsoft::WRL::ComPtr<ID3D12Fence> DirectXBase::fence = nullptr;
 UINT64 DirectXBase::fenceVal = 0;
-std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>DirectXBase::backBuffers;
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::rtvH;
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXBase::dsvH;
-UINT DirectXBase::bbIndex = 0;
+std::array<UINT, 2> DirectXBase::bbIndex;
+UINT DirectXBase::incrementSizeRTV = 0;
+UINT DirectXBase::incrementSizeDSV = 0;
+UINT DirectXBase::dsvIndex = 0;
+UINT DirectXBase::currentIndex = 0;
 
 #pragma region 初期化
 void DirectXBase::DXGIFactory()
@@ -102,7 +103,9 @@ void DirectXBase::CommandList()
 void DirectXBase::CommandQueue()
 {
 	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
-	DirectXImportant::dev->CreateCommandQueue(&cmdQueueDesc, IID_PPV_ARGS(&DirectXImportant::cmdQueue));
+	DirectXImportant::dev->CreateCommandQueue(
+		&cmdQueueDesc,
+		IID_PPV_ARGS(&DirectXImportant::cmdQueue));
 }
 
 void DirectXBase::SwapChain(HWND hwnd)
@@ -140,32 +143,32 @@ void DirectXBase::SwapChain(HWND hwnd)
 
 void DirectXBase::RenderTargetView()
 {
-	//レンダーターゲットビュー
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-
-	//表裏の2つ
-	heapDesc.NumDescriptors = 2;
-	DirectXImportant::dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&DirectXImportant::rtvHeaps));
-
+	incrementSizeRTV = DirectXImportant::dev->GetDescriptorHandleIncrementSize(
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	//表裏の2つ分について
-	//std::vector<ComPtr<ID3D12Resource>>backBuffers(2);
-	backBuffers.resize(2);
 	for (int i = 0; i < 2; i++)
 	{
+		bbIndex.at(i) = TexManager::GetOffsetRTV();
+
 		//スワップチェーンからバッファを取得
-		result = DirectXImportant::swapchain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i]));
+		result = DirectXImportant::swapchain->GetBuffer(
+			TexManager::GetOffsetRTV(),
+			IID_PPV_ARGS(&TexManager::GetBuffer()));
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE handle =
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(
-				DirectXImportant::rtvHeaps->GetCPUDescriptorHandleForHeapStart(),        //先頭のハンドル
-				i,                                                     //デスクリプタの番号
-				DirectXImportant::dev->GetDescriptorHandleIncrementSize(heapDesc.Type)); //1つ分のサイズを指定
+				TexManager::GetCpuHeapStartRTV(),
+				TexManager::GetOffsetRTV(),
+				incrementSizeRTV);
 
 		//レンダーターゲットビューの生成
 		DirectXImportant::dev->CreateRenderTargetView(
-			backBuffers[i].Get(),
+			TexManager::GetBuffer().Get(),
 			nullptr,
 			handle);
+
+		TexManager::AddOffsetSRV();
+		TexManager::AddOffsetRTV();
 	}
 }
 
@@ -186,25 +189,32 @@ void DirectXBase::DepthBuffer()
 		&depthResDesc,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE, //深度値書き込みに使用
 		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
-		IID_PPV_ARGS(&depthBuffer));
+		IID_PPV_ARGS(&TexManager::GetBuffer()));
 }
 
 void DirectXBase::DepthStencilView()
 {
-	//深度ビュー用デスクリプタヒープ作成
-	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
-	dsvHeapDesc.NumDescriptors = 1;
-	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	result = DirectXImportant::dev->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+	incrementSizeDSV = DirectXImportant::dev->GetDescriptorHandleIncrementSize(
+		D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	dsvIndex = TexManager::GetOffsetDSV();
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE handle =
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			TexManager::GetCpuHeapStartDSV(),
+			dsvIndex,
+			incrementSizeDSV);
 
 	//深度ステンシルビューの作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	DirectXImportant::dev->CreateDepthStencilView(
-		depthBuffer.Get(),
+		TexManager::GetBuffer().Get(),
 		&dsvDesc,
-		dsvHeap->GetCPUDescriptorHandleForHeapStart());
+		handle);
+
+	TexManager::AddOffsetSRV();
+	TexManager::AddOffsetDSV();
 }
 
 void DirectXBase::Fence()
@@ -220,21 +230,22 @@ void DirectXBase::Fence()
 #pragma region 描画前
 void DirectXBase::SetDrawMode()
 {
-	bbIndex = DirectXImportant::swapchain->GetCurrentBackBufferIndex();
-	CD3DX12_RESOURCE_BARRIER barrierDesc{};
-	DirectXImportant::cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		backBuffers[bbIndex].Get(),
-		D3D12_RESOURCE_STATE_PRESENT,
-		D3D12_RESOURCE_STATE_RENDER_TARGET));
+	currentIndex = bbIndex.at(DirectXImportant::swapchain->GetCurrentBackBufferIndex());
+	DirectXImportant::cmdList->ResourceBarrier(
+		1,
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			TexManager::GetBuffer(currentIndex).Get(),
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET));
 }
 
 void DirectXBase::RenderTarget()
 {
-	//レンダーターゲットビュー用ディスクリプタヒープのハンドルを取得
-	rtvH = DirectXImportant::rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-	rtvH.ptr += bbIndex * DirectXImportant::dev->GetDescriptorHandleIncrementSize(heapDesc.Type);
-	//深度ステンシルビュー用デスクリプタヒープのハンドルを取得
-	dsvH = dsvHeap->GetCPUDescriptorHandleForHeapStart();
+	rtvH = TexManager::GetCpuHeapStartRTV();
+	rtvH.ptr += currentIndex * incrementSizeRTV;
+
+	dsvH = TexManager::GetCpuHeapStartDSV();
+	dsvH.ptr += dsvIndex * incrementSizeDSV;
 	DirectXImportant::cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
 }
 
@@ -275,10 +286,12 @@ void DirectXBase::ScissorRects()
 #pragma region 描画後
 void DirectXBase::SetIndicateMode()
 {
-	DirectXImportant::cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		backBuffers[bbIndex].Get(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET,
-		D3D12_RESOURCE_STATE_PRESENT));
+	DirectXImportant::cmdList->ResourceBarrier(
+		1,
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			TexManager::GetBuffer(currentIndex).Get(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PRESENT));
 }
 
 void DirectXBase::CloseCommandList()
@@ -319,11 +332,15 @@ void DirectXBase::Swap()
 }
 #pragma endregion
 
-void DirectXBase::Init(HWND hwnd)
+void DirectXBase::CreateDevice()
 {
 	DXGIFactory();
 	GraphicsAdapter();
 	Device();
+}
+
+void DirectXBase::Init(HWND hwnd)
+{
 	CommandAllocator();
 	CommandList();
 	CommandQueue();

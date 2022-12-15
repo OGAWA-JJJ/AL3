@@ -12,6 +12,7 @@ public:	//パイプライン
 
 	static FbxObjects::FbxPipelineSet fbx_normal;
 	static FbxObjects::FbxPipelineSet fbx_shadow;
+	static FbxObjects::FbxPipelineSet fbx_receiveShadow;
 
 public:
 	static void Init();

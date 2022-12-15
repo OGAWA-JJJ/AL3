@@ -53,6 +53,10 @@ void GameScene::Init()
 		m_player->GetPos().z + enemyToPlayer.z * m_player->GetCameraDist()));
 
 	DirectX::XMFLOAT3 hoge = Camera::GetEye();
+
+	ImguiControl::Imgui_shadowEye_x = light->GetShadowLigitEye().x;
+	ImguiControl::Imgui_shadowEye_y = light->GetShadowLigitEye().y;
+	ImguiControl::Imgui_shadowEye_z = light->GetShadowLigitEye().z;
 }
 
 void GameScene::Update()
@@ -86,6 +90,13 @@ void GameScene::Update()
 				ImguiControl::Imgui_lightDir_y,
 				ImguiControl::Imgui_lightDir_z,
 			});
+
+		light->SetShadowLigitEye(DirectX::XMFLOAT3(
+			ImguiControl::Imgui_shadowEye_x,
+			ImguiControl::Imgui_shadowEye_y,
+			ImguiControl::Imgui_shadowEye_z
+		));
+
 		light->Update();
 
 		//Lightî•ñ‚ðXV
@@ -168,8 +179,14 @@ void GameScene::ShadowDraw()
 	if (m_gameSceneType == GAME)
 	{
 		m_player->ShadowDraw();
+		//m_enemy->ShadowDraw();
 		m_stage->ShadowDraw();
 	}
+}
+
+void GameScene::ShaftOfLightDraw()
+{
+	m_stage->ShaftOfLightDraw();
 }
 
 void GameScene::PlayerUpdate()

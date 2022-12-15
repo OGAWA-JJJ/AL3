@@ -6,6 +6,7 @@
 #include <vector>
 #include "../DirectX/Camera.h"
 #include "../../imgui/ImguiControl.h"
+#include "../2D/TexManager.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 
@@ -249,7 +250,7 @@ bool Object::Init()
 	return true;
 }
 
-void Object::Update(bool isShadowCamera)
+void Object::Update()
 {
 	HRESULT result;
 	DirectX::XMMATRIX matScale, matRot, matTrans;
@@ -294,35 +295,17 @@ void Object::Update(bool isShadowCamera)
 	DirectX::XMMATRIX matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
 	DirectX::XMFLOAT3 cameraPos = Camera::GetEye();
 
-	if (isShadowCamera)
-	{
-		//影用
-		DirectX::XMMATRIX matView = DirectX::XMMatrixLookAtLH(
-			XMLoadFloat3(&light->GetShadowLigitEye()),
-			XMLoadFloat3(&light->GetShadowLigitTarget()),
-			XMLoadFloat3(&light->GetShadowLigitUp()));
-
-		float fov = ImguiControl::Imgui_fov;
-		DirectX::XMMATRIX lightMatPerspective = DirectX::XMMatrixPerspectiveFovLH(
-			DirectX::XMConvertToRadians(fov),
-			(float)WINDOW_WIDTH / WINDOW_HEIGHT,
-			0.1f, ImguiControl::Imgui_far_z); //前端、奥端
-
-		matViewProjection = matView * lightMatPerspective;
-		cameraPos = light->GetShadowLigitEye();
-	}
-
 	// 定数バッファへデータ転送
-	ConstBufferDataB0* constMap = nullptr;
-	result = constBuffB0->Map(0, nullptr, (void**)&constMap);
-	constMap->viewproj = matViewProjection;
-	constMap->world = matWorld;
-	constMap->cameraPos = cameraPos;
-	constMap->color = color;
+	ConstBufferDataB0* constMap0 = nullptr;
+	result = constBuffB0->Map(0, nullptr, (void**)&constMap0);
+	constMap0->viewproj = matViewProjection;
+	constMap0->world = matWorld;
+	constMap0->cameraPos = cameraPos;
+	constMap0->color = color;
 	constBuffB0->Unmap(0, nullptr);
 }
 
-void Object::Draw(const ObjPipelineSet& pipelineSet)
+void Object::Draw(const ObjPipelineSet& pipelineSet, bool isShadow)
 {
 	//nullptrチェック
 	assert(device);
@@ -339,6 +322,15 @@ void Object::Draw(const ObjPipelineSet& pipelineSet)
 	cmdList->SetGraphicsRootSignature(pipelineSet.rootsignature.Get());
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, constBuffB0->GetGPUVirtualAddress());
+
+	if (isShadow)
+	{
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			TexManager::GetGpuHeapStartSRV(),
+			TexManager::GetShadowInDsvIndex(),
+			TexManager::GetIncrementSizeSRV());
+		cmdList->SetGraphicsRootDescriptorTable(4, gpuHandle);
+	}
 
 	//ライトの描画
 	light->Draw(cmdList, 3);

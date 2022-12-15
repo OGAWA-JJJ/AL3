@@ -268,17 +268,17 @@ void Enemy::Draw()
 {
 	if (ImguiControl::Imgui_isEnemyDraw)
 	{
-		fbxobj_creature->Draw(PipelineManager::fbx_normal);
+		fbxobj_creature->Draw(PipelineManager::fbx_receiveShadow);
 	}
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 
-	obj_circle->Draw(PipelineManager::obj_texColorReceice);
+	//obj_circle->Draw(PipelineManager::obj_texColorReceice);
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < obj_Box.size(); i++)
 		{
-			obj_Box[i]->Draw(PipelineManager::obj_normal);
+			obj_Box[i]->Draw(PipelineManager::obj_receiveShadow);
 		}
 	}
 
@@ -295,6 +295,22 @@ void Enemy::LuminanceDraw()
 
 void Enemy::ShadowDraw()
 {
+	if (ImguiControl::Imgui_isEnemyDraw)
+	{
+		fbxobj_creature->Draw(PipelineManager::fbx_shadow, false);
+	}
+
+	Object::PreDraw(DirectXImportant::cmdList.Get());
+
+	if (ImguiControl::Imgui_isOBBDraw)
+	{
+		for (int i = 0; i < obj_Box.size(); i++)
+		{
+			obj_Box[i]->Draw(PipelineManager::obj_shadow, false);
+		}
+	}
+
+	Object::PostDraw();
 }
 
 void Enemy::CalcOBB()
