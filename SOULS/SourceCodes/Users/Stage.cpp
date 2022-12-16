@@ -15,7 +15,7 @@ Stage::Stage()
 	const float Stage_Scale = 2000.0f;
 	obj_Stage->SetScale(DirectX::XMFLOAT3(Stage_Scale + 200.0f, Stage_Scale, Stage_Scale));
 
-	const float arenaScale = 1000.0f;
+	const float arenaScale = 2000.0f;
 	obj_arenaFront->SetScale(
 		DirectX::XMFLOAT3(arenaScale, arenaScale, arenaScale));
 	//obj_arenaBack->SetScale(
