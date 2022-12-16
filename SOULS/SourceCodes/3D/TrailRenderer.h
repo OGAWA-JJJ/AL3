@@ -24,7 +24,7 @@ private:
 	struct ConstBufferData
 	{
 		DirectX::XMMATRIX viewProj = {};
-		DirectX::
+		//DirectX::
 		DirectX::XMFLOAT4 color = { 1,1,1,1 };
 	};
 

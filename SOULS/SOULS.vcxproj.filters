@@ -49,12 +49,6 @@
     <FxCompile Include="Resources\Shaders\ObjVS.hlsl">
       <Filter>Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\TrailVS.hlsl">
-      <Filter>Shader\3D</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\TrailPS.hlsl">
-      <Filter>Shader\3D</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -344,9 +338,6 @@
       <Filter>Shader\3D</Filter>
     </None>
     <None Include="Resources\Shaders\ObjShaderHeader.hlsli">
-      <Filter>Shader\3D</Filter>
-    </None>
-    <None Include="Resources\Shaders\Trail.hlsli">
       <Filter>Shader\3D</Filter>
     </None>
   </ItemGroup>
