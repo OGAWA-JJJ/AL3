@@ -49,6 +49,12 @@
     <FxCompile Include="Resources\Shaders\ObjVS.hlsl">
       <Filter>Shader\3D</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\TrailVS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\TrailPS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -174,7 +180,9 @@
     <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
       <Filter>SourceCodes\2D\PostEffect</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\3D\TrailRenderer.cpp" />
+    <ClCompile Include="SourceCodes\3D\TrailRenderer.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCodes\Singleton.h">
@@ -312,7 +320,9 @@
     <ClInclude Include="SourceCodes\2D\ShadowMap.h">
       <Filter>SourceCodes\2D\PostEffect</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\3D\TrailRenderer.h" />
+    <ClInclude Include="SourceCodes\3D\TrailRenderer.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\SpriteShaderHeader.hlsli">
@@ -334,6 +344,9 @@
       <Filter>Shader\3D</Filter>
     </None>
     <None Include="Resources\Shaders\ObjShaderHeader.hlsli">
+      <Filter>Shader\3D</Filter>
+    </None>
+    <None Include="Resources\Shaders\Trail.hlsli">
       <Filter>Shader\3D</Filter>
     </None>
   </ItemGroup>

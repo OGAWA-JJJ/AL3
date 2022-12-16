@@ -1,7 +1,5 @@
 #pragma once
 #include "../3D/Object.h"
-#include <DirectXMath.h>
-#include <vector>
 #include <array>
 
 class Particle
