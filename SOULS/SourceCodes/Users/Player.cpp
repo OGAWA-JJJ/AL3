@@ -214,6 +214,8 @@ void Player::Init()
 		ImguiControl::Imgui_playerOBBScale[i][1] = l_y[i];
 		ImguiControl::Imgui_playerOBBScale[i][2] = l_z[i];
 	}
+
+	trail.Init();
 }
 
 void Player::Update(DirectX::XMFLOAT3 enemyPos)
@@ -863,6 +865,10 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	}
 
 	pManager.Update();
+
+	trail.SetOldPos(DirectX::XMFLOAT3(-50, 100, 100), DirectX::XMFLOAT3(-50, 50, 100));
+	trail.SetCurrentPos(DirectX::XMFLOAT3(50, 100, 100), DirectX::XMFLOAT3(50, 50, 100));
+	trail.Update();
 }
 
 void Player::Draw()
@@ -896,6 +902,7 @@ void Player::Draw()
 	Object::PostDraw();
 
 	//pManager.Draw();
+	trail.Draw();
 }
 
 void Player::LuminanceDraw()
