@@ -133,10 +133,6 @@ void Player::Init()
 #pragma endregion
 
 	//Sword
-	obj_Sword->SetPosition(XMFLOAT3(
-		0,
-		0,
-		0));
 	obj_Sword->SetRotation(XMFLOAT3(
 		310.0f,
 		300.0f,
@@ -149,11 +145,12 @@ void Player::Init()
 		0.0f
 	));
 
+	Camera::SetEye(DirectX::XMFLOAT3(0, 20, C_MAX_CAMERA_NEAR_DISTANCE));
 	ImguiControl::Imgui_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
 
 	//パーティクル
 	const float pScale = 0.5f;
-	const float pPower = 0.03f;
+	const float pPower = 0.1f;
 	const float pColor = 0.9f;
 
 	Particle::ParticleData pData;
@@ -162,11 +159,12 @@ void Player::Init()
 	pData.scale = { pScale, pScale, pScale };
 	pData.power = { pPower, pPower, pPower };
 	pData.color = { pColor, pColor, pColor, 1.0f };
+	pData.life = 30;
 	for (int i = 0; i < pManager.GetMaxParticle(); i++)
 	{
 		pManager.SetParticle(i, pData);
 	}
-	pManager.SetCreateNum(1);
+	pManager.SetCreateNum(100);
 
 	//Box
 	std::array<float, 10> l_x = {
@@ -832,24 +830,15 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		m_animationType = AnimationType::DIE;
 	}
 
+	bool l_isOldSheathed = m_isSheathed;
 	CalcBlendAnimation();
 
-	OtherUpdate();	//ここでm_animationTypeの変更を行うと挙動がおかしくなる可能性アリ
-	CalcOBB();
-
-	//確認用
-	if (m_isAttack)
-	{
-		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
-	}
-	else
-	{
-		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	}
-
-	m_cameraDist = ImguiControl::Imgui_cameraDist;
-
 	//パーティクル
+	pManager.SetIsCreateStop(true);
+	if (m_isSheathed != l_isOldSheathed)
+	{
+		pManager.SetIsCreateStop(false);
+	}
 	for (int i = 0; i < pManager.GetMaxParticle(); i++)
 	{
 		//剣から微調整
@@ -867,61 +856,85 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 
 	pManager.Update();
 
-	//Trail
-	if (true)
+	OtherUpdate();	//ここでm_animationTypeの変更を行うと挙動がおかしくなる可能性アリ
+	CalcOBB();
+
+	//確認用
+	if (m_isAttack)
 	{
-		if (!m_isTrailStart)
-		{
-			DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-			l_trans.r[3].m128_f32[1] = 25.0f;
-			l_trans *= obj_Sword->GetMatrix();
-
-			DirectX::XMFLOAT3 top = {
-				l_trans.r[3].m128_f32[0],
-			l_trans.r[3].m128_f32[1] ,
-			l_trans.r[3].m128_f32[2] };
-
-			DirectX::XMFLOAT3 bottom = {
-				obj_Sword->GetMatrix().r[3].m128_f32[0],
-			obj_Sword->GetMatrix().r[3].m128_f32[1],
-			obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
-			trail.SetCurrentPos(m_trailCount, top, bottom);
-			m_isTrailStart = true;
-		}
-		else
-		{
-			DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-			l_trans.r[3].m128_f32[1] = 25.0f;
-			l_trans *= obj_Sword->GetMatrix();
-
-			DirectX::XMFLOAT3 top = {
-				l_trans.r[3].m128_f32[0],
-			l_trans.r[3].m128_f32[1] ,
-			l_trans.r[3].m128_f32[2] };
-
-			DirectX::XMFLOAT3 bottom = {
-				obj_Sword->GetMatrix().r[3].m128_f32[0],
-			obj_Sword->GetMatrix().r[3].m128_f32[1],
-			obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
-			int l_oldCount = m_trailCount - 1;
-			if (l_oldCount < 0)
-			{
-				l_oldCount = 99;
-			}
-
-			trail.SetOldPos(m_trailCount,
-				trail.GetCurrentPos_Top(l_oldCount),
-				trail.GetCurrentPos_Bottom(l_oldCount));
-			trail.SetCurrentPos(m_trailCount, top, bottom);
-			trail.CreateTrail(m_trailCount);
-		}
-		m_trailCount++;
+		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 	}
+	else
+	{
+		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+
+	m_cameraDist = ImguiControl::Imgui_cameraDist;
+
+	//Trail
 	if (m_trailCount > 99)
 	{
 		m_trailCount = 0;
+	}
+
+	if (!m_isTrailStart)
+	{
+		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
+		l_trans.r[3].m128_f32[1] = 25.0f;
+		l_trans *= obj_Sword->GetMatrix();
+
+		DirectX::XMFLOAT3 top = {
+			l_trans.r[3].m128_f32[0],
+		l_trans.r[3].m128_f32[1] ,
+		l_trans.r[3].m128_f32[2] };
+
+		DirectX::XMFLOAT3 bottom = {
+			obj_Sword->GetMatrix().r[3].m128_f32[0],
+		obj_Sword->GetMatrix().r[3].m128_f32[1],
+		obj_Sword->GetMatrix().r[3].m128_f32[2] };
+
+		trail.SetCurrentPos(m_trailCount, top, bottom);
+		m_isTrailStart = true;
+	}
+	else
+	{
+		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
+		l_trans.r[3].m128_f32[1] = 25.0f;
+		l_trans *= obj_Sword->GetMatrix();
+
+		DirectX::XMFLOAT3 top = {
+			l_trans.r[3].m128_f32[0],
+		l_trans.r[3].m128_f32[1] ,
+		l_trans.r[3].m128_f32[2] };
+
+		DirectX::XMFLOAT3 bottom = {
+			obj_Sword->GetMatrix().r[3].m128_f32[0],
+		obj_Sword->GetMatrix().r[3].m128_f32[1],
+		obj_Sword->GetMatrix().r[3].m128_f32[2] };
+
+		int l_oldCount = m_trailCount - 1;
+		if (l_oldCount < 0)
+		{
+			l_oldCount = 99;
+		}
+
+		trail.SetOldPos(m_trailCount,
+			trail.GetCurrentPos_Top(l_oldCount),
+			trail.GetCurrentPos_Bottom(l_oldCount));
+		trail.SetCurrentPos(m_trailCount, top, bottom);
+		if (!m_isSheathed)
+		{
+			trail.CreateTrail(m_trailCount);
+		}
+	}
+
+	if (!m_isSheathed)
+	{
+		m_trailCount++;
+	}
+	else
+	{
+		m_isTrailStart = false;
 	}
 	trail.Update();
 
@@ -935,8 +948,6 @@ void Player::Draw()
 	{
 		fbxobj_miku->Draw(PipelineManager::fbx_receiveShadow);
 	}
-
-	Object::PreDraw(DirectXImportant::cmdList.Get());
 
 	if (ImguiControl::isHel)
 	{
@@ -957,22 +968,16 @@ void Player::Draw()
 		obj_SwordBox->Draw(PipelineManager::obj_receiveShadow);
 	}
 
-	Object::PostDraw();
-
 	pManager.Draw();
 	trail.Draw();
 }
 
 void Player::LuminanceDraw()
 {
-	if (IsDead())
+	if (ImguiControl::Imgui_isWeaponDraw)
 	{
-		return;
+		obj_Sword->Draw(PipelineManager::obj_normal, false);
 	}
-
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-	obj_Sword->Draw(PipelineManager::obj_normal, false);
-	Object::PostDraw();
 
 	pManager.Draw();
 	trail.Draw();
@@ -985,12 +990,10 @@ void Player::ShadowDraw()
 		fbxobj_miku->Draw(PipelineManager::fbx_shadow, false);
 	}
 
-	Object::PreDraw(DirectXImportant::cmdList.Get());
 	if (ImguiControl::Imgui_isWeaponDraw)
 	{
 		obj_Sword->Draw(PipelineManager::obj_shadow, false);
 	}
-	Object::PostDraw();
 }
 
 void Player::Input()
@@ -1210,6 +1213,7 @@ void Player::OtherUpdate()
 		{
 			m_isAnimation = false;
 			m_isInvincible = false;
+			m_isInvincible = false;
 		}
 
 		ImguiControl::Imgui_playerAniType = "DAMAGED";
@@ -1314,7 +1318,33 @@ void Player::OtherUpdate()
 	m_isHelmet = ImguiControl::isHel;
 
 	obj_Helmet->MultiMatrix(bones[2].second);
-	obj_Sword->MultiMatrix(fbxobj_miku->GetMatrix());
+	if (m_isSheathed)
+	{
+		obj_Sword->SetPosition(DirectX::XMFLOAT3(
+			ImguiControl::SwordXt,
+			ImguiControl::SwordYt,
+			ImguiControl::SwordZt
+		));
+		obj_Sword->SetRotation(DirectX::XMFLOAT3(
+			ImguiControl::SwordXr,
+			ImguiControl::SwordYr,
+			ImguiControl::SwordZr
+		));
+
+		obj_Sword->MultiMatrix(bones[0].second);
+	}
+	else
+	{
+		obj_Sword->SetPosition(XMFLOAT3(
+			0.0f,
+			0.0f,
+			0.0f));
+		obj_Sword->SetRotation(XMFLOAT3(
+			310.0f,
+			300.0f,
+			310.0f));
+		obj_Sword->MultiMatrix(fbxobj_miku->GetMatrix());
+	}
 
 	obj_Helmet->Update();
 	obj_Sword->Update();
@@ -1353,12 +1383,26 @@ void Player::CalcBlendAnimation()
 				m_blendTimer = 1.0f;
 				m_isChange = false;
 				m_oldAnimationType = m_animationType;
+
+				//納刀
+				if (m_animationType < AnimationType::NORMAL_ATTACK_1 ||
+					m_animationType>AnimationType::NORMAL_ATTACK_3)
+				{
+					m_isSheathed = true;
+				}
 			}
 		}
 		else
 		{
 			m_isChange = false;
 			m_oldAnimationType = m_animationType;
+
+			//納刀
+			if (m_animationType < AnimationType::NORMAL_ATTACK_1 ||
+				m_animationType>AnimationType::NORMAL_ATTACK_3)
+			{
+				m_isSheathed = true;
+			}
 		}
 	}
 
@@ -1460,6 +1504,9 @@ void Player::DoAttack(const int animationType)
 	m_isHeal = false;
 	m_padState = 0;
 	m_animationTimer = 0;
+
+	//仮
+	m_isSheathed = false;
 
 	m_oldAnimationType = m_animationType;
 	m_animationType = animationType;

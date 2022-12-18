@@ -97,6 +97,8 @@ private:
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
 	//ボーン全部の回転行列
 	std::vector<DirectX::XMMATRIX> matRots;
+	//スケール抜きワールド行列
+	DirectX::XMMATRIX m_matTransRotWorld = DirectX::XMMatrixIdentity();
 
 private:
 	DirectX::XMFLOAT3 ambient = { 0.8f, 0.8f, 0.8f };
@@ -180,6 +182,7 @@ public:	//Getter
 		& GetAffineTrans() { return affineTrans; }		//スケール行列が入っている為、OBB描画に問題←治した
 	const std::vector<DirectX::XMMATRIX>& GetMatRots() { return matRots; }
 	DirectX::XMMATRIX& GetMatrix() { return matrix; }	//手固定
+	DirectX::XMMATRIX& GetMatWorld();					//スケール抜き
 
 	const bool IsCurrentAnimationEnd() { return animationDatas[m_currentAnimationIndex].m_isAnimationEndTrigger; }
 	const bool IsAnimationEnd(int animationIndex) { return animationDatas[animationIndex].m_isAnimationEndTrigger; }

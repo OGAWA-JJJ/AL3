@@ -11,7 +11,7 @@
 
 GameScene::GameScene()
 {
-	m_gameSceneType = TITLE;
+	m_sceneType = TITLE;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -42,6 +42,11 @@ void GameScene::Init()
 	m_player->Init();
 	m_enemy->Init();
 	m_stage->Init();
+	SpriteManager::Init();
+
+	m_moveTimer = C_MAX_MOVE_TIMER;
+	m_moveTrigger = false;
+	ImguiControl::Imgui_gameInit = false;
 
 	ImguiControl::Imgui_shadowEye_x = light->GetShadowLigitEye().x;
 	ImguiControl::Imgui_shadowEye_y = light->GetShadowLigitEye().y;
@@ -54,106 +59,56 @@ void GameScene::Update()
 	{
 		if (SpriteManager::IsSceneChangeEnd())
 		{
-			m_gameSceneType = GAME;
+			m_sceneType = GAME;
 		}
 	}
 
-	if (m_gameSceneType == TITLE)
+	switch (m_sceneType)
+	{
+	case TITLE:
 	{
 		if (Input::isPadTrigger(XINPUT_GAMEPAD_A))
 		{
 			m_sceneChangeTri = true;
 		}
+		break;
 	}
-	else if (m_gameSceneType == GAME)
+	case GAME:
 	{
-		//GameInit
-		if (ImguiControl::Imgui_gameInit)
-		{
-			m_player->Init();
-			m_enemy->Init();
-			SpriteManager::Init();
-			m_moveTimer = 30;
-			m_moveTrigger = false;
-			ImguiControl::Imgui_gameInit = false;
-		}
-
-		//Light系
-		light->SetLightColor(
-			{
-				ImguiControl::Imgui_lightColor_r,
-				ImguiControl::Imgui_lightColor_g,
-				ImguiControl::Imgui_lightColor_b
-			});
-		light->SetLightDir(
-			{
-				ImguiControl::Imgui_lightDir_x,
-				ImguiControl::Imgui_lightDir_y,
-				ImguiControl::Imgui_lightDir_z,
-			});
-
-		light->SetShadowLigitEye(DirectX::XMFLOAT3(
-			ImguiControl::Imgui_shadowEye_x,
-			ImguiControl::Imgui_shadowEye_y,
-			ImguiControl::Imgui_shadowEye_z
-		));
-
-		light->Update();
-
-		//Light情報を更新
-		Object::SetLight(light);
-		FbxObjects::SetLight(light);
-
-		//敵起動
-		if (m_moveTimer > 0) { m_moveTimer--; }
-		else
-		{
-			if (!m_moveTrigger) { m_enemy->DiscoverPlayer(); }
-			m_moveTrigger = true;
-		}
+		OtherUpdate();
 
 		PlayerUpdate();
 		EnemyUpdate();
-
-		if (m_enemy->IsExplosion() && !m_player->IsInvincible())
-		{
-			float dist = OgaJHelper::CalcDist(m_player->GetPos(), m_enemy->GetPos());
-			if (dist < 175.0f)
-			{
-				m_player->HitAttack(m_enemy->GetExplosionPower());
-			}
-		}
 
 		m_player->Update(m_enemy->GetPos());
 		m_enemy->Update(m_player->GetPos());
 		m_stage->Update();
 
-		//死亡判定(SceneChange用)
-		bool isDead = m_player->IsDead();
-		isDead = m_enemy->IsDead();
-
 		SpriteManager::Update();
 		SpriteManager::PlayerHPUpdate(m_player->GetHpRate());
+		SpriteManager::EnemyHPUpdate(m_enemy->GetHpRate());
 		SpriteManager::PlayerMpAndStaminaUpdate(
 			m_player->GetMpRate(),
 			m_player->GetStaminaRate(),
 			false
 		);
+		break;
+	}
 	}
 }
 
 void GameScene::Draw()
 {
-	if (m_gameSceneType == TITLE)
+	if (m_sceneType == TITLE)
 	{
 		SpriteManager::TitleDraw(m_sceneChangeTri);
 	}
-	else if (m_gameSceneType == GAME)
+	else if (m_sceneType == GAME)
 	{
 		m_stage->Draw();
 		m_player->Draw();
 		m_enemy->Draw();
-		SpriteManager::PlayerUIDraw(m_player->GetEstus());
+		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
 
 		if (m_enemy->IsFighting())
 		{
@@ -168,7 +123,7 @@ void GameScene::Draw()
 
 void GameScene::LuminanceDraw()
 {
-	if (m_gameSceneType == GAME)
+	if (m_sceneType == GAME)
 	{
 		m_player->LuminanceDraw();
 		m_enemy->LuminanceDraw();
@@ -177,7 +132,7 @@ void GameScene::LuminanceDraw()
 
 void GameScene::ShadowDraw()
 {
-	if (m_gameSceneType == GAME)
+	if (m_sceneType == GAME)
 	{
 		m_player->ShadowDraw();
 		m_enemy->ShadowDraw();
@@ -249,8 +204,68 @@ void GameScene::EnemyUpdate()
 			}
 		}
 	}
-	else if (!m_enemy->IsAttack())
+
+	//爆発
+	if (m_enemy->IsExplosion() && !m_player->IsInvincible())
 	{
-		//m_player->UnInvincible();
+		float dist = OgaJHelper::CalcDist(m_player->GetPos(), m_enemy->GetPos());
+		if (dist < 175.0f)
+		{
+			m_player->HitAttack(m_enemy->GetExplosionPower());
+		}
 	}
+}
+
+void GameScene::OtherUpdate()
+{
+	//敵起動
+	if (m_moveTimer > 0)
+	{
+		m_moveTimer--;
+	}
+	else
+	{
+		if (!m_moveTrigger)
+		{
+			m_enemy->DiscoverPlayer();
+		}
+		m_moveTrigger = true;
+	}
+
+	//GameInit
+	if (ImguiControl::Imgui_gameInit)
+	{
+		Init();
+	}
+	if (ImguiControl::Imgui_enemyKill)
+	{
+		m_enemy->SelfKill();
+		SpriteManager::EnemyHPChange();
+	}
+
+	//Light系
+	light->SetLightColor(
+		{
+			ImguiControl::Imgui_lightColor_r,
+			ImguiControl::Imgui_lightColor_g,
+			ImguiControl::Imgui_lightColor_b
+		});
+	light->SetLightDir(
+		{
+			ImguiControl::Imgui_lightDir_x,
+			ImguiControl::Imgui_lightDir_y,
+			ImguiControl::Imgui_lightDir_z,
+		});
+
+	light->SetShadowLigitEye(DirectX::XMFLOAT3(
+		ImguiControl::Imgui_shadowEye_x,
+		ImguiControl::Imgui_shadowEye_y,
+		ImguiControl::Imgui_shadowEye_z
+	));
+
+	light->Update();
+
+	//Light情報を更新
+	Object::SetLight(light);
+	FbxObjects::SetLight(light);
 }

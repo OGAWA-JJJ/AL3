@@ -76,13 +76,11 @@ private:
 
 public:
 	//静的初期化
-	static void StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device);
+	static void StaticInit(
+		Microsoft::WRL::ComPtr<ID3D12Device> device,
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
 	//グラフィックパイプラインの生成
 	static ObjPipelineSet CreateGraphicsPipeline(const ObjectInitData& objectInitData);
-	//描画前処理
-	static void PreDraw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
-	//描画後処理
-	static void PostDraw();
 	//3Dオブジェクト生成
 	static std::shared_ptr<Object> Create(std::shared_ptr<Model> model = nullptr);
 	//ライト

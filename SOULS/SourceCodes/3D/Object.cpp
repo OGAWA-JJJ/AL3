@@ -15,7 +15,9 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> Object::cmdList = nullptr;
 ObjPipelineSet Object::pipelineSet;
 std::shared_ptr<Light> Object::light = nullptr;
 
-void Object::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
+void Object::StaticInit(
+	Microsoft::WRL::ComPtr<ID3D12Device> device,
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
 {
 	//再初期化チェック
 	assert(!Object::device);
@@ -24,6 +26,7 @@ void Object::StaticInit(Microsoft::WRL::ComPtr<ID3D12Device> device)
 	assert(device);
 
 	Object::device = device;
+	Object::cmdList = cmdList;
 
 	//モデルの静的初期化
 	Model::StaticInit(device);
@@ -190,24 +193,6 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 	return pipelineSet;
 }
 
-void Object::PreDraw(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
-{
-	//PreDrawとPostDrawがペアで呼ばれていなければエラー
-	assert(Object::cmdList == nullptr);
-
-	//コマンドリストをセット
-	Object::cmdList = cmdList;
-
-	//プリミティブ形状を設定
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
-
-void Object::PostDraw()
-{
-	//コマンドリストを解除
-	Object::cmdList = nullptr;
-}
-
 std::shared_ptr<Object> Object::Create(std::shared_ptr<Model> model)
 {
 	//3Dオブジェクトのインスタンスを生成
@@ -316,6 +301,8 @@ void Object::Draw(const ObjPipelineSet& pipelineSet, bool isShadow)
 		return;
 	}
 
+	//形式
+	Object::cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//パイプラインステートの設定
 	cmdList->SetPipelineState(pipelineSet.pipelinestate.Get());
 	//ルートシグネチャの設定

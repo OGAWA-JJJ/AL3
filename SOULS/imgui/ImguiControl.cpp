@@ -60,6 +60,14 @@ float ImguiControl::Imgui_stageScale = 3500.0f;
 bool ImguiControl::Imgui_gameInit = false;
 bool ImguiControl::Imgui_enemyKill = false;
 
+float ImguiControl::SwordXt = -3.0f;
+float ImguiControl::SwordYt = 10.0f;
+float ImguiControl::SwordZt = -2.0f;
+
+float ImguiControl::SwordXr = 10.0f;
+float ImguiControl::SwordYr = 0.0f;
+float ImguiControl::SwordZr = -170.0f;
+
 ImguiControl::ImguiControl()
 {
 	//Player
@@ -236,4 +244,12 @@ void ImguiControl::Update()
 
 	ImGui::Checkbox("GAME_INIT", &Imgui_gameInit);
 	ImGui::Checkbox("ENEMY_KILL", &Imgui_enemyKill);
+
+	ImGui::DragFloat("SWORD Xt", &SwordXt);
+	ImGui::DragFloat("SWORD Yt", &SwordYt);
+	ImGui::DragFloat("SWORD Zt", &SwordZt);
+
+	ImGui::DragFloat("SWORD Xr", &SwordXr);
+	ImGui::DragFloat("SWORD Yr", &SwordYr);
+	ImGui::DragFloat("SWORD Zr", &SwordZr);
 }

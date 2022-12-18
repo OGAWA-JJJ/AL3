@@ -105,18 +105,17 @@ private:	//変数
 	bool m_isAccept;				//途中入力を受け付けてるか
 	bool m_isChange;				//アニメーションが切り替わったか
 	bool m_isAnimation;				//STANDとRUN以外true
-	bool m_isEstus;
+	bool m_isEstus;					//回復中か
 
 	//仮
+	int m_trailCount = 0;
 	int m_keepAnimationType = 0;
 	float m_attackEase = 0.0f;
-	bool m_isStickReleaseTrigger = true;
 	bool m_isHeal = true;
-
 	bool m_isHelmet = true;
-
-	int m_trailCount = 0;
 	bool m_isTrailStart = false;
+	bool m_isStickReleaseTrigger = true;
+	bool m_isSheathed = false;
 
 private:	//変数(ステータス関係)
 	int m_hp;

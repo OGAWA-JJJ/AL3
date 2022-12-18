@@ -188,6 +188,7 @@ public:	//Setter
 	void UnInvincible() { m_isInvincible = false; }
 	void DiscoverPlayer() { m_animationType = RUN; }
 	void SetHitOBBNum(int hitNum) { m_hitOBBNum = hitNum; }
+	void SelfKill() { m_hp = 0; }
 
 public:	//ŒÄ‚Ô‚â‚Â
 	void HitAttack(int damage);

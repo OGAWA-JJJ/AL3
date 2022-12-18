@@ -104,11 +104,18 @@ bool Particle::Update(bool isCreate)
 	return hoge;
 }
 
-void Particle::Draw()
+void Particle::Draw(bool isShadow)
 {
 	if (m_isDraw)
 	{
-		m_object->Draw(PipelineManager::obj_texColorReceice, false);
+		if (isShadow)
+		{
+			m_object->Draw(PipelineManager::obj_texColorReceice, isShadow);
+		}
+		else
+		{
+			m_object->Draw(PipelineManager::obj_shadow, isShadow);
+		}
 	}
 }
 
@@ -207,14 +214,12 @@ void ParticleManager::Update()
 	}
 }
 
-void ParticleManager::Draw()
+void ParticleManager::Draw(bool isShadow)
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
 	for (int i = 0; i < m_maxParticle; i++)
 	{
-		m_particles.at(i).Draw();
+		m_particles.at(i).Draw(isShadow);
 	}
-	Object::PostDraw();
 }
 
 void ParticleManager::SetParticle(const int num, const Particle::ParticleData& particleData)

@@ -43,7 +43,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Dx12Wrapper::ImguiInit();
 	Dx12Wrapper::WindowsInit(hwnd);
 	Dx12Wrapper::DirectXInit();
-	Object::StaticInit(DirectXImportant::dev.Get());
+	Object::StaticInit(DirectXImportant::dev.Get(), DirectXImportant::cmdList.Get());
 	Light::StaticInit(DirectXImportant::dev.Get());
 	if (!Sprite::StaticInitialize(DirectXImportant::dev.Get(), WINDOW_WIDTH, WINDOW_HEIGHT)) {
 		assert(0);

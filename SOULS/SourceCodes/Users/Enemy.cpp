@@ -225,6 +225,10 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 			CalcAngleDiff(playerPos);
 		}
 	}
+	else
+	{
+		m_animationType = DIE;
+	}
 
 	CalcBlendAnimation();
 	OtherUpdate(playerPos);
@@ -250,8 +254,6 @@ void Enemy::Draw()
 		fbxobj_creature->Draw(PipelineManager::fbx_receiveShadow);
 	}
 
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < obj_Box.size(); i++)
@@ -259,8 +261,6 @@ void Enemy::Draw()
 			obj_Box[i]->Draw(PipelineManager::obj_receiveShadow);
 		}
 	}
-
-	Object::PostDraw();
 
 	pManager_Hit.Draw();
 	pManager_Ex.Draw();
@@ -277,18 +277,7 @@ void Enemy::ShadowDraw()
 	{
 		fbxobj_creature->Draw(PipelineManager::fbx_shadow, false);
 	}
-
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-
-	if (ImguiControl::Imgui_isOBBDraw)
-	{
-		for (int i = 0; i < obj_Box.size(); i++)
-		{
-			obj_Box[i]->Draw(PipelineManager::obj_shadow, false);
-		}
-	}
-
-	Object::PostDraw();
+	pManager_Ex.Draw(false);
 }
 
 void Enemy::CalcOBB()
@@ -983,6 +972,8 @@ void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
 	}
 	case DIE:
 	{
+		fbxobj_creature->Update();
+
 		if (fbxobj_creature->IsAnimationEnd(AnimationType::DIE))
 		{
 			fbxobj_creature->StopAnimation(AnimationType::DIE);
@@ -1164,13 +1155,6 @@ void Enemy::SetImgui()
 	ImguiControl::Imgui_enemyBlendTimer = m_blendTimer;
 	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature->GetNowTime(m_animationType);
 	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature->GetNowTime(m_oldAnimationType);
-
-	//ã≠êßéÄñS
-	if (ImguiControl::Imgui_enemyKill)
-	{
-		m_hp = 0;
-		ImguiControl::Imgui_enemyKill = false;
-	}
 }
 
 void Enemy::CalcBlendAnimation()

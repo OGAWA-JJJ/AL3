@@ -57,8 +57,6 @@ void Stage::Update()
 
 void Stage::Draw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
-
 	if (!ImguiControl::Imgui_isSponzaDraw)
 	{
 		obj_Stage->Draw(PipelineManager::obj_receiveShadow);
@@ -69,16 +67,12 @@ void Stage::Draw()
 	}
 
 	m_stageObject->Draw();
-
-	Object::PostDraw();
 }
 
 void Stage::ShadowDraw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_arenaFront->Draw(PipelineManager::obj_shadow, false);
 	//obj_arenaBack->Draw(PipelineManager::obj_shadow, false);
-	Object::PostDraw();
 }
 
 void Stage::LuminanceDraw()
@@ -88,9 +82,7 @@ void Stage::LuminanceDraw()
 
 void Stage::ShaftOfLightDraw()
 {
-	Object::PreDraw(DirectXImportant::cmdList.Get());
 	obj_arenaFront->Draw(PipelineManager::obj_normal, false);
 	//obj_arenaBack->Draw(PipelineManager::obj_normal, false);
 	m_stageObject->Draw();
-	Object::PostDraw();
 }

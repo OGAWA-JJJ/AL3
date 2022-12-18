@@ -55,6 +55,14 @@ public:	//Vector‚É‚µ‚½‚¢
 	static bool Imgui_gameInit;
 	static bool Imgui_enemyKill;
 
+	static float SwordXt;
+	static float SwordYt;
+	static float SwordZt;
+
+	static float SwordXr;
+	static float SwordYr;
+	static float SwordZr;
+
 public:
 	ImguiControl();
 	static void Update();

@@ -62,13 +62,17 @@ public:
 	static void PlayerUIDraw(const int estusNum);
 	static void EnemyUIDraw();
 	static void DiedDraw();
-	static void TitleDraw(bool& isSceneChange);
+	static void TitleDraw(bool isSceneChange);
 
 	static void PlayerMpAndStaminaUpdate(float mpRate, float staminaRate, bool isHealdelay);
 	static void PlayerDamaged(float hpRate);
 	static void EnemyDamaged(float hpRate);
 
 	static void PlayerHPUpdate(float hpRate);
+	static void EnemyHPUpdate(float hpRate);
+
+	static void PlayerHPChange() { m_playerDamaged = true; }
+	static void EnemyHPChange() { m_enemyDamaged = true; }
 
 	static bool IsSceneChangeEnd() { return m_isSceneChangeEnd; }
 };

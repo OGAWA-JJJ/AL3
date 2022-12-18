@@ -51,8 +51,6 @@ std::shared_ptr<Sprite> SpriteManager::tex_estus = nullptr;
 
 void SpriteManager::StaticInit()
 {
-	Init();
-
 	Sprite::LoadTexture(0, L"Resources/numbers/number_0.png");
 	Sprite::LoadTexture(1, L"Resources/numbers/number_1.png");
 	Sprite::LoadTexture(2, L"Resources/numbers/number_2.png");
@@ -141,7 +139,7 @@ void SpriteManager::Init()
 	m_diedAlpha = 0.0f;
 }
 
-void SpriteManager::TitleDraw(bool& isSceneChange)
+void SpriteManager::TitleDraw(bool isSceneChange)
 {
 	//アルファ値変更処理
 	bool l_isAlphaMax = false;
@@ -310,22 +308,13 @@ void SpriteManager::EnemyDamaged(float hpRate)
 {
 	if (!m_enemyDamaged)
 	{
-		m_enemy_hpRate = C_ENEMY_HP_BAR_SIZE_X * hpRate;
-
-		tex_enemy_hp_red->SetSize(DirectX::XMFLOAT2(
-			m_enemy_hpRate,
-			C_ENEMY_HP_BAR_SIZE_Y));
 		m_enemyDamaged = true;
+		EnemyHPUpdate(hpRate);
 	}
 	else
 	{
-		m_enemy_hpRate = C_ENEMY_HP_BAR_SIZE_X * hpRate;
-
-		tex_enemy_hp_red->SetSize(DirectX::XMFLOAT2(
-			m_enemy_hpRate,
-			C_ENEMY_HP_BAR_SIZE_Y));
-
 		m_enemy_yellowCount = 0;
+		EnemyHPUpdate(hpRate);
 	}
 }
 
@@ -337,10 +326,26 @@ void SpriteManager::PlayerHPUpdate(float hpRate)
 		m_player_hpRate,
 		C_PLAYER_HP_BAR_SIZE_Y));
 
-	if (!m_playerDamaged)
+	if (m_player_yellowCount >= C_YELLOW_MOVE_DELAY)
 	{
 		tex_player_hp_yellow->SetSize(DirectX::XMFLOAT2(
 			m_player_hpRate,
 			C_PLAYER_HP_BAR_SIZE_Y));
+	}
+}
+
+void SpriteManager::EnemyHPUpdate(float hpRate)
+{
+	m_enemy_hpRate = C_ENEMY_HP_BAR_SIZE_X * hpRate;
+
+	tex_enemy_hp_red->SetSize(DirectX::XMFLOAT2(
+		m_enemy_hpRate,
+		C_ENEMY_HP_BAR_SIZE_Y));
+
+	if (m_enemy_yellowCount >= C_YELLOW_MOVE_DELAY)
+	{
+		tex_enemy_hp_yellow->SetSize(DirectX::XMFLOAT2(
+			m_enemy_hpRate,
+			C_ENEMY_HP_BAR_SIZE_Y));
 	}
 }

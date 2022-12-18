@@ -633,3 +633,23 @@ void FbxObjects::SetAnimationSpeed(int animationIndex, float addSpeed, bool isSe
 	}
 	animationDatas[animationIndex].m_addSpeed = addSpeed;
 }
+
+DirectX::XMMATRIX& FbxObjects::GetMatWorld()
+{
+	DirectX::XMFLOAT3 l_scale = {};
+	l_scale.x = 1 / scale.x;
+	l_scale.y = 1 / scale.y;
+	l_scale.z = 1 / scale.z;
+
+	m_matTransRotWorld = matWorld;
+	m_matTransRotWorld.r[0].m128_f32[0] *= l_scale.x;
+	m_matTransRotWorld.r[0].m128_f32[1] *= l_scale.x;
+	m_matTransRotWorld.r[0].m128_f32[2] *= l_scale.x;
+	m_matTransRotWorld.r[1].m128_f32[0] *= l_scale.y;
+	m_matTransRotWorld.r[1].m128_f32[1] *= l_scale.y;
+	m_matTransRotWorld.r[1].m128_f32[2] *= l_scale.y;
+	m_matTransRotWorld.r[2].m128_f32[0] *= l_scale.z;
+	m_matTransRotWorld.r[2].m128_f32[1] *= l_scale.z;
+	m_matTransRotWorld.r[2].m128_f32[2] *= l_scale.z;
+	return m_matTransRotWorld;
+}

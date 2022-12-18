@@ -32,7 +32,7 @@ private:
 public:
 	void Init();
 	bool Update(bool isCreate);
-	void Draw();
+	void Draw(bool isShadow);
 
 private:
 	void Create();
@@ -83,7 +83,7 @@ private:
 public:
 	void Init();
 	void Update();
-	void Draw();
+	void Draw(bool isShadow = true);
 
 public:
 	void SetParticle(const int num, const Particle::ParticleData& particleData);

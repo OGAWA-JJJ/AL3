@@ -16,6 +16,9 @@ private:
 	};
 
 private:
+	const int C_MAX_MOVE_TIMER = 1200000;
+
+private:
 	std::shared_ptr<Light> light = nullptr;
 
 private:
@@ -25,10 +28,10 @@ private:
 	std::unique_ptr<StageObject> m_stageObj = std::make_unique<StageObject>();
 
 private:
-	int m_gameSceneType;
+	int m_sceneType;
 	bool m_sceneChangeTri;
 
-	int m_moveTimer = 120;		//çÏÇÍÅI
+	int m_moveTimer;		//çÏÇÍÅI
 	bool m_moveTrigger = false;
 
 public:
@@ -44,4 +47,5 @@ public:
 private:
 	void PlayerUpdate();
 	void EnemyUpdate();
+	void OtherUpdate();
 };

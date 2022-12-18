@@ -19,7 +19,6 @@ StageObject::~StageObject()
 
 void StageObject::Init()
 {
-	//obj_sphere->SetPosition(DirectX::XMFLOAT3(250, 75, -250));
 }
 
 void StageObject::Update()
