@@ -6,7 +6,6 @@ class Stage
 private:	//オブジェクト(Draw用)
 	std::shared_ptr<Object> obj_Stage = nullptr;
 	std::shared_ptr<Object> obj_arenaFront = nullptr;
-	std::shared_ptr<Object> obj_arenaBack = nullptr;
 
 private:
 	std::unique_ptr<StageObject> m_stageObject =

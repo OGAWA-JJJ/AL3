@@ -86,7 +86,7 @@ PSOutput VSShadowReceive(VSInput input)
     //入力値をそのまま次のステージに渡す
     output.uv = input.uv;
     
-    float4 wpos = mul(world, input.pos);
+    float4 wpos = mul(world, skinned.pos);
     output.posInLVP = mul(lightViewProj, wpos);
 
     return output;
@@ -107,7 +107,7 @@ PSOutput VSShadowTex(VSInput input)
     //入力値をそのまま次のステージに渡す
     output.uv = input.uv;
     
-    float4 wpos = mul(world, input.pos);
+    float4 wpos = mul(world, skinned.pos);
     output.posInLVP = mul(lightViewProj, wpos);
 
     return output;

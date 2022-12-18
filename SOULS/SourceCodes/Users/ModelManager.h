@@ -15,8 +15,6 @@ public:	//Player
 public:	//Enemy
 	static std::shared_ptr<FbxModels> fbxmodel_creatures;
 
-	static std::shared_ptr<Model> model_circle;
-
 public:	//Stage
 	static std::shared_ptr<Model> model_stage;
 	static std::shared_ptr<Model> model_arenaFront;

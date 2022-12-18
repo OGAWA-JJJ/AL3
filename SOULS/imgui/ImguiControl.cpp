@@ -1,8 +1,9 @@
 #include "ImguiControl.h"
 #include "imgui.h"
 
+//Camera
 float ImguiControl::Imgui_fov = 60.0f;
-float ImguiControl::Imgui_far_z = 1000.0f;
+float ImguiControl::Imgui_far_z = 2500.0f;
 float ImguiControl::Imgui_lightColor_r = 0.4f;
 float ImguiControl::Imgui_lightColor_g = 0.4f;
 float ImguiControl::Imgui_lightColor_b = 0.4f;
@@ -10,6 +11,7 @@ float ImguiControl::Imgui_lightDir_x = 0.0f;
 float ImguiControl::Imgui_lightDir_y = 0.1f;
 float ImguiControl::Imgui_lightDir_z = 0.0f;
 
+//IsDraw
 bool ImguiControl::Imgui_isOBBDraw = false;
 bool ImguiControl::Imgui_isPlayerDraw = true;
 bool ImguiControl::Imgui_isEnemyDraw = true;
@@ -18,6 +20,7 @@ bool ImguiControl::Imgui_isSponzaDraw = true;
 
 float ImguiControl::Imgui_cameraDist;
 
+//Enemy
 float ImguiControl::Imgui_enemyBlendTimer = 0.0f;
 float ImguiControl::Imgui_enemyCurrentAniTimer = 0.0f;
 float ImguiControl::Imgui_enemyOldAniTimer = 0.0f;
@@ -25,6 +28,7 @@ char* ImguiControl::Imgui_enemyAniType = "NONE";
 char* ImguiControl::Imgui_enemyOldAniType = "NONE";
 char* ImguiControl::Imgui_enemyInvi = "FALSE";
 
+//Player
 float ImguiControl::Imgui_playerBlendTimer = 0.0f;
 float ImguiControl::Imgui_playerCurrentAniTimer = 0.0f;
 float ImguiControl::Imgui_playerOldAniTimer = 0.0f;
@@ -34,6 +38,7 @@ char* ImguiControl::Imgui_playerIsAccept = "NONE";
 char* ImguiControl::Imgui_playerIsChange = "NONE";
 char* ImguiControl::Imgui_playerIsAttack = "NONE";
 char* ImguiControl::Imgui_playerIsInvincible = "NONE";
+bool ImguiControl::isHel = false;
 
 //obb
 float ImguiControl::Imgui_playerOBBPos[10][3];
@@ -42,12 +47,18 @@ float ImguiControl::Imgui_enemyOBBPos[12][3];
 float ImguiControl::Imgui_playerOBBScale[10][3];
 float ImguiControl::Imgui_enemyOBBScale[12][3];
 
+//Shadow
 float ImguiControl::Imgui_shadowEye_x = 0.0f;
 float ImguiControl::Imgui_shadowEye_y = 0.0f;
 float ImguiControl::Imgui_shadowEye_z = 0.0f;
 
-//仮
-bool ImguiControl::isHel = false;
+//Stage
+float ImguiControl::Imgui_stageArea = 500.0f;
+float ImguiControl::Imgui_stageScale = 3500.0f;
+
+//GameInit
+bool ImguiControl::Imgui_gameInit = false;
+bool ImguiControl::Imgui_enemyKill = false;
 
 ImguiControl::ImguiControl()
 {
@@ -70,7 +81,8 @@ void ImguiControl::Update()
 	const ImVec4 text_enemyStatusColor = { 1.0f, 0.3f, 0.3f, 1.0f };
 	const ImVec4 text_playerStatusColor = { 0.3f, 0.3f, 1.0f, 1.0f };
 	const ImVec4 text_obbColor = { 0.3f, 1.0f, 0.3f, 1.0f };
-	const ImVec4 text_particleManagerColor = { 0.3f, 0.5f, 0.7f, 1.0f };
+	const ImVec4 text_shadowSetColor = { 0.3f, 0.5f, 0.7f, 1.0f };
+	const ImVec4 text_stageSetColor = { 0.5f, 0.3f, 0.7f, 1.0f };
 
 	//カメラ関係
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_cameraColor;
@@ -110,7 +122,8 @@ void ImguiControl::Update()
 		ImGui::Checkbox("PLAYER_DRAW", &Imgui_isPlayerDraw);
 		ImGui::Checkbox("ENEMY_DRAW", &Imgui_isEnemyDraw);
 		ImGui::Checkbox("WEAPON_DRAW", &Imgui_isWeaponDraw);
-		ImGui::Checkbox("SPONZA_DRAW", &Imgui_isSponzaDraw);
+		ImGui::Checkbox("ARENA_DRAW", &Imgui_isSponzaDraw);
+		ImGui::Checkbox("IS_HELMET", &isHel);
 		ImGui::TreePop();
 	}
 
@@ -198,19 +211,29 @@ void ImguiControl::Update()
 	}
 
 	//パーティクル
-	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_particleManagerColor;
-	if (ImGui::TreeNode("ParticleManager"))
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_shadowSetColor;
+	if (ImGui::TreeNode("ShadowSettings"))
 	{
+		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		ImGui::DragFloat("SHADOW_EYE_X", &Imgui_shadowEye_x);
+		ImGui::DragFloat("SHADOW_EYE_Y", &Imgui_shadowEye_y);
+		ImGui::DragFloat("SHADOW_EYE_Z", &Imgui_shadowEye_z);
+		ImGui::TreePop();
+	}
+
+	//ステージ
+	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_stageSetColor;
+	if (ImGui::TreeNode("StageSettings"))
+	{
+		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		ImGui::DragFloat("STAGE_AREA", &Imgui_stageArea, 5.0f);
+		ImGui::DragFloat("STAGE_SCALE", &Imgui_stageScale, 5.0f);
 		ImGui::TreePop();
 	}
 
 	//リセット
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	//仮
-	ImGui::Checkbox("IS_HELMET", &isHel);
-
-	ImGui::DragFloat("EYE_X", &Imgui_shadowEye_x);
-	ImGui::DragFloat("EYE_Y", &Imgui_shadowEye_y);
-	ImGui::DragFloat("EYE_Z", &Imgui_shadowEye_z);
+	ImGui::Checkbox("GAME_INIT", &Imgui_gameInit);
+	ImGui::Checkbox("ENEMY_KILL", &Imgui_enemyKill);
 }

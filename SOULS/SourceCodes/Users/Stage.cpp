@@ -37,6 +37,12 @@ void Stage::Init()
 
 void Stage::Update()
 {
+	obj_arenaFront->SetScale(
+		DirectX::XMFLOAT3(
+			ImguiControl::Imgui_stageScale,
+			ImguiControl::Imgui_stageScale,
+			ImguiControl::Imgui_stageScale));
+
 	if (!ImguiControl::Imgui_isSponzaDraw)
 	{
 		obj_Stage->Update();
@@ -44,7 +50,6 @@ void Stage::Update()
 	else
 	{
 		obj_arenaFront->Update();
-		//obj_arenaBack->Update();
 	}
 
 	m_stageObject->Update();
@@ -61,7 +66,6 @@ void Stage::Draw()
 	else
 	{
 		obj_arenaFront->Draw(PipelineManager::obj_receiveShadow);
-		//obj_arenaBack->Draw(PipelineManager::obj_receiveShadow);
 	}
 
 	m_stageObject->Draw();

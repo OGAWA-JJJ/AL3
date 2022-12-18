@@ -177,11 +177,11 @@
     <ClCompile Include="SourceCodes\2D\TexManager.cpp">
       <Filter>SourceCodes\2D</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
-      <Filter>SourceCodes\2D\PostEffect</Filter>
+    <ClCompile Include="SourceCodes\Users\TrailManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="SourceCodes\3D\TrailRenderer.cpp">
-      <Filter>SourceCodes\3D</Filter>
+    <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
+      <Filter>SourceCodes\2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -317,11 +317,11 @@
     <ClInclude Include="SourceCodes\2D\TexManager.h">
       <Filter>SourceCodes\2D</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\2D\ShadowMap.h">
-      <Filter>SourceCodes\2D\PostEffect</Filter>
+    <ClInclude Include="SourceCodes\Users\TrailManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\3D\TrailRenderer.h">
-      <Filter>SourceCodes\3D</Filter>
+    <ClInclude Include="SourceCodes\2D\ShadowMap.h">
+      <Filter>SourceCodes\2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

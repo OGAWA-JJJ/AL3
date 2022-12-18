@@ -37,6 +37,7 @@ public:	//Vector‚É‚µ‚½‚¢
 	static char* Imgui_playerIsChange;
 	static char* Imgui_playerIsAttack;
 	static char* Imgui_playerIsInvincible;
+	static bool isHel;
 
 	static float Imgui_playerOBBPos[10][3];
 	static float Imgui_enemyOBBPos[12][3];
@@ -48,8 +49,11 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_shadowEye_y;
 	static float Imgui_shadowEye_z;
 
-	//‰¼
-	static bool isHel;
+	static float Imgui_stageArea;
+	static float Imgui_stageScale;
+
+	static bool Imgui_gameInit;
+	static bool Imgui_enemyKill;
 
 public:
 	ImguiControl();

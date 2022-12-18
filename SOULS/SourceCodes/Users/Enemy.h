@@ -144,8 +144,6 @@ private:	//オブジェクト(Draw用)
 	std::shared_ptr<FbxObjects> fbxobj_creature = nullptr;
 	const int C_CREATURE_NUM = 13;
 
-	std::shared_ptr<Object> obj_circle = nullptr;
-
 public:
 	Enemy();
 	~Enemy();
@@ -173,6 +171,7 @@ private:
 	void CalcBlendAnimation();
 
 	float CalcDeg(DirectX::XMFLOAT3& pos);
+	void CalcArea();
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }

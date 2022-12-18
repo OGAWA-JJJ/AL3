@@ -49,13 +49,9 @@ std::shared_ptr<Sprite> SpriteManager::tex_title_press_a = nullptr;
 
 std::shared_ptr<Sprite> SpriteManager::tex_estus = nullptr;
 
-void SpriteManager::Init()
+void SpriteManager::StaticInit()
 {
-	//分けないとループ時にだるいかも
-	m_enemy_yellowCount = 0;
-	m_player_yellowCount = 0;
-	m_enemyDamaged = false;
-	m_playerDamaged = false;
+	Init();
 
 	Sprite::LoadTexture(0, L"Resources/numbers/number_0.png");
 	Sprite::LoadTexture(1, L"Resources/numbers/number_1.png");
@@ -100,7 +96,6 @@ void SpriteManager::Init()
 	tex_enemy_name = Sprite::Create(14, DirectX::XMFLOAT2(608.0f, 580.0f));
 	tex_died = Sprite::Create(15, DirectX::XMFLOAT2(0, 315.0f));
 	tex_died->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
-	m_diedAlpha = 0.0f;
 
 	//自機画像初期化(サイズを変える必要アリ)
 	const float l_player_hp_bar_x = 20.0f;
@@ -134,6 +129,16 @@ void SpriteManager::Init()
 
 	tex_estus = Sprite::Create(20, DirectX::XMFLOAT2(48, 572));
 	tex_estus->SetSize(DirectX::XMFLOAT2(72, 128));
+}
+
+void SpriteManager::Init()
+{
+	//分けないとループ時にだるいかも
+	m_enemy_yellowCount = 0;
+	m_player_yellowCount = 0;
+	m_enemyDamaged = false;
+	m_playerDamaged = false;
+	m_diedAlpha = 0.0f;
 }
 
 void SpriteManager::TitleDraw(bool& isSceneChange)

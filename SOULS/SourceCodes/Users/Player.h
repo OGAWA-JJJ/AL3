@@ -6,14 +6,14 @@
 #include "../3D/FbxObjects.h"
 
 #include "ParticleManager.h"
-#include "../3D/TrailRenderer.h"
+#include "TrailManager.h"
 
 class Player
 {
 	//やっぱ爽快感、画面暗転、瀕死だったら画面赤とか、ブルーム以外は暗くしたりとか...。合わせ技だったりする。
 	//工夫点とかアプローチをハッキリ喋れるといい。
 	ParticleManager pManager;
-	TrailRenderer trail;
+	TrailManager trail;
 
 private:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -115,6 +115,9 @@ private:	//変数
 
 	bool m_isHelmet = true;
 
+	int m_trailCount = 0;
+	bool m_isTrailStart = false;
+
 private:	//変数(ステータス関係)
 	int m_hp;
 	int m_mp;
@@ -162,6 +165,7 @@ private:
 	void DoAttack(const int animationType);
 	void CalcRolling();
 	void CalcHeal();
+	void CalcArea();
 	void SetImgui();
 
 public:	//Getter

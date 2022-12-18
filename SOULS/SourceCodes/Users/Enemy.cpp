@@ -8,43 +8,8 @@
 
 Enemy::Enemy()
 {
-#pragma region Init
-
-	m_pos = { 0,0,0 };
-	m_swingDownStartPos = { 0,0,0 };
-	m_swingDownEndPos = { 0,0,0 };
-	m_animationTimer = 0;
-	m_animationType = STAND;
-	m_oldAnimationType = m_animationType;
-	//m_boneCount = 0;
-	m_hitOBBNum = 0;
-	m_deg = 180.0f;
-	m_easeTimer = 0.0f;
-	m_turnStartAngle = 0.0f;
-	m_turnEndAngle = 0.0f;
-	m_dist = 0.0f;
-	m_blendTimer = 0.0f;
-	m_riseStartY = 0;
-	m_isInvincible = false;
-	m_isAttack = false;
-	m_isAttackTrigger = false;
-	m_isCalc = false;
-	m_isCalcEnd = false;
-	m_isTurn = false;
-	m_turnVec = false;
-	m_isBackAttackLottery = false;
-	m_isBackAttack = false;
-	m_isRise = false;
-	m_isSwing = false;
-	m_isChange = false;
-
-#pragma endregion
-
-#pragma region StatusInit
-
-	m_hp = C_MAX_HP;
-
-#pragma endregion
+	pManager_Hit.Init();
+	pManager_Ex.Init();
 
 #pragma region ModelCreate
 
@@ -54,8 +19,6 @@ Enemy::Enemy()
 		obj_Box[i] = Object::Create(ModelManager::model_box);
 		//obj_Box[i]->SetScale(DirectX::XMFLOAT3(boxSize, boxSize, boxSize));
 	}
-
-	obj_circle = Object::Create(ModelManager::model_circle);
 
 	fbxobj_creature = FbxObjects::Create(ModelManager::fbxmodel_creatures);
 
@@ -69,6 +32,7 @@ Enemy::Enemy()
 	fbxobj_creature->SetLoopAnimation(AnimationType::PUNCH, false);
 
 	fbxobj_creature->PlayAnimation(AnimationType::DIE);
+	fbxobj_creature->SetLoopAnimation(AnimationType::DIE, false);
 
 	fbxobj_creature->PlayAnimation(AnimationType::R_TURN);
 	fbxobj_creature->SetLoopAnimation(AnimationType::R_TURN, false);
@@ -109,13 +73,47 @@ Enemy::~Enemy()
 
 void Enemy::Init()
 {
-	m_pos = DirectX::XMFLOAT3(0.0f, 0.0f, -300.0f);
+#pragma region Init
+
+	m_pos = { 0,0,-300.0f };
+	m_swingDownStartPos = { 0,0,0 };
+	m_swingDownEndPos = { 0,0,0 };
+	m_animationTimer = 0;
+	m_animationType = STAND;
+	m_oldAnimationType = m_animationType;
+	m_hitOBBNum = 0;
+	m_deg = 180.0f;
+	m_easeTimer = 0.0f;
+	m_turnStartAngle = 0.0f;
+	m_turnEndAngle = 0.0f;
+	m_dist = 0.0f;
+	m_blendTimer = 0.0f;
+	m_riseStartY = 0;
+	m_isInvincible = false;
+	m_isAttack = false;
+	m_isAttackTrigger = false;
+	m_isCalc = false;
+	m_isCalcEnd = false;
+	m_isTurn = false;
+	m_turnVec = false;
+	m_isBackAttackLottery = false;
+	m_isBackAttack = false;
+	m_isRise = false;
+	m_isSwing = false;
+	m_isChange = false;
+
+#pragma endregion
+
+#pragma region StatusInit
+
+	m_hp = C_MAX_HP;
+
+#pragma endregion
 
 	//ƒp[ƒeƒBƒNƒ‹
 	const float pScale = 1.0f;
 	const float pPower = 3.0f;
 
-	pManager_Hit.Init();
 	Particle::ParticleData pData;
 	pData.isRandVec = true;
 	pData.isRandColor = false;
@@ -132,7 +130,6 @@ void Enemy::Init()
 
 	const float pScale2 = 2.0f;
 	const float pPower2 = 1.0f;
-	pManager_Ex.Init();
 	Particle::ParticleData pData2;
 	pData2.isRandVec = false;
 	pData2.life = 30;
@@ -194,54 +191,39 @@ void Enemy::Init()
 		ImguiControl::Imgui_enemyOBBScale[i][1] = l_y[i] * addScale;
 		ImguiControl::Imgui_enemyOBBScale[i][2] = l_z[i] * addScale;
 	}
-
-	//ŠÛ‰e
-	const float circleScale = 30.0f;
-	obj_circle->SetScale(DirectX::XMFLOAT3(circleScale, circleScale, circleScale));
-	obj_circle->SetColor(DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f));
 }
 
 void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 {
-	if (IsDead())
+	if (!IsDead())
 	{
-		if (fbxobj_creature->IsAnimationEnd(AnimationType::DIE))
+		if (m_animationType != STAND)
 		{
-			fbxobj_creature->StopAnimation(AnimationType::DIE);
-		}
-
-		fbxobj_creature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
-		fbxobj_creature->SetPosition(m_pos);
-		fbxobj_creature->Update();
-		return;
-	}
-
-	if (m_animationType != STAND)
-	{
-		//”ñUŒ‚’†‚©‚ÂU‚èŒü‚«’†‚¶‚á‚È‚¢
-		if (!m_isAttack)
-		{
-			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
-			float l_dist = OgaJHelper::CalcDist(l_pos, playerPos);
-			if (!m_isTurn)
+			//”ñUŒ‚’†‚©‚ÂU‚èŒü‚«’†‚¶‚á‚È‚¢
+			if (!m_isAttack)
 			{
-				//Š®‘S’Ç]©‚ä‚Á‚­‚èU‚èŒü‚¯(’è”‘«‚·)
-				DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(playerPos, m_pos);
-				eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
-				m_deg = atan2(eDirection.x, eDirection.z);
-				OgaJHelper::ConvertToDegree(m_deg);
-
-				if (l_dist >= C_MAX_DIST)
+				DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+				float l_dist = OgaJHelper::CalcDist(l_pos, playerPos);
+				if (!m_isTurn)
 				{
-					m_pos.x += -eDirection.x * C_MAX_MOVE_SPEED;
-					m_pos.z += -eDirection.z * C_MAX_MOVE_SPEED;
+					//Š®‘S’Ç]©‚ä‚Á‚­‚èU‚èŒü‚¯(’è”‘«‚·)
+					DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(playerPos, m_pos);
+					eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
+					m_deg = atan2(eDirection.x, eDirection.z);
+					OgaJHelper::ConvertToDegree(m_deg);
+
+					if (l_dist >= C_MAX_DIST)
+					{
+						m_pos.x += -eDirection.x * C_MAX_MOVE_SPEED;
+						m_pos.z += -eDirection.z * C_MAX_MOVE_SPEED;
+					}
 				}
+
+				JudgAnimationType(l_dist);
 			}
 
-			JudgAnimationType(l_dist);
+			CalcAngleDiff(playerPos);
 		}
-
-		CalcAngleDiff(playerPos);
 	}
 
 	CalcBlendAnimation();
@@ -256,12 +238,9 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 	}
 	pManager_Hit.Update();
 
-	DirectX::XMFLOAT3 l_pos = m_pos;
-	l_pos.y += 1.0f;
-	obj_circle->SetPosition(l_pos);
-	obj_circle->Update();
-
 	fbxobj_creature->SetAnimationIndex(m_animationType);
+
+	CalcArea();
 }
 
 void Enemy::Draw()
@@ -273,7 +252,6 @@ void Enemy::Draw()
 
 	Object::PreDraw(DirectXImportant::cmdList.Get());
 
-	//obj_circle->Draw(PipelineManager::obj_texColorReceice);
 	if (ImguiControl::Imgui_isOBBDraw)
 	{
 		for (int i = 0; i < obj_Box.size(); i++)
@@ -1003,6 +981,15 @@ void Enemy::OtherUpdate(DirectX::XMFLOAT3& pPos)
 		ImguiControl::Imgui_enemyAniType = "PUNCH";
 		break;
 	}
+	case DIE:
+	{
+		if (fbxobj_creature->IsAnimationEnd(AnimationType::DIE))
+		{
+			fbxobj_creature->StopAnimation(AnimationType::DIE);
+		}
+		ImguiControl::Imgui_enemyAniType = "DIE";
+		break;
+	}
 	case R_TURN:
 	{
 		fbxobj_creature->Update();
@@ -1177,6 +1164,13 @@ void Enemy::SetImgui()
 	ImguiControl::Imgui_enemyBlendTimer = m_blendTimer;
 	ImguiControl::Imgui_enemyCurrentAniTimer = fbxobj_creature->GetNowTime(m_animationType);
 	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature->GetNowTime(m_oldAnimationType);
+
+	//‹­§Ž€–S
+	if (ImguiControl::Imgui_enemyKill)
+	{
+		m_hp = 0;
+		ImguiControl::Imgui_enemyKill = false;
+	}
 }
 
 void Enemy::CalcBlendAnimation()
@@ -1231,6 +1225,23 @@ float Enemy::CalcDeg(DirectX::XMFLOAT3& pos)
 	float l_deg = atan2(eDirection.x, eDirection.z);
 	OgaJHelper::ConvertToDegree(l_deg);
 	return l_deg;
+}
+
+void Enemy::CalcArea()
+{
+	//ƒGƒŠƒAŠO”»’è
+	float l_dist = OgaJHelper::CalcDist(DirectX::XMFLOAT3(0, 0, 0), m_pos);
+	if (l_dist > ImguiControl::Imgui_stageArea)
+	{
+		float l_sub = l_dist - ImguiControl::Imgui_stageArea;
+		DirectX::XMFLOAT3 l_backVec = OgaJHelper::CalcDirectionVec3(
+			m_pos, DirectX::XMFLOAT3(0, 0, 0));
+		l_backVec = OgaJHelper::CalcNormalizeVec3(l_backVec);
+		float l_backX = l_backVec.x * l_sub;
+		float l_backZ = l_backVec.z * l_sub;
+		m_pos.x += l_backX;
+		m_pos.z += l_backZ;
+	}
 }
 
 /*----------ŒÄ‚Ô‚â‚Â----------*/

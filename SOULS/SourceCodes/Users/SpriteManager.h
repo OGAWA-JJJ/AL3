@@ -56,6 +56,7 @@ private:
 	static std::shared_ptr<Sprite> tex_estus;
 
 public:
+	static void StaticInit();
 	static void Init();
 	static void Update();
 	static void PlayerUIDraw(const int estusNum);

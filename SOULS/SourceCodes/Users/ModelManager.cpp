@@ -11,8 +11,6 @@ std::shared_ptr<FbxModels> ModelManager::fbxmodel_mikus = nullptr;
 //Enemy
 std::shared_ptr<FbxModels> ModelManager::fbxmodel_creatures = nullptr;
 
-std::shared_ptr<Model> ModelManager::model_circle = nullptr;
-
 //Stage
 std::shared_ptr<Model> ModelManager::model_stage = nullptr;
 std::shared_ptr<Model> ModelManager::model_arenaFront = nullptr;
@@ -61,8 +59,6 @@ void ModelManager::Init()
 	fbxmodel_creatures->AddAnimation("RiseCreature");
 	fbxmodel_creatures->AddAnimation("SwingDownCreature");
 	fbxmodel_creatures->AddAnimation("TackleCreature");
-
-	model_circle = Model::CreateFromObj("circle");
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");

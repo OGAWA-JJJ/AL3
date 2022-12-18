@@ -57,70 +57,71 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ModelManager::Init();
 
 	//画像のロード
-	SpriteManager::Init();
+	SpriteManager::StaticInit();
 
 	/*----------宣言　ここから----------*/
 #pragma region 宣言
-	////重み係数
-	//const float gaussSigma = 8.0f;
+	//重み係数
+	const float gaussSigma = 8.0f;
 
-	////輝度抽出用
-	//PostEffect::SpriteInitData luminanceData;
-	//luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
-	//luminanceData.m_psShaderName = L"Resources/Shaders/LuminancePS.hlsl";
+	//輝度抽出用
+	PostEffect::SpriteInitData luminanceData;
+	luminanceData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	luminanceData.m_psShaderName = L"Resources/Shaders/LuminancePS.hlsl";
 
-	//luminanceData.m_vsEntryPoint = "VSmain";
-	//luminanceData.m_psEntryPoint = "PSmain";
+	luminanceData.m_vsEntryPoint = "VSmain";
+	luminanceData.m_psEntryPoint = "PSmain";
 
-	//luminanceData.m_width = WINDOW_WIDTH;
-	//luminanceData.m_height = WINDOW_HEIGHT;
+	luminanceData.m_width = WINDOW_WIDTH;
+	luminanceData.m_height = WINDOW_HEIGHT;
 
-	////横ブラー用のスプライトを初期化
-	//PostEffect::SpriteInitData xBlurSpriteInitData;
-	//xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
-	//xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
+	//横ブラー用のスプライトを初期化
+	PostEffect::SpriteInitData xBlurSpriteInitData;
+	xBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	xBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	//xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
-	//xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
+	xBlurSpriteInitData.m_vsEntryPoint = "VSXmain";
+	xBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	//xBlurSpriteInitData.m_gaussianSigma = gaussSigma;
+	xBlurSpriteInitData.m_gaussianSigma = gaussSigma;
 
-	//xBlurSpriteInitData.m_width = WINDOW_WIDTH;
-	//xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
+	xBlurSpriteInitData.m_width = WINDOW_WIDTH;
+	xBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
-	////縦ブラー用のスプライトを初期化
-	//PostEffect::SpriteInitData yBlurSpriteInitData;
-	//yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
-	//yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
+	//縦ブラー用のスプライトを初期化
+	PostEffect::SpriteInitData yBlurSpriteInitData;
+	yBlurSpriteInitData.m_vsShaderName = L"Resources/Shaders/PostEffectTestVS.hlsl";
+	yBlurSpriteInitData.m_psShaderName = L"Resources/Shaders/PostEffectTestPS.hlsl";
 
-	//yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
-	//yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
+	yBlurSpriteInitData.m_vsEntryPoint = "VSYmain";
+	yBlurSpriteInitData.m_psEntryPoint = "PSBlur";
 
-	//yBlurSpriteInitData.m_gaussianSigma = gaussSigma;
+	yBlurSpriteInitData.m_gaussianSigma = gaussSigma;
 
-	//yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
-	//yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
+	yBlurSpriteInitData.m_width = WINDOW_WIDTH / 2;
+	yBlurSpriteInitData.m_height = WINDOW_HEIGHT;
 
-	////縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
-	//PostEffect::SpriteInitData spriteInitData;
+	//縦横ブラーをかけた絵をフレームバッファに貼り付ける為のスプライトの初期化
+	PostEffect::SpriteInitData spriteInitData;
 
-	//spriteInitData.m_width = WINDOW_WIDTH;
-	//spriteInitData.m_height = WINDOW_HEIGHT;
+	spriteInitData.m_width = WINDOW_WIDTH;
+	spriteInitData.m_height = WINDOW_HEIGHT;
 
-	//spriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
-	//spriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
+	spriteInitData.m_vsShaderName = L"Resources/Shaders/SpriteVertexShader.hlsl";
+	spriteInitData.m_psShaderName = L"Resources/Shaders/SpritePixelShader.hlsl";
 
-	//spriteInitData.m_vsEntryPoint = "VSmain";
-	//spriteInitData.m_psEntryPoint = "PSmain";
+	spriteInitData.m_vsEntryPoint = "VSmain";
+	spriteInitData.m_psEntryPoint = "PSmain";
 
-	//spriteInitData.m_alphaBlendMode = PostEffect::AlphaBlendMode::ALPHA_BLENDMODE_ADD;
+	spriteInitData.m_alphaBlendMode = PostEffect::AlphaBlendMode::ALPHA_BLENDMODE_ADD;
 #pragma endregion
 	/*----------宣言　ここまで----------*/
 
 
 	/*----------初期化　ここから----------*/
 #pragma region 初期化
-	/*std::unique_ptr<PostEffect> luminanceSprite = nullptr;
+	//ブルーム
+	std::unique_ptr<PostEffect> luminanceSprite = nullptr;
 	luminanceSprite = std::make_unique<PostEffect>();
 	luminanceSprite->Init(luminanceData);
 
@@ -134,7 +135,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	std::unique_ptr<PostEffect> copyToFrameBufferSprite = nullptr;
 	copyToFrameBufferSprite = std::make_unique<PostEffect>();
-	copyToFrameBufferSprite->Init(spriteInitData);*/
+	copyToFrameBufferSprite->Init(spriteInitData);
 
 	//影
 	std::unique_ptr<ShadowMap> shadow = nullptr;
@@ -187,7 +188,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		radialSprite2->PreDrawScene(WindowColor);
 		radialSprite->Draw();
-		radialSprite2->PostDrawScene();
+		radialSprite2->PostDrawScene();*/
 
 		luminanceSprite->PreDrawScene(WindowColor);
 		Gamescene->LuminanceDraw();
@@ -203,7 +204,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		copyToFrameBufferSprite->PreDrawScene(WindowColor);
 		yBlurSprite->Draw();
-		copyToFrameBufferSprite->PostDrawScene();*/
+		copyToFrameBufferSprite->PostDrawScene();
 
 		shadow->PreDraw();
 		Gamescene->ShadowDraw();
@@ -220,7 +221,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//Gamescene->ShadowDraw();
 		Gamescene->Draw();
-		//copyToFrameBufferSprite->Draw();
+		copyToFrameBufferSprite->Draw();
 		//radialSprite2->Draw();
 		//shadow->Draw();
 

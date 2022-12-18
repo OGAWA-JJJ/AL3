@@ -108,7 +108,7 @@ void Particle::Draw()
 {
 	if (m_isDraw)
 	{
-		m_object->Draw(PipelineManager::obj_texColorReceice);
+		m_object->Draw(PipelineManager::obj_texColorReceice, false);
 	}
 }
 

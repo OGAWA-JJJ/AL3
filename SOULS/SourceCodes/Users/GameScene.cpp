@@ -11,7 +11,7 @@
 
 GameScene::GameScene()
 {
-	m_gameSceneType = GAME;
+	m_gameSceneType = TITLE;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -43,17 +43,6 @@ void GameScene::Init()
 	m_enemy->Init();
 	m_stage->Init();
 
-	//Camera
-	DirectX::XMFLOAT3 enemyToPlayer = OgaJHelper::CalcDirectionVec3(m_enemy->GetPos(), m_player->GetPos());
-	enemyToPlayer = OgaJHelper::CalcNormalizeVec3(enemyToPlayer);
-
-	Camera::SetEye(DirectX::XMFLOAT3(
-		m_player->GetPos().x + enemyToPlayer.x * m_player->GetCameraDist(),
-		50.0f,
-		m_player->GetPos().z + enemyToPlayer.z * m_player->GetCameraDist()));
-
-	DirectX::XMFLOAT3 hoge = Camera::GetEye();
-
 	ImguiControl::Imgui_shadowEye_x = light->GetShadowLigitEye().x;
 	ImguiControl::Imgui_shadowEye_y = light->GetShadowLigitEye().y;
 	ImguiControl::Imgui_shadowEye_z = light->GetShadowLigitEye().z;
@@ -78,6 +67,18 @@ void GameScene::Update()
 	}
 	else if (m_gameSceneType == GAME)
 	{
+		//GameInit
+		if (ImguiControl::Imgui_gameInit)
+		{
+			m_player->Init();
+			m_enemy->Init();
+			SpriteManager::Init();
+			m_moveTimer = 30;
+			m_moveTrigger = false;
+			ImguiControl::Imgui_gameInit = false;
+		}
+
+		//LightŒn
 		light->SetLightColor(
 			{
 				ImguiControl::Imgui_lightColor_r,
@@ -149,9 +150,9 @@ void GameScene::Draw()
 	}
 	else if (m_gameSceneType == GAME)
 	{
+		m_stage->Draw();
 		m_player->Draw();
 		m_enemy->Draw();
-		m_stage->Draw();
 		SpriteManager::PlayerUIDraw(m_player->GetEstus());
 
 		if (m_enemy->IsFighting())
@@ -179,7 +180,7 @@ void GameScene::ShadowDraw()
 	if (m_gameSceneType == GAME)
 	{
 		m_player->ShadowDraw();
-		//m_enemy->ShadowDraw();
+		m_enemy->ShadowDraw();
 		m_stage->ShadowDraw();
 	}
 }
