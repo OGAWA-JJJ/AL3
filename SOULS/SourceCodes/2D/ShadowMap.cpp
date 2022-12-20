@@ -100,12 +100,13 @@ void ShadowMap::PreDraw()
 	//ビューポートの設定
 	cmdList->RSSetViewports(
 		1,
-		&CD3DX12_VIEWPORT(0.0f, 0.0f, WINDOW_WIDTH * 4, WINDOW_HEIGHT * 4)
+		&CD3DX12_VIEWPORT(0.0f, 0.0f,
+			static_cast<float>(SHADOW_WINDOW_WIDTH), static_cast<float>(SHADOW_WINDOW_HEIGHT))
 	);
 	//シザリング矩形の設定
 	cmdList->RSSetScissorRects(
 		1,
-		&CD3DX12_RECT(0, 0, WINDOW_WIDTH * 4, WINDOW_HEIGHT * 4)
+		&CD3DX12_RECT(0, 0, SHADOW_WINDOW_WIDTH, SHADOW_WINDOW_HEIGHT)
 	);
 
 	//全画面クリア
@@ -436,8 +437,8 @@ void ShadowMap::CreateDSV()
 	CD3DX12_RESOURCE_DESC depthResDesc =
 		CD3DX12_RESOURCE_DESC::Tex2D(
 			DXGI_FORMAT_D32_FLOAT,
-			WINDOW_WIDTH * 4,
-			WINDOW_HEIGHT * 4,
+			SHADOW_WINDOW_WIDTH,
+			SHADOW_WINDOW_HEIGHT,
 			1, 0,
 			1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL

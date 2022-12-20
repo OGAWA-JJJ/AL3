@@ -53,11 +53,12 @@ void Light::TransferConstBuffer()
 	float l_width = static_cast<float>(WINDOW_WIDTH / 2);
 	float l_height = static_cast<float>(WINDOW_HEIGHT / 2);
 	float l_far = ImguiControl::Imgui_far_z;
+
 	DirectX::XMMATRIX lightMatPerspective =
 		DirectX::XMMatrixOrthographicOffCenterLH(
 			-l_width, l_width,
 			-l_height, l_height,
-			0.1f, l_far);
+			1.0f, l_far);
 
 	const DirectX::XMMATRIX& lightMatViewProjection = matView * lightMatPerspective;
 

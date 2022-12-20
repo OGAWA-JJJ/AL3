@@ -25,6 +25,10 @@ private:
 	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
 
 private:
+	const int SHADOW_WINDOW_WIDTH = 4096;
+	const int SHADOW_WINDOW_HEIGHT = 4096;
+
+private:
 	//グラフィックスパイプライン
 	ComPtr<ID3D12PipelineState> pipelineState;
 	//ルートシグネチャ

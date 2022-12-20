@@ -79,8 +79,8 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
 
 float4 PSBlack(PSOutput input) : SV_TARGET
 {
-    //return float4(0, 0, 0, 1);
+    return float4(0, 0, 0, 1);
     
-    float shadow = (input.posInLVP.z / 1000.0f);
-    return float4(shadow, shadow, shadow, 1.0f);
+    //float shadow = (input.posInLVP.z / 1000.0f);
+    //return float4(shadow, shadow, shadow, 1.0f);
 }

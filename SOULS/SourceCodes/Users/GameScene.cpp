@@ -11,7 +11,7 @@
 
 GameScene::GameScene()
 {
-	m_sceneType = TITLE;
+	m_sceneType = GAME;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -107,7 +107,7 @@ void GameScene::Draw()
 	{
 		m_stage->Draw();
 		m_player->Draw();
-		m_enemy->Draw();
+		//m_enemy->Draw();
 		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
 
 		if (m_enemy->IsFighting())
@@ -126,7 +126,7 @@ void GameScene::LuminanceDraw()
 	if (m_sceneType == GAME)
 	{
 		m_player->LuminanceDraw();
-		m_enemy->LuminanceDraw();
+		//m_enemy->LuminanceDraw();
 	}
 }
 
@@ -135,8 +135,8 @@ void GameScene::ShadowDraw()
 	if (m_sceneType == GAME)
 	{
 		m_player->ShadowDraw();
-		m_enemy->ShadowDraw();
 		m_stage->ShadowDraw();
+		//m_enemy->ShadowDraw();
 	}
 }
 
