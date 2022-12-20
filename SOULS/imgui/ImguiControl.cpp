@@ -51,6 +51,7 @@ float ImguiControl::Imgui_enemyOBBScale[12][3];
 float ImguiControl::Imgui_shadowEye_x = 0.0f;
 float ImguiControl::Imgui_shadowEye_y = 0.0f;
 float ImguiControl::Imgui_shadowEye_z = 0.0f;
+float ImguiControl::Imgui_orthoMag = 1.0f;
 
 //Stage
 float ImguiControl::Imgui_stageArea = 500.0f;
@@ -218,7 +219,7 @@ void ImguiControl::Update()
 		ImGui::TreePop();
 	}
 
-	//パーティクル
+	//影
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = text_shadowSetColor;
 	if (ImGui::TreeNode("ShadowSettings"))
 	{
@@ -226,6 +227,7 @@ void ImguiControl::Update()
 		ImGui::DragFloat("SHADOW_EYE_X", &Imgui_shadowEye_x);
 		ImGui::DragFloat("SHADOW_EYE_Y", &Imgui_shadowEye_y);
 		ImGui::DragFloat("SHADOW_EYE_Z", &Imgui_shadowEye_z);
+		ImGui::DragFloat("SHADOW_ORTHO_MAG", &Imgui_orthoMag, 0.05f, 0.01f, 10.0f);
 		ImGui::TreePop();
 	}
 

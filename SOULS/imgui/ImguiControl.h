@@ -48,6 +48,7 @@ public:	//Vector‚É‚µ‚½‚¢
 	static float Imgui_shadowEye_x;
 	static float Imgui_shadowEye_y;
 	static float Imgui_shadowEye_z;
+	static float Imgui_orthoMag;
 
 	static float Imgui_stageArea;
 	static float Imgui_stageScale;

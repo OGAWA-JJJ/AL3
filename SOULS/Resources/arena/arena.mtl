@@ -22,7 +22,6 @@ Ni 1.450000
 d 1.000000
 illum 1
 map_Kd pave.dds
-map_Ns assets\\materials\\medieval_tiles_8bb3af2e-2e2c-4d3d-b44b-dbec203e059b\\textures_2k\\Guedelon_podlaha_roughness.jpg
 
 newmtl Old_Iron
 Ns 250.000000
@@ -33,9 +32,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd iron_header.dds
-map_Ns assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Roughness.jpeg
-refl assets\\materials\\old_iron_b99bc8e1-8cc0-4ef2-b43f-ab948a3fdfdb\\textures_2k\\Iron_old_Metallic.jpeg
+map_Kd iron_albedo.dds
 
 newmtl Rust
 Ns 1000.000000
