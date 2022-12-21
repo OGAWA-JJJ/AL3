@@ -107,8 +107,8 @@ void GameScene::Draw()
 	{
 		m_stage->Draw();
 		m_player->Draw();
-		//m_enemy->Draw();
-		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
+		m_enemy->Draw();
+		SpriteManager::PlayerUIDraw(m_player->GetEstus());
 
 		if (m_enemy->IsFighting())
 		{
@@ -135,7 +135,7 @@ void GameScene::ShadowDraw()
 	if (m_sceneType == GAME)
 	{
 		m_player->ShadowDraw();
-		m_stage->ShadowDraw();
+		//m_stage->ShadowDraw();
 		//m_enemy->ShadowDraw();
 	}
 }
