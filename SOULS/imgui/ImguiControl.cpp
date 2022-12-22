@@ -51,7 +51,8 @@ float ImguiControl::Imgui_enemyOBBScale[12][3];
 float ImguiControl::Imgui_shadowEye_x = 0.0f;
 float ImguiControl::Imgui_shadowEye_y = 0.0f;
 float ImguiControl::Imgui_shadowEye_z = 0.0f;
-float ImguiControl::Imgui_orthoMag = 0.4f;
+float ImguiControl::Imgui_orthoMag_x = 1.0f;
+float ImguiControl::Imgui_orthoMag_y = 1.0f;
 
 //Stage
 float ImguiControl::Imgui_stageArea = 500.0f;
@@ -100,7 +101,7 @@ void ImguiControl::Update()
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		ImGui::SliderFloat("FOV", &Imgui_fov, 30.0f, 150.0f);
 		ImGui::SliderFloat("FAR_Z", &Imgui_far_z, 50.0f, 5000.0f);
-		ImGui::SliderFloat("CAMERA_DIST", &Imgui_cameraDist, 50.0f, 200.0f);
+		ImGui::SliderFloat("TARGET_DIST", &Imgui_cameraDist, 50.0f, 200.0f);
 		ImGui::TreePop();
 	}
 
@@ -111,13 +112,13 @@ void ImguiControl::Update()
 	if (ImGui::TreeNode("LightColorSettings"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		ImGui::SliderFloat("LIGHT_COLOR_R", &Imgui_lightColor_r, 0.0f, 1.0f);
-		ImGui::SliderFloat("LIGHT_COLOR_G", &Imgui_lightColor_g, 0.0f, 1.0f);
-		ImGui::SliderFloat("LIGHT_COLOR_B", &Imgui_lightColor_b, 0.0f, 1.0f);
+		ImGui::SliderFloat("COLOR_R", &Imgui_lightColor_r, 0.0f, 1.0f);
+		ImGui::SliderFloat("COLOR_G", &Imgui_lightColor_g, 0.0f, 1.0f);
+		ImGui::SliderFloat("COLOR_B", &Imgui_lightColor_b, 0.0f, 1.0f);
 
-		ImGui::SliderFloat("LIGHT_DIR_X", &Imgui_lightDir_x, -1.0f, 1.0f);
-		ImGui::SliderFloat("LIGHT_DIR_Y", &Imgui_lightDir_y, -1.0f, 1.0f);
-		ImGui::SliderFloat("LIGHT_DIR_Z", &Imgui_lightDir_z, -1.0f, 1.0f);
+		ImGui::SliderFloat("DIR_X", &Imgui_lightDir_x, -1.0f, 1.0f);
+		ImGui::SliderFloat("DIR_Y", &Imgui_lightDir_y, -1.0f, 1.0f);
+		ImGui::SliderFloat("DIR_Z", &Imgui_lightDir_z, -1.0f, 1.0f);
 		ImGui::TreePop();
 	}
 
@@ -143,12 +144,12 @@ void ImguiControl::Update()
 	if (ImGui::TreeNode("EnemyStatus"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		ImGui::Text("ENEMY_BLEND_TIMER          ： %f", Imgui_enemyBlendTimer);
-		ImGui::Text("ENEMY_CURRENT_ANI_TIMER    ： %f", Imgui_enemyCurrentAniTimer);
-		ImGui::Text("ENEMY_OLD_ANI_TIMER        ： %f", Imgui_enemyOldAniTimer);
-		ImGui::Text("ENEMY_ANIMATION_TYPE       ： %s", Imgui_enemyAniType);
-		ImGui::Text("ENEMY_OLD_ANIMATION_TYPE   ： %s", Imgui_enemyOldAniType);
-		ImGui::Text("ENEMY_INVI                 ： %s", Imgui_enemyInvi);
+		ImGui::Text("BLEND_TIMER          ： %f", Imgui_enemyBlendTimer);
+		ImGui::Text("CURRENT_ANI_TIMER    ： %f", Imgui_enemyCurrentAniTimer);
+		ImGui::Text("OLD_ANI_TIMER        ： %f", Imgui_enemyOldAniTimer);
+		ImGui::Text("ANIMATION_TYPE       ： %s", Imgui_enemyAniType);
+		ImGui::Text("OLD_ANIMATION_TYPE   ： %s", Imgui_enemyOldAniType);
+		ImGui::Text("INVI                 ： %s", Imgui_enemyInvi);
 		ImGui::TreePop();
 	}
 
@@ -159,15 +160,15 @@ void ImguiControl::Update()
 	if (ImGui::TreeNode("PlayerStatus"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		ImGui::Text("PLAYER_BLEND_TIMER          ： %f", Imgui_playerBlendTimer);
-		ImGui::Text("PLAYER_CURRENT_ANI_TIMER    ： %f", Imgui_playerCurrentAniTimer);
-		ImGui::Text("PLAYER_OLD_ANI_TIMER        ： %f", Imgui_playerOldAniTimer);
-		ImGui::Text("PLAYER_ANIMATION_TYPE       ： %s", Imgui_playerAniType);
-		ImGui::Text("PLAYER_OLD_ANIMATION_TYPE   ： %s", Imgui_playerOldAniType);
-		ImGui::Text("PLAYER_IS_ACCEPT            ： %s", Imgui_playerIsAccept);
-		ImGui::Text("PLAYER_IS_CHANGE            ： %s", Imgui_playerIsChange);
-		ImGui::Text("PLAYER_IS_CHANGE            ： %s", Imgui_playerIsAttack);
-		ImGui::Text("PLAYER_IS_INVINCIBLE        ： %s", Imgui_playerIsInvincible);
+		ImGui::Text("BLEND_TIMER          ： %f", Imgui_playerBlendTimer);
+		ImGui::Text("CURRENT_ANI_TIMER    ： %f", Imgui_playerCurrentAniTimer);
+		ImGui::Text("OLD_ANI_TIMER        ： %f", Imgui_playerOldAniTimer);
+		ImGui::Text("ANIMATION_TYPE       ： %s", Imgui_playerAniType);
+		ImGui::Text("OLD_ANIMATION_TYPE   ： %s", Imgui_playerOldAniType);
+		ImGui::Text("IS_ACCEPT            ： %s", Imgui_playerIsAccept);
+		ImGui::Text("IS_CHANGE            ： %s", Imgui_playerIsChange);
+		ImGui::Text("IS_CHANGE            ： %s", Imgui_playerIsAttack);
+		ImGui::Text("IS_INVINCIBLE        ： %s", Imgui_playerIsInvincible);
 		ImGui::TreePop();
 	}
 
@@ -224,10 +225,11 @@ void ImguiControl::Update()
 	if (ImGui::TreeNode("ShadowSettings"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		ImGui::DragFloat("SHADOW_EYE_X", &Imgui_shadowEye_x);
-		ImGui::DragFloat("SHADOW_EYE_Y", &Imgui_shadowEye_y);
-		ImGui::DragFloat("SHADOW_EYE_Z", &Imgui_shadowEye_z);
-		ImGui::DragFloat("SHADOW_ORTHO_MAG", &Imgui_orthoMag, 0.05f, 0.01f, 10.0f);
+		ImGui::DragFloat("EYE_X", &Imgui_shadowEye_x);
+		ImGui::DragFloat("EYE_Y", &Imgui_shadowEye_y);
+		ImGui::DragFloat("EYE_Z", &Imgui_shadowEye_z);
+		ImGui::DragFloat("ORTHO_MAG_X", &Imgui_orthoMag_x, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("ORTHO_MAG_Y", &Imgui_orthoMag_y, 0.01f, 0.01f, 10.0f);
 		ImGui::TreePop();
 	}
 
@@ -236,8 +238,8 @@ void ImguiControl::Update()
 	if (ImGui::TreeNode("StageSettings"))
 	{
 		ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		ImGui::DragFloat("STAGE_AREA", &Imgui_stageArea, 5.0f);
-		ImGui::DragFloat("STAGE_SCALE", &Imgui_stageScale, 5.0f);
+		ImGui::DragFloat("AREA", &Imgui_stageArea, 5.0f);
+		ImGui::DragFloat("SCALE", &Imgui_stageScale, 5.0f);
 		ImGui::TreePop();
 	}
 

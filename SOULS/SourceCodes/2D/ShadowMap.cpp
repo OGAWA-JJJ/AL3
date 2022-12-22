@@ -19,10 +19,6 @@ ShadowMap::~ShadowMap()
 
 void ShadowMap::Init()
 {
-	//CreateGraphicsPipelineState();
-
-	//CreateVBV();
-
 	CreateConstBuff();
 
 	incrementSizeSRV = DirectXImportant::dev->
@@ -33,13 +29,9 @@ void ShadowMap::Init()
 		GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//生成系
-	//CreateTexBuff();
-
 	CreateDSV();
 
 	CreateSRV();
-
-	//CreateRTV();
 }
 
 void ShadowMap::Draw()
@@ -285,51 +277,6 @@ void ShadowMap::CreateGraphicsPipelineState()
 	assert(SUCCEEDED(result));
 }
 
-void ShadowMap::CreateVBV()
-{
-	HRESULT result;
-
-	//頂点バッファ生成
-	result = DirectXImportant::dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(VertexPosUv) * 4),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&vertBuff));
-	assert(SUCCEEDED(result));
-
-	//頂点データ転送
-	VertexPosUv vertices[4];
-
-	//左上
-	vertices[0].pos = { -1.0f, -1.0f , 0.0f };
-	//左下
-	vertices[1].pos = { -1.0f, -0.2f, 0.0f };
-	//右上
-	vertices[2].pos = { -0.2f, -1.0f , 0.0f };
-	//右下
-	vertices[3].pos = { -0.2f, -0.2f, 0.0f };
-
-	vertices[0].uv = { 0.0f, 1.0f };
-	vertices[1].uv = { 0.0f, 0.0f };
-	vertices[2].uv = { 1.0f, 1.0f };
-	vertices[3].uv = { 1.0f, 0.0f };
-
-	//頂点バッファへのデータ転送
-	VertexPosUv* vertMap = nullptr;
-	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
-	if (SUCCEEDED(result)) {
-		memcpy(vertMap, vertices, sizeof(vertices));
-		vertBuff->Unmap(0, nullptr);
-	}
-
-	//頂点バッファビューの作成
-	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
-	vbView.SizeInBytes = sizeof(VertexPosUv) * 4;
-	vbView.StrideInBytes = sizeof(VertexPosUv);
-}
-
 void ShadowMap::CreateConstBuff()
 {
 	//定数バッファの生成
@@ -340,47 +287,6 @@ void ShadowMap::CreateConstBuff()
 	data.mat = DirectX::XMMatrixIdentity();
 
 	ConstantBuffer::CopyToVRAM(constBuff, &data, sizeof(ConstantBuffer_b0));
-}
-
-void ShadowMap::CreateTexBuff()
-{
-	HRESULT result;
-
-	//テクスチャリソース設定←mipLevelsってなに←荒さ改善的なの
-	CD3DX12_RESOURCE_DESC texresDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
-	);
-
-	//テクスチャバッファの生成
-	float color[] = { 1.0f,1.0f,1.0f,1.0f };
-	result = DirectXImportant::dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
-		D3D12_HEAP_FLAG_NONE,
-		&texresDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, color),
-		IID_PPV_ARGS(&TexManager::GetBuffer())
-	);
-	assert(SUCCEEDED(result));
-
-	//テクスチャを仮想生成
-	const UINT pixelCount = WINDOW_WIDTH * WINDOW_HEIGHT;
-	//画像1行分のデータサイズ
-	const UINT rowPitch = sizeof(UINT) * WINDOW_WIDTH;
-	//画像全体のデータサイズ
-	const UINT depthPitch = rowPitch * WINDOW_HEIGHT;
-	//画像イメージ
-	UINT* img = new UINT[pixelCount];
-	for (int i = 0; i < pixelCount; i++) { img[i] = 0xff0000ff; }
-
-	//テクスチャバッファにデータ転送
-	result = TexManager::GetBuffer()->WriteToSubresource(0, nullptr,
-		img, rowPitch, depthPitch);
-	assert(SUCCEEDED(result));
-	delete[] img;
 }
 
 void ShadowMap::CreateSRV()
@@ -408,25 +314,6 @@ void ShadowMap::CreateSRV()
 	TexManager::SetIncrementSizeSRV(incrementSizeSRV);
 
 	TexManager::AddOffsetSRV();
-}
-
-void ShadowMap::CreateRTV()
-{
-	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
-		TexManager::GetCpuHeapStartRTV(),
-		TexManager::GetOffsetRTV(),
-		incrementSizeRTV);
-
-	DirectXImportant::dev->CreateRenderTargetView(
-		TexManager::GetBuffer(srvIndex).Get(),
-		nullptr,
-		cpuHandle
-	);
-
-	rtvIndex = TexManager::GetOffsetRTV();
-
-	TexManager::AddOffsetSRV();
-	TexManager::AddOffsetRTV();
 }
 
 void ShadowMap::CreateDSV()

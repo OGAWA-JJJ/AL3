@@ -47,7 +47,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     
     float andColor = 1.0f;
     float4 texcolor = tex.Sample(smp, input.uv);
-    if (input.posInLVP.z * w > z + 0.005f)
+    if (input.posInLVP.z * w > z + 0.001f)
     {
         andColor = 0.5f;
     }

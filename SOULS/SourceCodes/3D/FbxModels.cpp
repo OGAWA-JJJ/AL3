@@ -133,7 +133,7 @@ void FbxModels::Init(const std::string& modelname, bool smoothing)
 
 	FbxGeometryConverter converter(fbx_manager);
 	converter.Triangulate(fbxScene, true);
-	converter.RemoveBadPolygonsFromMeshes(fbxScene);
+	//converter.RemoveBadPolygonsFromMeshes(fbxScene);
 
 #pragma region Test
 	//ƒm[ƒh‚Ìæ“¾

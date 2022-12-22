@@ -27,6 +27,8 @@ private:
 	//ダーティフラグ
 	bool dirty = false;
 
+	const float SHADOW_OLTHO_BASESIZE = 512.0f;
+
 	//影用ライト座標
 	DirectX::XMFLOAT3 shadowEye = { 300,300,-300 };
 	DirectX::XMFLOAT3 shadowTarget = { 0,0,0 };

@@ -66,10 +66,7 @@ public:
 
 private:
 	void CreateGraphicsPipelineState();
-	void CreateVBV();
 	void CreateConstBuff();
-	void CreateTexBuff();
 	void CreateSRV();
-	void CreateRTV();
 	void CreateDSV();
 };

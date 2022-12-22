@@ -50,8 +50,8 @@ void Light::TransferConstBuffer()
 		XMLoadFloat3(&shadowTarget),
 		XMLoadFloat3(&shadowUp));
 
-	float l_width = static_cast<float>(WINDOW_WIDTH * ImguiControl::Imgui_orthoMag);
-	float l_height = static_cast<float>(WINDOW_HEIGHT * ImguiControl::Imgui_orthoMag);
+	float l_width = SHADOW_OLTHO_BASESIZE * ImguiControl::Imgui_orthoMag_x;
+	float l_height = SHADOW_OLTHO_BASESIZE * ImguiControl::Imgui_orthoMag_y;
 	float l_far = ImguiControl::Imgui_far_z;
 
 	DirectX::XMMATRIX lightMatPerspective =
