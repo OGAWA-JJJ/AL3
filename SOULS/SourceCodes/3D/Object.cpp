@@ -165,13 +165,21 @@ ObjPipelineSet Object::CreateGraphicsPipeline(const ObjectInitData& objectInitDa
 	rootparams[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
 	rootparams[4].InitAsDescriptorTable(1, &descRangeSRV1, D3D12_SHADER_VISIBILITY_ALL);
 
-	//スタティックサンプラー
-	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(
-		0, D3D12_FILTER_MIN_MAG_MIP_POINT);
+	//通常と影用sampler
+	CD3DX12_STATIC_SAMPLER_DESC samplerDescs[2] = {};
+	samplerDescs[0] = CD3DX12_STATIC_SAMPLER_DESC(
+		0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
-	//ルートシグネチャの設定
+	samplerDescs[1] = CD3DX12_STATIC_SAMPLER_DESC(
+		1, D3D12_FILTER_MIN_MAG_MIP_POINT);
+
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init_1_0(_countof(rootparams), rootparams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	rootSignatureDesc.Init_1_0(
+		_countof(rootparams),
+		rootparams,
+		_countof(samplerDescs),
+		samplerDescs,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	Microsoft::WRL::ComPtr<ID3DBlob> rootSigBlob;
 	//バージョン自動判定のシリアライズ

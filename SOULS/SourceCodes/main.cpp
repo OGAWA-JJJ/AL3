@@ -13,8 +13,6 @@
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	//ReportLiveObjects();
-
 	//ウィンドウタイトル
 	LPCTSTR WindowTitle = L"SOULS";
 	//背景の色
@@ -30,7 +28,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//Microsoft::WRL::ComPtr<ID3D12Debug1> debugController;
 	//if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 	//{
-	//	debugController->EnableDebugLayer();
 	//	debugController->SetEnableGPUBasedValidation(TRUE); // NEW!
 	//}
 #endif
@@ -234,6 +231,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+
+	/*ID3D12DebugDevice* debugInterface;
+	if (SUCCEEDED(DirectXImportant::dev->QueryInterface(&debugInterface)))
+	{
+		debugInterface->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+		debugInterface->Release();
+	}*/
 
 	//ウィンドウクラスを登録解除
 	UnregisterClass(Window::windowClass.lpszClassName, Window::windowClass.hInstance);

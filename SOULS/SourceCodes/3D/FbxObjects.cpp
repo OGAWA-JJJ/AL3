@@ -159,22 +159,42 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 	//âe
 	rootparams[5].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_ALL);
 
-	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(
-		0, D3D12_FILTER_MIN_MAG_MIP_POINT);
+	//í èÌÇ∆âeópsampler
+	CD3DX12_STATIC_SAMPLER_DESC samplerDescs[2] = {};
+	samplerDescs[0] = CD3DX12_STATIC_SAMPLER_DESC(
+		0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
+
+	samplerDescs[1] = CD3DX12_STATIC_SAMPLER_DESC(
+		1, D3D12_FILTER_MIN_MAG_MIP_POINT);
 
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init_1_0(_countof(rootparams), rootparams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	rootSignatureDesc.Init_1_0(
+		_countof(rootparams),
+		rootparams,
+		_countof(samplerDescs),
+		samplerDescs,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	Microsoft::WRL::ComPtr<ID3DBlob> rootSigBlob;
 
-	result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
-	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
+	result = D3DX12SerializeVersionedRootSignature(
+		&rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1_0,
+		&rootSigBlob,
+		&errorBlob);
+
+	result = device->CreateRootSignature(
+		0,
+		rootSigBlob->GetBufferPointer(),
+		rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&pipelineSet.rootsignature));
 	if (FAILED(result)) { assert(0); }
 
 	gpipeline.pRootSignature = pipelineSet.rootsignature.Get();
 
-	result = device->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineSet.pipelinestate));
+	result = device->CreateGraphicsPipelineState(
+		&gpipeline,
+		IID_PPV_ARGS(&pipelineSet.pipelinestate));
 	if (FAILED(result)) { assert(0); }
 
 	return pipelineSet;

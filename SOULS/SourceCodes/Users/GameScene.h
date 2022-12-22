@@ -16,7 +16,7 @@ private:
 	};
 
 private:
-	const int C_MAX_MOVE_TIMER = 1200000;
+	const int C_MAX_MOVE_TIMER = 12000000;
 
 private:
 	std::shared_ptr<Light> light = nullptr;

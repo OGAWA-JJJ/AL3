@@ -3,6 +3,7 @@
 Texture2D<float4> tex : register(t0);
 Texture2D<float4> shadow : register(t1);
 SamplerState smp : register(s0);
+SamplerState shadowSmp : register(s1);
 
 //エントリーポイント
 float4 PSmain(VSOutput input) : SV_TARGET
@@ -44,7 +45,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     float2 shadowTex;
     shadowTex.x = (1.0f + input.posInLVP.x * w) * 0.5f;
     shadowTex.y = (1.0f - input.posInLVP.y * w) * 0.5f;
-    float z = shadow.Sample(smp, shadowTex).x;
+    float z = shadow.Sample(shadowSmp, shadowTex).x;
     
     float andColor = 1.0f;
     float4 texcolor = tex.Sample(smp, input.uv);

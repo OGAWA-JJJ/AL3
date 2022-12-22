@@ -51,7 +51,7 @@ float ImguiControl::Imgui_enemyOBBScale[12][3];
 float ImguiControl::Imgui_shadowEye_x = 0.0f;
 float ImguiControl::Imgui_shadowEye_y = 0.0f;
 float ImguiControl::Imgui_shadowEye_z = 0.0f;
-float ImguiControl::Imgui_orthoMag = 1.0f;
+float ImguiControl::Imgui_orthoMag = 0.4f;
 
 //Stage
 float ImguiControl::Imgui_stageArea = 500.0f;

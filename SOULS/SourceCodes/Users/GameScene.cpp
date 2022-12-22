@@ -11,7 +11,7 @@
 
 GameScene::GameScene()
 {
-	m_sceneType = GAME;
+	m_sceneType = GameSceneType::TITLE;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -126,7 +126,7 @@ void GameScene::LuminanceDraw()
 	if (m_sceneType == GAME)
 	{
 		m_player->LuminanceDraw();
-		//m_enemy->LuminanceDraw();
+		m_enemy->LuminanceDraw();
 	}
 }
 
@@ -135,8 +135,8 @@ void GameScene::ShadowDraw()
 	if (m_sceneType == GAME)
 	{
 		m_player->ShadowDraw();
-		//m_stage->ShadowDraw();
-		//m_enemy->ShadowDraw();
+		m_stage->ShadowDraw();
+		m_enemy->ShadowDraw();
 	}
 }
 

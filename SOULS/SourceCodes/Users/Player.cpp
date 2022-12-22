@@ -8,7 +8,7 @@
 
 Player::Player()
 {
-	trail.Init();
+	//trail.Init();
 	pManager.Init();
 
 #pragma region ModelCreate
@@ -893,7 +893,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		obj_Sword->GetMatrix().r[3].m128_f32[1],
 		obj_Sword->GetMatrix().r[3].m128_f32[2] };
 
-		trail.SetCurrentPos(m_trailCount, top, bottom);
+		//trail.SetCurrentPos(m_trailCount, top, bottom);
 		m_isTrailStart = true;
 	}
 	else
@@ -918,13 +918,13 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 			l_oldCount = 99;
 		}
 
-		trail.SetOldPos(m_trailCount,
-			trail.GetCurrentPos_Top(l_oldCount),
-			trail.GetCurrentPos_Bottom(l_oldCount));
-		trail.SetCurrentPos(m_trailCount, top, bottom);
+		//trail.SetOldPos(m_trailCount,
+			//trail.GetCurrentPos_Top(l_oldCount),
+			//trail.GetCurrentPos_Bottom(l_oldCount));
+		//trail.SetCurrentPos(m_trailCount, top, bottom);
 		if (!m_isSheathed)
 		{
-			trail.CreateTrail(m_trailCount);
+			//trail.CreateTrail(m_trailCount);
 		}
 	}
 
@@ -936,7 +936,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 	{
 		m_isTrailStart = false;
 	}
-	trail.Update();
+	//trail.Update();
 
 	//ƒGƒŠƒAŠO”»’è
 	CalcArea();
@@ -969,7 +969,7 @@ void Player::Draw()
 	}
 
 	pManager.Draw();
-	trail.Draw();
+	//trail.Draw();
 }
 
 void Player::LuminanceDraw()
@@ -980,7 +980,7 @@ void Player::LuminanceDraw()
 	}
 
 	pManager.Draw();
-	trail.Draw();
+	//trail.Draw();
 }
 
 void Player::ShadowDraw()

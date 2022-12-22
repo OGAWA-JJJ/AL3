@@ -1,8 +1,9 @@
 #include "ObjShaderHeader.hlsli"
 
-Texture2D<float4> tex : register(t0); //0番スロットに設定されたテクスチャ
-Texture2D<float4> shadow : register(t1); //1番スロットに設定されたテクスチャ
-SamplerState smp : register(s0); //0番スロットに設定されたサンプラー
+Texture2D<float4> tex : register(t0);       //0番テクスチャ
+Texture2D<float4> shadow : register(t1);    //1番テクスチャ
+SamplerState smp : register(s0);            //0番サンプラー
+SamplerState shadowSmp : register(s1);
 
 float4 PSmain(VSOutput input) : SV_TARGET
 {
@@ -42,7 +43,7 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     float2 shadowTex;
     shadowTex.x = (1.0f + input.posInLVP.x * w) * 0.5f;
     shadowTex.y = (1.0f - input.posInLVP.y * w) * 0.5f;
-    float z = shadow.Sample(smp, shadowTex).x;
+    float z = shadow.Sample(shadowSmp, shadowTex).x;
     
     float andColor = 1.0f;
     float4 texcolor = tex.Sample(smp, input.uv);

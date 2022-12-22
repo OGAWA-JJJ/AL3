@@ -13,7 +13,7 @@ class Player
 	//やっぱ爽快感、画面暗転、瀕死だったら画面赤とか、ブルーム以外は暗くしたりとか...。合わせ技だったりする。
 	//工夫点とかアプローチをハッキリ喋れるといい。
 	ParticleManager pManager;
-	TrailManager trail;
+	//TrailManager trail;
 
 private:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
