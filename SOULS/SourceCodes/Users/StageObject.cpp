@@ -11,6 +11,15 @@ StageObject::StageObject()
 	const float sphereScale = 0.5f;
 	obj_sphere->SetScale(
 		DirectX::XMFLOAT3(sphereScale, sphereScale, sphereScale));
+
+	obj_bonefire = Object::Create(ModelManager::model_bonefire);
+	const float bonefireScale = 4.0f;
+	obj_bonefire->SetScale(
+		DirectX::XMFLOAT3(bonefireScale, bonefireScale, bonefireScale));
+	obj_bonefire->SetPosition(DirectX::XMFLOAT3(
+		0,
+		5,
+		0));
 }
 
 StageObject::~StageObject()
@@ -19,6 +28,7 @@ StageObject::~StageObject()
 
 void StageObject::Init()
 {
+	obj_bonefire->SetColor(DirectX::XMFLOAT4(1, 1, 1, 0));
 }
 
 void StageObject::Update()
@@ -30,9 +40,22 @@ void StageObject::Update()
 	obj_sphere->Update();
 }
 
+void StageObject::AfterBattleUpdate()
+{
+	float l_alpha = obj_bonefire->GetColor().w;
+	l_alpha += 0.05f;
+	obj_bonefire->SetColor(DirectX::XMFLOAT4(1, 1, 1, l_alpha));
+	obj_bonefire->Update();
+}
+
 void StageObject::Draw()
 {
 	obj_sphere->Draw(PipelineManager::obj_texColorReceice, false);
+}
+
+void StageObject::AfterBattleDraw()
+{
+	obj_bonefire->Draw(PipelineManager::obj_normal, false);
 }
 
 void StageObject::ShadowDraw()

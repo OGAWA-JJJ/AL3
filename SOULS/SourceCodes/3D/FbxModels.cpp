@@ -684,7 +684,17 @@ void FbxModels::FetchSkeleton(FbxMesh* fbx_mesh)
 
 void FbxModels::FetchAnimaton()
 {
+	//アニメーション抜き取り
 	FbxArray<FbxString*> animation_stack_names;
+
+	//ノード情報
+	size_t node_count = nodes.size();
+	std::vector<FbxNode*> fbxNodes;
+	fbxNodes.resize(node_count);
+	for (size_t node_index = 0; node_index < node_count; ++node_index)
+	{
+		fbxNodes[node_index] = fbxScene->FindNodeByName(nodes.at(node_index).name.c_str());
+	}
 
 	fbxScene->FillAnimStackNameArray(animation_stack_names);
 	const int animation_stack_count = animation_stack_names.GetCount();
@@ -698,29 +708,17 @@ void FbxModels::FetchAnimaton()
 		FbxAnimStack* animation_stack = fbxScene->FindMember<FbxAnimStack>(animation_clip.name.c_str());
 		fbxScene->SetCurrentAnimationStack(animation_stack);
 
-		//アニメーションのフレームレートモード取得
 		const FbxTime::EMode time_mode{ fbxScene->GetGlobalSettings().GetTimeMode() };
-
-		//1フレーム辺りの加算量(FbxTimeでの)
 		FbxTime one_second;
 		one_second.SetTime(0, 0, 1, 0, 0, time_mode);
-
-		//アニメーションのフレームレート算出
 		animation_clip.sampling_rate = static_cast<float>(one_second.GetFrameRate(time_mode));
 
-		//アニメーションの内部的な加算量??多分そんな重要じゃない
 		const FbxTime sampling_interval =
 			static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
-		float fsamplng_interval = one_second.Get() / animation_clip.sampling_rate;
-
-		//アニメーションの名前から色んな情報取得(多分)
 		const FbxTakeInfo* take_info = fbxScene->GetTakeInfo(animation_clip.name.c_str());
-
-		//それらを元に計算(FbxTimeでの)
 		const FbxTime start_time = take_info->mLocalTimeSpan.GetStart();
 		const FbxTime stop_time = take_info->mLocalTimeSpan.GetStop();
 
-		//それらを元に計算(floatでの)
 		float stop = stop_time.GetFrameCount() / animation_clip.sampling_rate;
 		float start = start_time.GetFrameCount() / animation_clip.sampling_rate;
 		animation_clip.seconds_length = stop - start;
@@ -732,7 +730,6 @@ void FbxModels::FetchAnimaton()
 			animation_clip.keyframes.emplace_back();
 			Keyframe& keyframe = animation_clip.keyframes.back();
 
-			const size_t node_count = nodes.size();
 			keyframe.nodeKeys.resize(node_count);
 
 			float f_time = time.GetFrameCount() / animation_clip.sampling_rate;
@@ -740,12 +737,11 @@ void FbxModels::FetchAnimaton()
 
 			for (size_t node_index = 0; node_index < node_count; ++node_index)
 			{
-				FbxNode* fbx_node = fbxScene->FindNodeByName(nodes.at(node_index).name.c_str());
-				if (fbx_node)
+				if (fbxNodes[node_index])
 				{
 					NodeKeyData& node = keyframe.nodeKeys.at(node_index);
 
-					const FbxAMatrix& local_transform = fbx_node->EvaluateLocalTransform(time);
+					const FbxAMatrix& local_transform = fbxNodes[node_index]->EvaluateLocalTransform(time);
 					node.scale = ToXMFLOAT3(local_transform.GetS());
 					node.rotate = ToXMFLOAT4(local_transform.GetQ());
 					node.translate = ToXMFLOAT3(local_transform.GetT());
@@ -802,7 +798,6 @@ void FbxModels::AddAnimation(const std::string& modelname)
 
 		const FbxTime sampling_interval =
 			static_cast<FbxLongLong>(one_second.Get() / animation_clip.sampling_rate);
-		float fsamplng_interval = one_second.Get() / animation_clip.sampling_rate;
 		const FbxTakeInfo* take_info = fbxScene->GetTakeInfo(animation_clip.name.c_str());
 		const FbxTime start_time = take_info->mLocalTimeSpan.GetStart();
 		const FbxTime stop_time = take_info->mLocalTimeSpan.GetStop();

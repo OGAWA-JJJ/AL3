@@ -137,6 +137,7 @@
     <ClCompile Include="SourceCodes\Users\Stage.cpp" />
     <ClCompile Include="SourceCodes\Users\StageObject.cpp" />
     <ClCompile Include="SourceCodes\Users\SpriteManager.cpp" />
+    <ClCompile Include="SourceCodes\Users\Config.cpp" />
     <ClCompile Include="SourceCodes\Users\TrailManager.cpp" />
     <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp" />
     <ClCompile Include="SourceCodes\XAudio2\Music.cpp" />
@@ -182,9 +183,10 @@
     <ClInclude Include="SourceCodes\Users\ParticleManager.h" />
     <ClInclude Include="SourceCodes\Users\PipelineManager.h" />
     <ClInclude Include="SourceCodes\Users\Player.h" />
+    <ClInclude Include="SourceCodes\Users\SpriteManager.h" />
     <ClInclude Include="SourceCodes\Users\Stage.h" />
     <ClInclude Include="SourceCodes\Users\StageObject.h" />
-    <ClInclude Include="SourceCodes\Users\SpriteManager.h" />
+    <ClInclude Include="SourceCodes\Users\Config.h" />
     <ClInclude Include="SourceCodes\Users\TrailManager.h" />
     <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h" />
     <ClInclude Include="SourceCodes\XAudio2\Music.h" />

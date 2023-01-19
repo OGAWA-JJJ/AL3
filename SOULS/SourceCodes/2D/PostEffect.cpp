@@ -135,6 +135,7 @@ void PostEffect::Draw()
 	ID3D12DescriptorHeap* ppHeaps[] = { TexManager::GetHeapAdressSRV() };
 	//デスクリプタヒープをセット
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
 	//定数バッファビューをセット
 	cmdList->SetGraphicsRootConstantBufferView(0, this->constBuff->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(2, this->constBuff_b1->GetGPUVirtualAddress());

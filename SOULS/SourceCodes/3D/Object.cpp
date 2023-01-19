@@ -287,7 +287,7 @@ void Object::Update()
 	}
 
 	DirectX::XMMATRIX matViewProjection = Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	DirectX::XMFLOAT3 cameraPos = Camera::GetEye();
+	DirectX::XMFLOAT3 cameraPos = light->GetShadowLigitEye();
 
 	// 定数バッファへデータ転送
 	ConstBufferDataB0* constMap0 = nullptr;

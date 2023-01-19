@@ -16,7 +16,9 @@ public:
 	~Stage();
 	void Init();
 	void Update();
+	void AfterBattleUpdate();
 	void Draw();
+	void AfterBattleDraw();
 	void ShadowDraw();
 	void LuminanceDraw();
 	void ShaftOfLightDraw();

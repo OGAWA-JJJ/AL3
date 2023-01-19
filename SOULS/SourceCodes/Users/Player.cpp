@@ -1,15 +1,41 @@
+#define NOMINMAX
+
 #include "Player.h"
-#include "../../imgui/ImguiControl.h"
+#include "PipelineManager.h"
+#include "ModelManager.h"
+#include "Config.h"
+
 #include "../Math/OgaJHelper.h"
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
-#include "PipelineManager.h"
-#include "ModelManager.h"
+#include "../../imgui/ImguiControl.h"
+
+#include <fstream>
+#include <iostream>
+
+rapidjson::Document m_pDoc(rapidjson::kObjectType);
 
 Player::Player()
 {
-	//trail.Init();
-	pManager.Init();
+	pManagerSword.Init();
+	pManagerEstus.Init();
+
+	pManagerLight0.Init();
+	pManagerLight1.Init();
+	pManagerLight2.Init();
+	pManagerLight3.Init();
+
+	trail.Init();
+
+	std::ifstream ifs("Resources/Config/PlayerDataConfig.json");
+	std::string str;
+	std::string txt;
+	while (getline(ifs, str))
+	{
+		txt += str;
+	}
+	m_pDoc.Parse(txt.c_str());
+	InportJson();
 
 #pragma region ModelCreate
 
@@ -49,6 +75,7 @@ Player::Player()
 	fbxobj_miku->SetLoopAnimation(DIE, false);
 
 	fbxobj_miku->PlayAnimation(DAMAGED);
+	//fbxobj_miku->SetLoopAnimation(DAMAGED, false);
 
 	fbxobj_miku->StopAnimation(ROLLING);
 	fbxobj_miku->SetLoopAnimation(ROLLING, false);
@@ -96,6 +123,7 @@ void Player::Init()
 	m_rollingAngle = { 0,0,0 };
 	m_cameraToPlayer = { 0,0,0 };
 	m_cameraTarget = { 0,0,0 };
+	m_enemyPos = { 0,0,0 };
 	m_animationTimer = 0;
 	m_animationType = STAND;
 	m_oldAnimationType = m_animationType;
@@ -107,14 +135,16 @@ void Player::Init()
 		m_attackCollisionTimer[i] = C_ATTACK_COLLISION_TIMER[i];
 	}
 	m_estusHeal = 0;
-
+	m_estusTimer = 0;
 	m_cameraMoveEase = 0.0f;
-	m_cameraY = 50.0f;
+	m_cameraY = 20.0f;
 	m_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
 	m_blendTimer = 0.0f;
+	m_endAngle = 180.0f;
 	m_isTarget = false;
 	m_isEase = false;
 	m_isAttack = false;
+	m_isInvincible = false;
 	m_isAccept = true;
 	m_isChange = false;
 	m_isAnimation = false;
@@ -132,6 +162,16 @@ void Player::Init()
 
 #pragma endregion
 
+#pragma region ModelInit
+
+	for (int i = 0; i < C_MIKU_NUM; i++)
+	{
+		fbxobj_miku->ResetAnimation(i);
+	}
+	fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, 180.0f, 0));
+
+#pragma endregion
+
 	//Sword
 	obj_Sword->SetRotation(XMFLOAT3(
 		310.0f,
@@ -145,26 +185,111 @@ void Player::Init()
 		0.0f
 	));
 
-	Camera::SetEye(DirectX::XMFLOAT3(0, 20, C_MAX_CAMERA_NEAR_DISTANCE));
+	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, C_MAX_CAMERA_NEAR_DISTANCE));
 	ImguiControl::Imgui_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
 
-	//パーティクル
-	const float pScale = 0.5f;
-	const float pPower = 0.1f;
-	const float pColor = 0.9f;
+	//パーティクル(剣)
+	const float pScaleSword = 0.5f;
+	const float pPowerSword = 0.1f;
+	const float pColorSword = 0.9f;
+	const int pLifeSword = 30;
+	const int pCreateNumSword = 100;
 
-	Particle::ParticleData pData;
-	pData.isRandVec = true;
-	pData.isRandColor = false;
-	pData.scale = { pScale, pScale, pScale };
-	pData.power = { pPower, pPower, pPower };
-	pData.color = { pColor, pColor, pColor, 1.0f };
-	pData.life = 30;
-	for (int i = 0; i < pManager.GetMaxParticle(); i++)
+	Particle::ParticleData pDataSword;
+	pDataSword.isRandVec = true;
+	pDataSword.isRandColor = false;
+	pDataSword.scale = { pScaleSword, pScaleSword, pScaleSword };
+	pDataSword.power = { pPowerSword, pPowerSword, pPowerSword };
+	pDataSword.color = { pColorSword, pColorSword, pColorSword, 1.0f };
+	pDataSword.life = pLifeSword;
+	for (int i = 0; i < pCreateNumSword; i++)
 	{
-		pManager.SetParticle(i, pData);
+		pManagerSword.SetParticle(i, pDataSword);
 	}
-	pManager.SetCreateNum(100);
+	pManagerSword.SetCreateNum(pCreateNumSword);
+
+	//パーティクル(回復)
+	const float pScaleEstus = 0.8f;
+	const float pPowerEstus = 0.1f;
+	const float pColorEstus = 0.9f;
+	const int pCreateNumEstus = 100;
+
+	Particle::ParticleData pDataEstus;
+	pDataEstus.isRandVec = true;
+	pDataEstus.isRandColor = false;
+	pDataEstus.scale = { pScaleEstus, pScaleEstus, pScaleEstus };
+	pDataEstus.power = { pPowerEstus, pPowerEstus, pPowerEstus };
+
+	const int pLifeEstusRange = 31;
+	for (int i = 0; i < pCreateNumEstus; i++)
+	{
+		pDataEstus.color = {
+			pColorEstus,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			0.6f };
+		pDataEstus.life = rand() % pLifeEstusRange + 60;
+		pManagerEstus.SetParticle(i, pDataEstus);
+	}
+	pManagerEstus.SetCreateNum(pCreateNumEstus);
+	pManagerEstus.SetIsCreateStop(true);
+
+	//Light
+	pDataEstus.isRandVec = false;
+	pDataEstus.scale = { 2.0f, 2.0f, 2.0f };
+	pDataEstus.power = { 0.5f, 0.5f, 0.5f };
+
+	for (int i = 0; i < 50; i++)
+	{
+		pDataEstus.color = {
+			pColorEstus,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			0.6f };
+		pManagerLight0.SetLife(i, 50);
+		pManagerLight0.SetParticle(i, pDataEstus);
+		pManagerLight0.SetVec(i, DirectX::XMFLOAT3(0, 1, 0));
+	}
+	pManagerLight0.SetCreateNum(1);
+
+	for (int i = 0; i < 50; i++)
+	{
+		pDataEstus.color = {
+			pColorEstus,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			0.6f };
+		pManagerLight1.SetLife(i, 50);
+		pManagerLight1.SetParticle(i, pDataEstus);
+		pManagerLight1.SetVec(i, DirectX::XMFLOAT3(0, 1, 0));
+	}
+	pManagerLight1.SetCreateNum(1);
+
+	for (int i = 0; i < 50; i++)
+	{
+		pDataEstus.color = {
+			pColorEstus,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			0.6f };
+		pManagerLight2.SetLife(i, 50);
+		pManagerLight2.SetParticle(i, pDataEstus);
+		pManagerLight2.SetVec(i, DirectX::XMFLOAT3(0, 1, 0));
+	}
+	pManagerLight2.SetCreateNum(1);
+
+	for (int i = 0; i < 50; i++)
+	{
+		pDataEstus.color = {
+			pColorEstus,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			0.6f };
+		pManagerLight3.SetLife(i, 50);
+		pManagerLight3.SetParticle(i, pDataEstus);
+		pManagerLight3.SetVec(i, DirectX::XMFLOAT3(0, 1, 0));
+	}
+	pManagerLight3.SetCreateNum(1);
 
 	//Box
 	std::array<float, 10> l_x = {
@@ -214,11 +339,21 @@ void Player::Init()
 		ImguiControl::Imgui_playerOBBScale[i][1] = l_y[i];
 		ImguiControl::Imgui_playerOBBScale[i][2] = l_z[i];
 	}
+
+	//debug
+	ImguiControl::Imgui_eye_x = Camera::GetEye().x;
+	ImguiControl::Imgui_eye_y = Camera::GetEye().y;
+	ImguiControl::Imgui_eye_z = Camera::GetEye().z;
+	ImguiControl::Imgui_target_x = Camera::GetEye().x;
+	ImguiControl::Imgui_target_x = Camera::GetEye().y;
+	ImguiControl::Imgui_target_x = Camera::GetEye().z;
 }
 
-void Player::Update(DirectX::XMFLOAT3 enemyPos)
+void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 {
-	if (!IsDead())
+	m_enemyPos = enemyPos;
+
+	if (!IsDead() && isInputRecept)
 	{
 #pragma region Game
 
@@ -248,8 +383,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 				}
 
 				//移動
-				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+				if (IsInputStick(C_DOWN_POWER))
 				{
 					if (!m_isAnimation)
 					{
@@ -288,7 +422,12 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 						Camera::SetEye(cameraPos);
 						Camera::SetTarget(targetPos);
 
-						fbxobj_miku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
+						m_endAngle = deg + cameraRad;
+						if (m_endAngle < 0)
+						{
+							m_endAngle += 360.0f;
+						}
+						//fbxobj_miku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					}
 				}
 
@@ -577,8 +716,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 					m_cameraY = Camera::GetEye().y;
 				}
 
-				if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-					0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+				if (IsInputStick(C_DOWN_POWER))
 				{
 					if (!m_isAnimation)
 					{
@@ -830,34 +968,14 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		m_animationType = AnimationType::DIE;
 	}
 
-	bool l_isOldSheathed = m_isSheathed;
+	m_isOldSheathed = m_isSheathed;
 	CalcBlendAnimation();
-
-	//パーティクル
-	pManager.SetIsCreateStop(true);
-	if (m_isSheathed != l_isOldSheathed)
-	{
-		pManager.SetIsCreateStop(false);
-	}
-	for (int i = 0; i < pManager.GetMaxParticle(); i++)
-	{
-		//剣から微調整
-		pManager.SetPosition(i, DirectX::XMFLOAT3(
-			0,
-			static_cast<float>(rand() % 21) + 5.0f,
-			0));
-
-		//生成時のみ剣に付随
-		if (!pManager.IsMove(i))
-		{
-			pManager.MultiMatrix(i, obj_Sword->GetMatrix());
-		}
-	}
-
-	pManager.Update();
 
 	OtherUpdate();	//ここでm_animationTypeの変更を行うと挙動がおかしくなる可能性アリ
 	CalcOBB();
+
+	//パーティクル
+	CalcParticle();
 
 	//確認用
 	if (m_isAttack)
@@ -869,77 +987,14 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos)
 		obj_Sword->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
-	m_cameraDist = ImguiControl::Imgui_cameraDist;
-
 	//Trail
-	if (m_trailCount > 99)
-	{
-		m_trailCount = 0;
-	}
-
-	if (!m_isTrailStart)
-	{
-		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-		l_trans.r[3].m128_f32[1] = 25.0f;
-		l_trans *= obj_Sword->GetMatrix();
-
-		DirectX::XMFLOAT3 top = {
-			l_trans.r[3].m128_f32[0],
-		l_trans.r[3].m128_f32[1] ,
-		l_trans.r[3].m128_f32[2] };
-
-		DirectX::XMFLOAT3 bottom = {
-			obj_Sword->GetMatrix().r[3].m128_f32[0],
-		obj_Sword->GetMatrix().r[3].m128_f32[1],
-		obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
-		//trail.SetCurrentPos(m_trailCount, top, bottom);
-		m_isTrailStart = true;
-	}
-	else
-	{
-		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-		l_trans.r[3].m128_f32[1] = 25.0f;
-		l_trans *= obj_Sword->GetMatrix();
-
-		DirectX::XMFLOAT3 top = {
-			l_trans.r[3].m128_f32[0],
-		l_trans.r[3].m128_f32[1] ,
-		l_trans.r[3].m128_f32[2] };
-
-		DirectX::XMFLOAT3 bottom = {
-			obj_Sword->GetMatrix().r[3].m128_f32[0],
-		obj_Sword->GetMatrix().r[3].m128_f32[1],
-		obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
-		int l_oldCount = m_trailCount - 1;
-		if (l_oldCount < 0)
-		{
-			l_oldCount = 99;
-		}
-
-		//trail.SetOldPos(m_trailCount,
-			//trail.GetCurrentPos_Top(l_oldCount),
-			//trail.GetCurrentPos_Bottom(l_oldCount));
-		//trail.SetCurrentPos(m_trailCount, top, bottom);
-		if (!m_isSheathed)
-		{
-			//trail.CreateTrail(m_trailCount);
-		}
-	}
-
-	if (!m_isSheathed)
-	{
-		m_trailCount++;
-	}
-	else
-	{
-		m_isTrailStart = false;
-	}
-	//trail.Update();
+	CalcTrail();
 
 	//エリア外判定
 	CalcArea();
+
+	//排斥
+	//CalcExpulsion();
 }
 
 void Player::Draw()
@@ -968,8 +1023,18 @@ void Player::Draw()
 		obj_SwordBox->Draw(PipelineManager::obj_receiveShadow);
 	}
 
-	pManager.Draw();
-	//trail.Draw();
+	pManagerSword.Draw();
+	pManagerEstus.Draw();
+
+	pManagerLight0.Draw();
+	pManagerLight1.Draw();
+	pManagerLight2.Draw();
+	pManagerLight3.Draw();
+
+	if (m_isAttack)
+	{
+		trail.Draw();
+	}
 }
 
 void Player::LuminanceDraw()
@@ -979,8 +1044,18 @@ void Player::LuminanceDraw()
 		obj_Sword->Draw(PipelineManager::obj_normal, false);
 	}
 
-	pManager.Draw();
-	//trail.Draw();
+	pManagerSword.Draw();
+	pManagerEstus.Draw();
+
+	pManagerLight0.Draw();
+	pManagerLight1.Draw();
+	pManagerLight2.Draw();
+	pManagerLight3.Draw();
+
+	if (m_isAttack)
+	{
+		trail.Draw();
+	}
 }
 
 void Player::ShadowDraw()
@@ -994,6 +1069,152 @@ void Player::ShadowDraw()
 	{
 		obj_Sword->Draw(PipelineManager::obj_shadow, false);
 	}
+}
+
+void Player::ResetCamera()
+{
+	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, C_MAX_CAMERA_NEAR_DISTANCE));
+}
+
+bool Player::BeforeBattleScene()
+{
+	return false;
+}
+
+void Player::AddMenbers()
+{
+	rapidjson::Document l_doc(rapidjson::kObjectType);
+
+#pragma region FRAME
+	rapidjson::Value l_frameValue(rapidjson::kObjectType);
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[0]  ", 40, l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[1]  ", 35, l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[2]  ", 50, l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_ENDTIMER  ", 55, l_doc.GetAllocator());
+	l_doc.AddMember("FRAME", l_frameValue, l_doc.GetAllocator());
+#pragma endregion
+
+#pragma region OTHER
+	rapidjson::Value l_frameOther(rapidjson::kObjectType);
+	l_frameOther.AddMember("MAX_CAMERA_NEAR_DISTANCE  ", 75.0, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_CAMERA_FAR_DISTANCE   ", 200.0, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_PAD_RETENTION         ", 60, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_CAMERA_MOVE_SPEED     ", 2.0, l_doc.GetAllocator());
+	l_frameOther.AddMember("EASE_CAMERA_TIMER         ", 0.01, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_BLEND_TIMER           ", 0.02, l_doc.GetAllocator());
+	l_frameOther.AddMember("DOWN_POWER                ", 0.3, l_doc.GetAllocator());
+	l_frameOther.AddMember("ROTATE_ADD_ANGLE          ", 15.0, l_doc.GetAllocator());
+	l_frameOther.AddMember("EXPLUSION_RAD             ", 10.0, l_doc.GetAllocator());
+	l_doc.AddMember("OTHER", l_frameOther, l_doc.GetAllocator());
+#pragma endregion
+
+#pragma region STATUS
+	rapidjson::Value l_frameStatus(rapidjson::kObjectType);
+	l_frameStatus.AddMember("MAX_HP                 ", 1000, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_MP                 ", 100, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_STAMINA            ", 1000, l_doc.GetAllocator());
+
+	l_frameStatus.AddMember("MAX_POWER[0]           ", 40, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_POWER[1]           ", 25, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_POWER[2]           ", 70, l_doc.GetAllocator());
+
+	l_frameStatus.AddMember("MAX_ESTUS              ", 5, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ESTUS_TIMER            ", 60, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_ESTUS_HEAL         ", 350, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_ESTUS_HEAL_SPEED   ", 15, l_doc.GetAllocator());
+	l_frameStatus.AddMember("AUTOHEAL_STAMINA_TIMER ", 60, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ATTACK_SUB_STAMINA     ", 220, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ROLLING_SUB_STAMINA    ", 200, l_doc.GetAllocator());
+	l_frameStatus.AddMember("HEAL_VOL               ", 8, l_doc.GetAllocator());
+	l_frameStatus.AddMember("C_MAX_MOVE_SPEED       ", 1.5, l_doc.GetAllocator());
+	l_doc.AddMember("STATUS", l_frameStatus, l_doc.GetAllocator());
+#pragma endregion
+
+	Config::Writter("PlayerDataConfig", l_doc);
+}
+
+void Player::ExportJson()
+{
+#pragma region FRAME
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].SetInt(0);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].SetInt(0);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].SetInt(0);
+#pragma endregion
+
+#pragma region OTHER
+	m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].SetInt(0);
+	m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].SetInt(0);
+	m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].SetInt(0);
+	m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].SetInt(0);
+	m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].SetInt(0);
+	m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].SetInt(0);
+	m_pDoc["OTHER"]["DOWN_POWER                "].SetInt(0);
+	m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].SetInt(0);
+	m_pDoc["OTHER"]["EXPLUSION_RAD             "].SetInt(0);
+#pragma endregion
+
+#pragma region STATUS
+	m_pDoc["STATUS"]["MAX_HP                 "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_MP                 "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_STAMINA            "].SetInt(0);
+
+	m_pDoc["STATUS"]["MAX_POWER[0]           "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_POWER[1]           "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_POWER[2]           "].SetInt(0);
+
+	m_pDoc["STATUS"]["MAX_ESTUS              "].SetInt(0);
+	m_pDoc["STATUS"]["ESTUS_TIMER            "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].SetInt(0);
+	m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].SetInt(0);
+	m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].SetInt(0);
+	m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].SetInt(0);
+	m_pDoc["STATUS"]["HEAL_VOL               "].SetInt(0);
+	m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].SetInt(0);
+#pragma endregion
+
+	Config::Writter("PlayerDataConfig", m_pDoc);
+}
+
+void Player::InportJson()
+{
+#pragma region FRAME
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].GetInt();
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].GetInt();
+	m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].GetInt();
+#pragma endregion
+
+#pragma region OTHER
+	m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].GetInt();
+	m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].GetInt();
+	m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].GetInt();
+	m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].GetInt();
+	m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].GetInt();
+	m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].GetInt();
+	m_pDoc["OTHER"]["DOWN_POWER                "].GetInt();
+	m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].GetInt();
+	m_pDoc["OTHER"]["EXPLUSION_RAD             "].GetInt();
+#pragma endregion
+
+#pragma region STATUS
+	m_pDoc["STATUS"]["MAX_HP                 "].GetInt();
+	m_pDoc["STATUS"]["MAX_MP                 "].GetInt();
+	m_pDoc["STATUS"]["MAX_STAMINA            "].GetInt();
+
+	m_pDoc["STATUS"]["MAX_POWER[0]           "].GetInt();
+	m_pDoc["STATUS"]["MAX_POWER[1]           "].GetInt();
+	m_pDoc["STATUS"]["MAX_POWER[2]           "].GetInt();
+
+	m_pDoc["STATUS"]["MAX_ESTUS              "].GetInt();
+	m_pDoc["STATUS"]["ESTUS_TIMER            "].GetInt();
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].GetInt();
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].GetInt();
+	m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].GetInt();
+	m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].GetInt();
+	m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].GetInt();
+	m_pDoc["STATUS"]["HEAL_VOL               "].GetInt();
+	m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].GetInt();
+#pragma endregion
 }
 
 void Player::Input()
@@ -1059,7 +1280,7 @@ void Player::Input()
 				m_animationType != DAMAGED &&
 				m_animationType != ROLLING)
 			{
-				CalcRolling();
+				CalcRollingAngle();
 			}
 		}
 	}
@@ -1146,9 +1367,10 @@ void Player::CalcOBB()
 
 void Player::OtherUpdate()
 {
+	CalcAngle();
+
 	//Update
 	fbxobj_miku->SetAnimationIndex(m_animationType);
-
 	fbxobj_miku->Update();
 
 	//Current
@@ -1213,7 +1435,6 @@ void Player::OtherUpdate()
 		{
 			m_isAnimation = false;
 			m_isInvincible = false;
-			m_isInvincible = false;
 		}
 
 		ImguiControl::Imgui_playerAniType = "DAMAGED";
@@ -1221,27 +1442,7 @@ void Player::OtherUpdate()
 	}
 	case ROLLING:
 	{
-		float l_addPosX = m_rollingAngle.x * C_MAX_MOVE_SPEED;
-		float l_addPosZ = m_rollingAngle.z * C_MAX_MOVE_SPEED;
-		m_pos.x += l_addPosX;
-		m_pos.z += l_addPosZ;
-
-		XMFLOAT3 l_cameraPos = Camera::GetEye();
-		l_cameraPos.x += l_addPosX;
-		l_cameraPos.z += l_addPosZ;
-		Camera::SetEye(l_cameraPos);
-		if (!m_isTarget)
-		{
-			Camera::SetTarget(m_cameraTarget);
-		}
-
-		fbxobj_miku->SetPosition(m_pos);
-
-		if (fbxobj_miku->IsAnimationEnd(m_animationType))
-		{
-			m_isAnimation = false;
-			m_isInvincible = false;
-		}
+		CalcRolling();
 
 		ImguiControl::Imgui_playerAniType = "ROLLING";
 		break;
@@ -1372,6 +1573,7 @@ void Player::CalcBlendAnimation()
 			m_blendTimer = 0.0f;
 			m_keepAnimationType = m_animationType;
 			fbxobj_miku->ResetAnimation(m_animationType);
+			fbxobj_miku->SetAnimationSpeed(0, 0, false);
 		}
 
 		//タイマー計算
@@ -1407,20 +1609,22 @@ void Player::CalcBlendAnimation()
 	}
 
 	fbxobj_miku->
-		BlendAnimation(m_oldAnimationType, m_animationType,
-			OgaJEase::easeOutCubic(m_blendTimer), true);
+		BlendAnimation(
+			m_oldAnimationType,
+			m_animationType,
+			OgaJEase::easeOutCubic(m_blendTimer),
+			true);
 }
 
 void Player::CalcAttack()
 {
-	//攻撃力
-	m_power = C_MAX_POWER[m_animationType - 6];
-
 	//最大までのフレーム数
 	float l_frame =
 		fbxobj_miku->GetEndTime(m_animationType) / fbxobj_miku->GetAddTime(m_animationType);
+
 	fbxobj_miku->SetAnimationSpeed(
 		m_animationType, OgaJEase::easeInSine(m_attackEase), true);
+
 	if (m_attackEase < 1.0f)
 	{
 		m_attackEase += 1.0f / l_frame;
@@ -1428,6 +1632,34 @@ void Player::CalcAttack()
 	else
 	{
 		m_attackEase = 1.0f;
+	}
+
+	//移動処理
+	if (m_isAttack)
+	{
+		DirectX::XMFLOAT3 l_pos = m_pos;
+		l_pos.y = m_enemyPos.y;
+		float l_dist = OgaJHelper::CalcDist(m_enemyPos, l_pos);
+
+		const float C_DIST = 40.0f;
+		if (l_dist > C_DIST)
+		{
+			const float l_speed = 0.8f;
+			DirectX::XMFLOAT3 l_angle = GetAngle();
+			float l_addPosX = l_angle.x * l_speed;
+			float l_addPosZ = l_angle.z * l_speed;
+			m_pos.x += l_addPosX;
+			m_pos.z += l_addPosZ;
+
+			DirectX::XMFLOAT3 l_target = Camera::GetTarget();
+			DirectX::XMFLOAT3 l_eye = Camera::GetEye();
+			l_target.x += l_addPosX;
+			l_target.z += l_addPosZ;
+			l_eye.x += l_addPosX;
+			l_eye.z += l_addPosZ;
+			Camera::SetTarget(l_target);
+			Camera::SetEye(l_eye);
+		}
 	}
 
 	//攻撃アニメーション中断
@@ -1454,13 +1686,18 @@ void Player::CalcAttackTimer()
 	if (m_animationType >= NORMAL_ATTACK_1 &&
 		m_animationType <= NORMAL_ATTACK_3)
 	{
+		//攻撃判定開始前
 		int l_animationNum = m_animationType - NORMAL_ATTACK_1;
 		if (m_animationTimer < m_attackCollisionTimer[l_animationNum])
 		{
 			m_animationTimer++;
 		}
+		//開始
 		else
 		{
+			//攻撃力
+			m_power = C_MAX_POWER[m_animationType - 6];
+
 			m_animationTimer = 0;
 			m_isAttack = true;
 
@@ -1469,6 +1706,12 @@ void Player::CalcAttackTimer()
 			if (m_stamina < 0)
 			{
 				m_stamina = 0;
+			}
+
+			//攻撃時方向切り替え
+			if (IsInputStick(C_DOWN_POWER))
+			{
+				SetAngle(GetInputAngle());
 			}
 		}
 	}
@@ -1515,6 +1758,31 @@ void Player::DoAttack(const int animationType)
 
 void Player::CalcRolling()
 {
+	float l_addPosX = m_rollingAngle.x * C_MAX_MOVE_SPEED;
+	float l_addPosZ = m_rollingAngle.z * C_MAX_MOVE_SPEED;
+	m_pos.x += l_addPosX;
+	m_pos.z += l_addPosZ;
+
+	XMFLOAT3 l_cameraPos = Camera::GetEye();
+	l_cameraPos.x += l_addPosX;
+	l_cameraPos.z += l_addPosZ;
+	Camera::SetEye(l_cameraPos);
+	if (!m_isTarget)
+	{
+		Camera::SetTarget(m_cameraTarget);
+	}
+
+	fbxobj_miku->SetPosition(m_pos);
+
+	if (fbxobj_miku->IsAnimationEnd(m_animationType))
+	{
+		m_isAnimation = false;
+		m_isInvincible = false;
+	}
+}
+
+void Player::CalcRollingAngle()
+{
 	m_padState = 0;
 
 	m_healTimer = C_AUTOHEAL_STAMINA_TIMER;
@@ -1533,31 +1801,15 @@ void Player::CalcRolling()
 	m_isInvincible = true;
 
 	//向きの計算
-	if (0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
-		0.3 < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+	if (IsInputStick(C_DOWN_POWER))
 	{
-		XMFLOAT3 l_deg = { 0,0,0 };
-		l_deg.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
-		l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
-		l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
-
-		DirectX::XMVECTOR l_matRotVec = DirectX::XMLoadFloat3(&l_deg);
-		l_matRotVec = DirectX::XMVector3Transform(l_matRotVec, Camera::BillboardYMatrix());
-
-		m_rollingAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
-		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		m_rollingAngle = GetInputAngle();
+		SetAngle(m_rollingAngle);
 	}
 	else
 	{
-		XMFLOAT3 l_deg = fbxobj_miku->GetRotation();
-		OgaJHelper::ConvertToRadian(l_deg.y);
-		float l_radX = sinf(l_deg.y);
-		float l_radZ = cosf(l_deg.y);
-
-		m_rollingAngle = { l_radX,0,l_radZ };
-		float l_degY = atan2(m_rollingAngle.x, m_rollingAngle.z) * 180.0f / DirectX::XM_PI;
-		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_degY, 0));
+		m_rollingAngle = GetAngle();
+		SetAngle(m_rollingAngle);
 	}
 }
 
@@ -1572,6 +1824,7 @@ void Player::CalcHeal()
 		m_estus--;
 		m_estusHeal = C_MAX_ESTUS_HEAL;
 		m_isEstus = true;
+		pManagerEstus.SetIsCreateStop(false);
 	}
 }
 
@@ -1595,6 +1848,38 @@ void Player::CalcArea()
 		l_eye.z += l_backZ;
 		l_target.x += l_backX;
 		l_target.z += l_backZ;
+		Camera::SetEye(l_eye);
+		Camera::SetTarget(l_target);
+	}
+}
+
+void Player::CalcExpulsion(bool isTackle)
+{
+	if (isTackle) { return; }
+	if (m_animationType == ROLLING)
+	{
+		return;
+	}
+
+	DirectX::XMFLOAT3 l_pos = m_pos;
+	l_pos.y = m_enemyPos.y;
+	float l_dist = OgaJHelper::CalcDist(m_enemyPos, l_pos);
+
+	if (l_dist < C_EXPLUSION_RAD)
+	{
+		DirectX::XMFLOAT3 l_vec =
+			OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(m_enemyPos, l_pos));
+		float l_expulsX = l_vec.x * (C_EXPLUSION_RAD - l_dist);
+		float l_expulsZ = l_vec.z * (C_EXPLUSION_RAD - l_dist);
+		m_pos.x += l_expulsX;
+		m_pos.z += l_expulsZ;
+
+		DirectX::XMFLOAT3 l_eye = Camera::GetEye();
+		DirectX::XMFLOAT3 l_target = Camera::GetTarget();
+		l_eye.x += l_expulsX;
+		l_eye.z += l_expulsZ;
+		l_target.x += l_expulsX;
+		l_target.z += l_expulsZ;
 		Camera::SetEye(l_eye);
 		Camera::SetTarget(l_target);
 	}
@@ -1694,6 +1979,8 @@ void Player::SetImgui()
 		ImguiControl::Imgui_playerIsAttack = "FALSE";
 	}
 
+	m_cameraDist = ImguiControl::Imgui_cameraDist;
+
 	ImguiControl::Imgui_playerCurrentAniTimer = fbxobj_miku->GetNowTime(m_animationType);
 	ImguiControl::Imgui_playerOldAniTimer = fbxobj_miku->GetNowTime(m_oldAnimationType);
 	ImguiControl::Imgui_playerBlendTimer = m_blendTimer;
@@ -1720,6 +2007,287 @@ void Player::SetImgui()
 	{
 		ImguiControl::Imgui_playerIsInvincible = "FALSE";
 	}
+
+	/*Camera::SetEye(DirectX::XMFLOAT3(
+		ImguiControl::Imgui_eye_x, ImguiControl::Imgui_eye_y, ImguiControl::Imgui_eye_z));
+	Camera::SetTarget(DirectX::XMFLOAT3(
+		ImguiControl::Imgui_target_x, ImguiControl::Imgui_target_y, ImguiControl::Imgui_target_z));*/
+}
+
+bool Player::IsInputStick(float downPower)
+{
+	if (downPower < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTSIDE)) ||
+		downPower < fabs(Input::isPadThumb(XINPUT_THUMB_LEFTVERT)))
+	{
+		return true;
+	}
+	return false;
+}
+
+void Player::CalcParticle()
+{
+	CalcSwordParticle();
+	CalcEstusParticle();
+
+	const int range = 21;
+
+	for (int i = 0; i < pManagerLight0.GetMaxParticle(); i++)
+	{
+		if (!pManagerLight0.IsMove(i))
+		{
+			pManagerLight0.SetPosition(i, DirectX::XMFLOAT3(
+				0 + rand() % range - range * 0.5f,
+				100 + rand() % range - range * 0.5f,
+				-500 + rand() % range - range * 0.5f
+			));
+			break;
+		}
+	}
+	pManagerLight0.Update();
+
+	for (int i = 0; i < pManagerLight1.GetMaxParticle(); i++)
+	{
+		if (!pManagerLight1.IsMove(i))
+		{
+			pManagerLight1.SetPosition(i, DirectX::XMFLOAT3(
+				0 + rand() % range - range * 0.5f,
+				100 + rand() % range - range * 0.5f,
+				500 + rand() % range - range * 0.5f
+			));
+			break;
+		}
+	}
+	pManagerLight1.Update();
+
+	for (int i = 0; i < pManagerLight2.GetMaxParticle(); i++)
+	{
+		if (!pManagerLight2.IsMove(i))
+		{
+			pManagerLight2.SetPosition(i, DirectX::XMFLOAT3(
+				-500 + rand() % range - range * 0.5f,
+				100 + rand() % range - range * 0.5f,
+				0 + rand() % range - range * 0.5f
+			));
+			break;
+		}
+	}
+	pManagerLight2.Update();
+
+	for (int i = 0; i < pManagerLight3.GetMaxParticle(); i++)
+	{
+		if (!pManagerLight3.IsMove(i))
+		{
+			pManagerLight3.SetPosition(i, DirectX::XMFLOAT3(
+				500 + rand() % range - range * 0.5f,
+				100 + rand() % range - range * 0.5f,
+				0 + rand() % range - range * 0.5f
+			));
+			break;
+		}
+	}
+	pManagerLight3.Update();
+}
+
+void Player::CalcSwordParticle()
+{
+	//パーティクル(剣)
+	pManagerSword.SetIsCreateStop(true);
+	if (m_isSheathed != m_isOldSheathed)
+	{
+		pManagerSword.SetIsCreateStop(false);
+	}
+	for (int i = 0; i < pManagerSword.GetMaxParticle(); i++)
+	{
+		//剣から微調整
+		pManagerSword.SetPosition(i, DirectX::XMFLOAT3(
+			0,
+			static_cast<float>(rand() % 21) + 5.0f,
+			0));
+
+		//生成時のみ剣に付随
+		if (!pManagerSword.IsMove(i))
+		{
+			pManagerSword.MultiMatrix(i, obj_Sword->GetMatrix());
+		}
+	}
+
+	pManagerSword.Update();
+}
+
+void Player::CalcEstusParticle()
+{
+	const int l_randRange = 3;
+	for (int i = 0; i < pManagerEstus.GetMaxParticle(); i++)
+	{
+		DirectX::XMFLOAT3 l_vec = pManagerEstus.GetVec(i);
+		if (l_vec.x < 0.0f)
+		{
+			l_vec.x += 0.01f;
+		}
+		else if (l_vec.x > 0.0f)
+		{
+			l_vec.x -= 0.01f;
+		}
+
+		l_vec.y += 0.02f;
+
+		if (l_vec.z < 0.0f)
+		{
+			l_vec.z += 0.01f;
+		}
+		else if (l_vec.z > 0.0f)
+		{
+			l_vec.z -= 0.01f;
+		}
+		pManagerEstus.SetVec(i, l_vec);
+
+		//剣から微調整
+		pManagerEstus.SetPosition(i, DirectX::XMFLOAT3(
+			m_obbs[0].pos.x + static_cast<float>(rand() % l_randRange) - l_randRange * 0.5f,
+			(m_obbs[0].pos.y + 3.0f) + static_cast<float>(rand() % l_randRange) - l_randRange * 0.5f,
+			m_obbs[0].pos.z + static_cast<float>(rand() % l_randRange) - l_randRange * 0.5f
+		));
+	}
+	pManagerEstus.Update();
+	pManagerEstus.SetIsCreateStop(true);
+}
+
+void Player::CalcTrail()
+{
+	if (m_trailCount > 99)
+	{
+		m_trailCount = 0;
+	}
+
+	if (!m_isTrailStart)
+	{
+		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
+		l_trans.r[3].m128_f32[1] = 25.0f;
+		l_trans *= obj_Sword->GetMatrix();
+
+		DirectX::XMFLOAT3 top = {
+			l_trans.r[3].m128_f32[0],
+		l_trans.r[3].m128_f32[1] ,
+		l_trans.r[3].m128_f32[2] };
+
+		DirectX::XMFLOAT3 bottom = {
+			obj_Sword->GetMatrix().r[3].m128_f32[0],
+		obj_Sword->GetMatrix().r[3].m128_f32[1],
+		obj_Sword->GetMatrix().r[3].m128_f32[2] };
+
+		trail.SetCurrentPos(m_trailCount, top, bottom);
+		m_isTrailStart = true;
+	}
+	else
+	{
+		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
+		l_trans.r[3].m128_f32[1] = 25.0f;
+		l_trans *= obj_Sword->GetMatrix();
+
+		DirectX::XMFLOAT3 top = {
+			l_trans.r[3].m128_f32[0],
+		l_trans.r[3].m128_f32[1] ,
+		l_trans.r[3].m128_f32[2] };
+
+		DirectX::XMFLOAT3 bottom = {
+			obj_Sword->GetMatrix().r[3].m128_f32[0],
+		obj_Sword->GetMatrix().r[3].m128_f32[1],
+		obj_Sword->GetMatrix().r[3].m128_f32[2] };
+
+		int l_oldCount = m_trailCount - 1;
+		if (l_oldCount < 0)
+		{
+			l_oldCount = 99;
+		}
+
+		trail.SetOldPos(m_trailCount,
+			trail.GetCurrentPos_Top(l_oldCount),
+			trail.GetCurrentPos_Bottom(l_oldCount));
+		trail.SetCurrentPos(m_trailCount, top, bottom);
+		if (!m_isSheathed)
+		{
+			trail.CreateTrail(m_trailCount);
+		}
+	}
+
+	if (!m_isSheathed)
+	{
+		m_trailCount++;
+	}
+	else
+	{
+		m_isTrailStart = false;
+	}
+	trail.Update();
+}
+
+DirectX::XMFLOAT3 Player::GetInputAngle()
+{
+	XMFLOAT3 l_deg = { 0,0,0 };
+	l_deg.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
+	l_deg.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
+	l_deg = OgaJHelper::CalcNormalizeVec3(l_deg);
+
+	DirectX::XMVECTOR l_matRotVec = DirectX::XMLoadFloat3(&l_deg);
+	l_matRotVec = DirectX::XMVector3Transform(l_matRotVec, Camera::BillboardYMatrix());
+
+	DirectX::XMFLOAT3 retAngle = { 0,0,0 };
+	retAngle = { l_matRotVec.m128_f32[0],0,l_matRotVec.m128_f32[2] };
+	return retAngle;
+}
+
+DirectX::XMFLOAT3 Player::GetAngle()
+{
+	XMFLOAT3 l_deg = fbxobj_miku->GetRotation();
+	OgaJHelper::ConvertToRadian(l_deg.y);
+	float l_radX = sinf(l_deg.y);
+	float l_radZ = cosf(l_deg.y);
+	return XMFLOAT3(l_radX, 0, l_radZ);
+}
+
+void Player::SetAngle(DirectX::XMFLOAT3 angle)
+{
+	float l_degY = atan2(angle.x, angle.z) * 180.0f / DirectX::XM_PI;
+	if (l_degY < 0)
+	{
+		l_degY += 360.0f;
+	}
+	m_endAngle = l_degY;
+}
+
+void Player::CalcAngle()
+{
+	//どこかで補間する(ここはTriggerでしか通らない)←移動にも適応させる。
+	float l_currentDegY = fbxobj_miku->GetRotation().y;
+	if (l_currentDegY < 0)
+	{
+		l_currentDegY += 360.0f;
+	}
+	if (l_currentDegY > 360.0f)
+	{
+		l_currentDegY -= 360.0f;
+	}
+
+	float l_nearAngle = OgaJHelper::RotateEarliestArc(
+		l_currentDegY, m_endAngle);
+	if (l_nearAngle < 0)
+	{
+		float l_totalAngle = l_currentDegY - C_ROTATE_ADD_ANGLE;
+		if (fabsf(l_totalAngle - m_endAngle) < C_ROTATE_ADD_ANGLE)
+		{
+			l_totalAngle = m_endAngle;
+		}
+		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_totalAngle, 0));
+	}
+	else if (l_nearAngle > 0)
+	{
+		float l_totalAngle = l_currentDegY + C_ROTATE_ADD_ANGLE;
+		if (fabsf(l_totalAngle - m_endAngle) < C_ROTATE_ADD_ANGLE)
+		{
+			l_totalAngle = m_endAngle;
+		}
+		fbxobj_miku->SetRotation(DirectX::XMFLOAT3(0, l_totalAngle, 0));
+	}
 }
 
 /*----------呼ぶやつ----------*/
@@ -1740,6 +2308,8 @@ void Player::HitAttack(int damage)
 	m_isHeal = true;
 	m_oldAnimationType = m_animationType;
 	m_animationType = DAMAGED;
+	//fbxobj_miku->ResetAnimation(m_animationType);
+	//fbxobj_miku->SetAnimationSpeed(0, 0, false);
 	if (m_hp < 0) { m_hp = 0; }
 	OutputDebugStringA("Hit!\n");
 }

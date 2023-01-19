@@ -18,6 +18,7 @@ std::shared_ptr<Model> ModelManager::model_arenaBack = nullptr;
 
 //StageObject
 std::shared_ptr<Model> ModelManager::model_sphere = nullptr;
+std::shared_ptr<Model> ModelManager::model_bonefire = nullptr;
 
 ModelManager::~ModelManager()
 {
@@ -59,13 +60,18 @@ void ModelManager::Init()
 	fbxmodel_creatures->AddAnimation("RiseCreature");
 	fbxmodel_creatures->AddAnimation("SwingDownCreature");
 	fbxmodel_creatures->AddAnimation("TackleCreature");
+	fbxmodel_creatures->AddAnimation("AwakeningCreature");
+	fbxmodel_creatures->AddAnimation("SwipingCreature");
+	fbxmodel_creatures->AddAnimation("MagicCreature");
+	fbxmodel_creatures->AddAnimation("RazerCreature");
+	fbxmodel_creatures->AddAnimation("UltReady");
+	fbxmodel_creatures->AddAnimation("Ultimate");
 
 	//Stage
 	model_stage = Model::CreateFromObj("yuka");
 	model_arenaFront = Model::CreateFromObj("arena");
-	//model_arenaFront = Model::CreateFromObj("arena_front");
-	//model_arenaBack = Model::CreateFromObj("arena_back");
 
 	//StageObject
 	model_sphere = Model::CreateFromObj("sphere");
+	model_bonefire = Model::CreateFromObj("bonefire");
 }

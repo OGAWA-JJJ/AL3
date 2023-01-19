@@ -1,8 +1,8 @@
 #include "ObjShaderHeader.hlsli"
 
-Texture2D<float4> tex : register(t0);       //0番テクスチャ
-Texture2D<float4> shadow : register(t1);    //1番テクスチャ
-SamplerState smp : register(s0);            //0番サンプラー
+Texture2D<float4> tex : register(t0); //0番テクスチャ
+Texture2D<float4> shadow : register(t1); //1番テクスチャ
+SamplerState smp : register(s0); //0番サンプラー
 SamplerState shadowSmp : register(s1);
 
 float4 PSmain(VSOutput input) : SV_TARGET
@@ -68,6 +68,24 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //鏡面反射光
     float3 specular = pow(saturate(dot(reflect, eyedir)), shininess) * m_specular;
+    
+    float3 pos[4];
+    pos[0] = float3(0, 0, 500);
+    pos[1] = float3(0, 0, -500);
+    pos[2] = float3(500, 0, 0);
+    pos[3] = float3(-500, 0, 0);
+    for (int i = 0; i < 4; i++)
+    {
+        float3 lightv = pos[i] - input.worldpos.xyz;
+        float d = length(lightv);
+        lightv = normalize(lightv);
+        float atten = 1.0f / (0.3f + 0.3f * d + 0.3f * d * d);
+        dotlightnormal = dot(lightv, input.normal);
+        reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
+        diffuse = dotlightnormal * m_diffuse;
+        specular = pow(saturate(dot(reflect, eyedir)), shininess) * m_specular;
+        shadecolor.rgb += atten * (diffuse + specular);
+    }
 	
     //加算
     shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;

@@ -22,6 +22,7 @@ public:	//Stage
 
 public:	//StageObject
 	static std::shared_ptr<Model> model_sphere;
+	static std::shared_ptr<Model> model_bonefire;
 
 public:
 	~ModelManager();

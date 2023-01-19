@@ -18,7 +18,7 @@ public:
 	};
 
 private:
-	static const int MAX_BONES = 32;
+	static const int MAX_BONES = 36;
 
 	static Microsoft::WRL::ComPtr<ID3D12Device> device;
 	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;

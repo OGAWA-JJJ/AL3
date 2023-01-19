@@ -70,9 +70,28 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
     float3 diffuse = dotlightnormal * m_diffuse * 3.14f;
     //‹¾–Ê”½ŽËŒõ
     float3 specular = pow(saturate(dot(reflect, eyedir)), shininess) * m_specular;
+    
+    float3 pos[4];
+    pos[0] = float3(0, 0, 0);
+    pos[1] = float3(0, 0, -500);
+    pos[2] = float3(500, 0, 0);
+    pos[3] = float3(-500, 0, 0);
+    const float lightatten = 0.8f;
+    for (int i = 0; i < 4; i++)
+    {
+        float3 lightv = pos[i] - input.svpos.xyz;
+        float d = length(lightv);
+        lightv = normalize(lightv);
+        float atten = 1.0f / (lightatten + lightatten * d + lightatten * d * d);
+        dotlightnormal = dot(lightv, input.normal);
+        reflect = normalize(-lightv + 2 * dotlightnormal * input.normal);
+        diffuse = dotlightnormal * m_diffuse;
+        specular = pow(saturate(dot(reflect, eyedir)), shininess) * m_specular;
+        shadecolor.rgb += atten * (diffuse + specular) * float3(0.9f, 0.6f, 0.0f);
+    }
 	
     //‰ÁŽZ
-    shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
+    //shadecolor.rgb = (ambient + diffuse + specular) * lightcolor;
     
     return texcolor * shadecolor *
     float4(andColor, andColor, andColor, 1);
@@ -81,7 +100,4 @@ float4 PSShadowMain(PSOutput input) : SV_TARGET
 float4 PSBlack(PSOutput input) : SV_TARGET
 {
     return float4(0, 0, 0, 1);
-    
-    //float shadow = (input.posInLVP.z / 1000.0f);
-    //return float4(shadow, shadow, shadow, 1.0f);
 }

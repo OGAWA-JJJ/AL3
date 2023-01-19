@@ -14,6 +14,12 @@ Music::Music()
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 }
 
+Music::~Music()
+{
+	delete masterVoice;
+	delete pSourceVoice;
+}
+
 void Music::PlayWave(const char* filename, float volume, bool isLoop)
 {
 	HRESULT result = S_OK;

@@ -12,6 +12,7 @@
 GameScene::GameScene()
 {
 	m_sceneType = GameSceneType::TITLE;
+	m_nextSceneType = m_sceneType;
 	m_sceneChangeTri = false;
 
 	PipelineManager::Init();
@@ -39,6 +40,10 @@ GameScene::~GameScene()
 
 void GameScene::Init()
 {
+	m_sceneType = GameSceneType::TITLE;
+	m_nextSceneType = m_sceneType;
+	m_sceneChangeTri = false;
+
 	m_player->Init();
 	m_enemy->Init();
 	m_stage->Init();
@@ -55,32 +60,94 @@ void GameScene::Init()
 
 void GameScene::Update()
 {
-	if (m_sceneChangeTri)
+	SpriteManager::SceneTransUpdate();
+	m_sceneType = m_nextSceneType;
+
+	//Json
+	if (ImguiControl::Imgui_export)
 	{
-		if (SpriteManager::IsSceneChangeEnd())
-		{
-			m_sceneType = GAME;
-		}
+		m_enemy->ExportJson();
+	}
+	if (ImguiControl::Imgui_inport)
+	{
+		m_enemy->InportJson();
+	}
+	if (ImguiControl::Imgui_addMenbers)
+	{
+		m_player->AddMenbers();
+		m_enemy->AddMenbers();
 	}
 
 	switch (m_sceneType)
 	{
 	case TITLE:
 	{
-		if (Input::isPadTrigger(XINPUT_GAMEPAD_A))
+		//Input
+		if (!m_sceneChangeTri &&
+			Input::isPadTrigger(XINPUT_GAMEPAD_A))
 		{
 			m_sceneChangeTri = true;
 		}
+
+		//Aが押されたか
+		if (m_sceneChangeTri)
+		{
+			//タイトル画面が暗転したか←壁くぐったらに変更する必要がある
+			if (SpriteManager::IsSceneChangeEnd())
+			{
+				if (!m_isTransTri)
+				{
+					m_isTransTri = true;
+					SpriteManager::SceneTrans();
+				}
+
+				if (!SpriteManager::IsSceneTrans())
+				{
+					m_isTransTri = false;
+					m_nextSceneType = BEFORE_BATTLE;
+				}
+			}
+		}
 		break;
 	}
-	case GAME:
+	case BEFORE_BATTLE:
+	{
+		//戦闘前カメラ(1回)
+		if (m_enemy->BeforeBattleScene())
+		{
+			if (!m_isTransTri)
+			{
+				m_isTransTri = true;
+				SpriteManager::SceneTrans();
+			}
+		}
+		if (m_isTransTri && !SpriteManager::IsSceneTrans())
+		{
+			m_isTransTri = false;
+			m_player->ResetCamera();
+			m_nextSceneType = BATTLE;
+		}
+
+		LightUpdate();
+		m_player->Update(m_enemy->GetPos(), false);
+		m_enemy->Update(m_player->GetPos());
+		m_stage->Update();
+		break;
+	}
+	case BATTLE:
 	{
 		OtherUpdate();
 
 		PlayerUpdate();
 		EnemyUpdate();
 
+		if (m_enemy->IsDeadAnimationEnd())
+		{
+			m_nextSceneType = AFTER_BATTLE;
+		}
+
 		m_player->Update(m_enemy->GetPos());
+		m_player->CalcExpulsion(m_enemy->IsTackle());
 		m_enemy->Update(m_player->GetPos());
 		m_stage->Update();
 
@@ -94,22 +161,48 @@ void GameScene::Update()
 		);
 		break;
 	}
+	case AFTER_BATTLE:
+	{
+		LightUpdate();
+		m_player->Update(m_enemy->GetPos());
+		m_enemy->Update(m_player->GetPos());
+		m_stage->Update();
+		m_stage->AfterBattleUpdate();
+		break;
+	}
 	}
 }
 
 void GameScene::Draw()
 {
-	if (m_sceneType == TITLE)
+	switch (m_sceneType)
 	{
+	case TITLE:
+	{
+		Sprite::PreDraw(DirectXImportant::cmdList.Get());
 		SpriteManager::TitleDraw(m_sceneChangeTri);
+		Sprite::PostDraw();
+		break;
 	}
-	else if (m_sceneType == GAME)
+	case BEFORE_BATTLE:
 	{
+		//3D
 		m_stage->Draw();
 		m_player->Draw();
 		m_enemy->Draw();
-		SpriteManager::PlayerUIDraw(m_player->GetEstus());
+		break;
+	}
+	case BATTLE:
+	{
+		//3D
+		m_stage->Draw();
+		m_player->Draw();
+		m_enemy->Draw();
 
+		//2D
+		Sprite::PreDraw(DirectXImportant::cmdList.Get());
+
+		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
 		if (m_enemy->IsFighting())
 		{
 			SpriteManager::EnemyUIDraw();
@@ -118,12 +211,25 @@ void GameScene::Draw()
 		{
 			SpriteManager::DiedDraw();
 		}
+
+		Sprite::PostDraw();
+		break;
+	}
+	case AFTER_BATTLE:
+	{
+		//3D
+		m_stage->Draw();
+		m_stage->AfterBattleDraw();
+		m_player->Draw();
+		m_enemy->Draw();
+		break;
+	}
 	}
 }
 
 void GameScene::LuminanceDraw()
 {
-	if (m_sceneType == GAME)
+	if (m_sceneType != TITLE)
 	{
 		m_player->LuminanceDraw();
 		m_enemy->LuminanceDraw();
@@ -132,7 +238,7 @@ void GameScene::LuminanceDraw()
 
 void GameScene::ShadowDraw()
 {
-	if (m_sceneType == GAME)
+	if (m_sceneType != TITLE)
 	{
 		m_player->ShadowDraw();
 		m_stage->ShadowDraw();
@@ -214,6 +320,15 @@ void GameScene::EnemyUpdate()
 			m_player->HitAttack(m_enemy->GetExplosionPower());
 		}
 	}
+
+	//レーザー
+	if (!m_player->IsInvincible())
+	{
+		if (m_enemy->IsRazerHit())
+		{
+			m_player->HitAttack(100);
+		}
+	}
 }
 
 void GameScene::OtherUpdate()
@@ -243,6 +358,11 @@ void GameScene::OtherUpdate()
 		SpriteManager::EnemyHPChange();
 	}
 
+	LightUpdate();
+}
+
+void GameScene::LightUpdate()
+{
 	//Light系
 	light->SetLightColor(
 		{

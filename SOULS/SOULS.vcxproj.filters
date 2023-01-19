@@ -183,6 +183,9 @@
     <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
       <Filter>SourceCodes\2D</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Config.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCodes\Singleton.h">
@@ -290,9 +293,6 @@
     <ClInclude Include="SourceCodes\Users\PipelineManager.h">
       <Filter>SourceCodes\Users\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="SourceCodes\Users\SpriteManager.h">
-      <Filter>SourceCodes\Users\Manager</Filter>
-    </ClInclude>
     <ClInclude Include="SourceCodes\Users\GameScene.h">
       <Filter>SourceCodes\Users\GameScene</Filter>
     </ClInclude>
@@ -322,6 +322,12 @@
     </ClInclude>
     <ClInclude Include="SourceCodes\2D\ShadowMap.h">
       <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\SpriteManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Config.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

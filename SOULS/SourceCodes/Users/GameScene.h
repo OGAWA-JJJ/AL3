@@ -12,11 +12,11 @@ class GameScene
 private:
 	enum GameSceneType
 	{
-		TITLE, GAME, RESULT
+		TITLE, BEFORE_BATTLE, BATTLE, AFTER_BATTLE
 	};
 
 private:
-	const int C_MAX_MOVE_TIMER = 12000000;
+	const int C_MAX_MOVE_TIMER = 30;
 
 private:
 	std::shared_ptr<Light> light = nullptr;
@@ -25,14 +25,16 @@ private:
 	std::unique_ptr<Player> m_player = std::make_unique<Player>();
 	std::unique_ptr<Enemy> m_enemy = std::make_unique<Enemy>();
 	std::unique_ptr<Stage> m_stage = std::make_unique<Stage>();
-	std::unique_ptr<StageObject> m_stageObj = std::make_unique<StageObject>();
 
 private:
 	int m_sceneType;
+	int m_nextSceneType;
 	bool m_sceneChangeTri;
 
 	int m_moveTimer;		//çÏÇÍÅI
 	bool m_moveTrigger = false;
+
+	bool m_isTransTri = false;
 
 public:
 	GameScene();
@@ -48,4 +50,5 @@ private:
 	void PlayerUpdate();
 	void EnemyUpdate();
 	void OtherUpdate();
+	void LightUpdate();
 };

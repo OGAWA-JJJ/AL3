@@ -12,8 +12,15 @@ class Player
 {
 	//やっぱ爽快感、画面暗転、瀕死だったら画面赤とか、ブルーム以外は暗くしたりとか...。合わせ技だったりする。
 	//工夫点とかアプローチをハッキリ喋れるといい。
-	ParticleManager pManager;
-	//TrailManager trail;
+	ParticleManager pManagerSword;
+	ParticleManager pManagerEstus;
+
+	ParticleManager pManagerLight0;
+	ParticleManager pManagerLight1;
+	ParticleManager pManagerLight2;
+	ParticleManager pManagerLight3;
+
+	TrailManager trail;
 
 private:
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -26,15 +33,15 @@ private:	//自機のパターン
 	enum AnimationType
 	{
 		STAND,				//待機
-		SLOWRUN,			//低速移動(未使用)
+		SLOWRUN,			//低速移動
 		RUN,				//移動
-		BACK_RUN,			//ターゲット中
-		R_RUN,
-		L_RUN,
-		NORMAL_ATTACK_1,	//攻撃(連撃非対応←やれ←した)
-		NORMAL_ATTACK_2,
-		NORMAL_ATTACK_3,
-		DAMAGED,			//被弾(吹っ飛びがない)
+		BACK_RUN,			//ターゲット中,後ろ移動
+		R_RUN,				//ターゲット中,右移動
+		L_RUN,				//ターゲット中,左移動
+		NORMAL_ATTACK_1,	//1撃目,攻撃中移動と操作方向切り替えまだ
+		NORMAL_ATTACK_2,	//2撃目
+		NORMAL_ATTACK_3,	//3撃目
+		DAMAGED,			//被弾(吹っ飛びなし)
 		ROLLING,			//回避
 		DIE,				//死亡時
 		HEAL				//アイテム(回復)使用
@@ -45,33 +52,37 @@ private:	//自機のパターン
 		//バックステップ
 	};
 
-private:		//定数
-	const float C_MAX_CAMERA_NEAR_DISTANCE = 75.0f;			//カメラと自機の距離の最大
-	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;			//カメラと自機の距離の最大
+	const int C_MIKU_NUM = 13;	//fbx増減時変更
 
-private:
+private:		//定数(判定系)
 	const int C_ATTACK_COLLISION_TIMER[3] = { 40,35,50 };	//攻撃判定
-	const int C_ATTACK_COLLISION_ENDTIMER = 55;				//攻撃判定後、判定を取り消すフレーム(攻撃による気もする)←回避を入れれるフレームに変更
+	const int C_ATTACK_COLLISION_ENDTIMER = 55;				//攻撃判定後、←回避を入れれるフレームに変更
 
-	const int C_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
-	const int C_ATTACK_SUB_STAMINA = 220;			//減少スタミナ(攻撃)
-	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
-	const int C_HEAL_VOL = 5;						//1フレームのスタミナ回復量
+private:		//定数
+	const float C_MAX_CAMERA_NEAR_DISTANCE = 75.0f;	//カメラと自機の距離の最大
+	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;	//カメラと自機の距離の最大
 	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
-	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
 	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
 	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
-	const float C_MAX_BLEND_TIMER = 0.02f;
+	const float C_MAX_BLEND_TIMER = 0.02f;			//補間速度
+	const float C_DOWN_POWER = 0.3f;				//スティック反応ライン
+	const float C_ROTATE_ADD_ANGLE = 15.0f;			//回転速度
+	const float C_EXPLUSION_RAD = 10.0f;			//排斥
 
 private:	//定数(ステータス関係)
 	const int C_MAX_HP = 1000;
 	const int C_MAX_MP = 100;
 	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER[3] = { 40,25,70 };	//変更必要
+	const int C_MAX_POWER[3] = { 40,25,70 };	//連撃ダメージ
 	const int C_MAX_ESTUS = 5;					//所持数
 	const int C_ESTUS_TIMER = 60;				//エスト飲んでから回復までのフレーム数
 	const int C_MAX_ESTUS_HEAL = 350;			//回復量
 	const int C_MAX_ESTUS_HEAL_SPEED = 15;		//1フレームの回復量
+	const int C_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
+	const int C_ATTACK_SUB_STAMINA = 220;			//減少スタミナ(攻撃)
+	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
+	const int C_HEAL_VOL = 8;						//1フレームのスタミナ回復量
+	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
 
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;	//ボーン情報
@@ -85,6 +96,7 @@ private:	//変数
 	XMFLOAT3 m_rollingAngle;		//回避する方向のアングル
 	XMFLOAT3 m_cameraToPlayer;		//カメラから自機の方向ベクトル
 	XMFLOAT3 m_cameraTarget;		//カメラのターゲット
+	XMFLOAT3 m_enemyPos;
 	int m_animationTimer;			//攻撃し始めてからのフレーム数
 	int m_animationType;			//現在のアニメーションタイプ
 	int m_oldAnimationType;			//過去のアニメーションタイプ
@@ -98,6 +110,7 @@ private:	//変数
 	float m_cameraY;				//カメラのY軸保存用(めり込み回避)
 	float m_cameraDist;				//自機とカメラの距離
 	float m_blendTimer;				//補間用タイマー
+	float m_endAngle;
 	bool m_isTarget;				//ターゲットモード中か
 	bool m_isEase;					//カメラがイージング中か
 	bool m_isAttack;				//攻撃中か
@@ -115,7 +128,9 @@ private:	//変数
 	bool m_isHelmet = true;
 	bool m_isTrailStart = false;
 	bool m_isStickReleaseTrigger = true;
-	bool m_isSheathed = false;
+
+	bool m_isSheathed = false;		//納刀用
+	bool m_isOldSheathed = false;
 
 private:	//変数(ステータス関係)
 	int m_hp;
@@ -140,17 +155,21 @@ private:	//オブジェクト(Draw用)
 	//std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
 	std::shared_ptr<FbxObjects> fbxobj_miku = nullptr;
 
-	const int C_MIKU_NUM = 13;										//fbx増減時変更
-
 public:
 	Player();
 	~Player();
 
 	void Init();
-	void Update(DirectX::XMFLOAT3 enemyPos);
+	void Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept = true);
 	void Draw();
 	void LuminanceDraw();
 	void ShadowDraw();
+	void ResetCamera();
+	bool BeforeBattleScene();
+
+	void AddMenbers();
+	void ExportJson();
+	void InportJson();
 
 private:
 	void Input();		//本当にInputなのか分からん
@@ -163,9 +182,21 @@ private:
 	void CheckAttackAnimationType();
 	void DoAttack(const int animationType);
 	void CalcRolling();
+	void CalcRollingAngle();
 	void CalcHeal();
 	void CalcArea();
 	void SetImgui();
+	bool IsInputStick(float downPower);
+	void CalcParticle();
+	void CalcSwordParticle();
+	void CalcEstusParticle();
+	void CalcTrail();
+
+	DirectX::XMFLOAT3 GetInputAngle();
+	DirectX::XMFLOAT3 GetAngle();
+	void SetAngle(DirectX::XMFLOAT3 angle);
+	void CalcAngle();
+
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
@@ -186,4 +217,5 @@ public:	//Setter
 public:	//呼ぶやつ
 	bool IsDead();				//死亡判定
 	void HitAttack(int damage);	//攻撃受けたら呼ぶ
+	void CalcExpulsion(bool isTackle);
 };

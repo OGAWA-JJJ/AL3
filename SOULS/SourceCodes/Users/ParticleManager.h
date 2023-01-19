@@ -56,6 +56,7 @@ public:
 	std::shared_ptr<Object> GetModel() { return m_object; }
 	bool GetIsDraw() { return m_isDraw; }
 	DirectX::XMFLOAT3& GetPower() { return m_particleData.power; }
+	DirectX::XMFLOAT3& GetVec() { return m_particleData.vec; }
 
 public:
 	void SetNowScale(DirectX::XMFLOAT3 scale) { m_object->SetScale(scale); }
@@ -109,8 +110,9 @@ public:
 	int GetMaxParticle() { return m_maxParticle; }
 
 	DirectX::XMFLOAT3& GetPower(const int num) { return m_particles.at(num).GetPower(); }
-
 	DirectX::XMFLOAT3 GetNowPosition(const int num) { return m_particles.at(num).GetNowPosition(); }
+	DirectX::XMFLOAT3& GetVec(const int num) { return m_particles.at(num).GetVec(); }
+
 	void SetNowScale(const int num, DirectX::XMFLOAT3 scale) { return m_particles.at(num).SetNowScale(scale); }
 };
 

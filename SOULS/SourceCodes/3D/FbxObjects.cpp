@@ -110,7 +110,7 @@ FbxObjects::FbxPipelineSet FbxObjects::CreateGraphicsPipeline(const FbxInitData&
 
 	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 	gpipeline.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	//gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	//gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	gpipeline.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
@@ -262,7 +262,7 @@ void FbxObjects::Update()
 
 	DirectX::XMMATRIX& matViewProjection =
 		Camera::ViewMatrix() * Camera::PerspectiveMatrix();
-	DirectX::XMFLOAT3& cameraPos = Camera::GetEye();
+	DirectX::XMFLOAT3& cameraPos = light->GetShadowLigitEye();
 
 	HRESULT result;
 
@@ -622,11 +622,17 @@ void FbxObjects::BlendAnimation(int startIndex, int endIndex, float rate, bool i
 	for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 	{
 		DirectX::XMVECTOR Scale =
-			DirectX::XMVectorLerp(startScales[nodeIndex], endScales[nodeIndex], rate);
+			DirectX::XMVectorLerp(
+				startScales[nodeIndex],
+				endScales[nodeIndex],rate);
 		DirectX::XMVECTOR Rotate =
-			DirectX::XMQuaternionSlerp(startRotates[nodeIndex], endRotates[nodeIndex], rate);
+			DirectX::XMQuaternionSlerp(
+				startRotates[nodeIndex],
+				endRotates[nodeIndex], rate);
 		DirectX::XMVECTOR Translate =
-			DirectX::XMVectorLerp(startTranslates[nodeIndex], endTranslates[nodeIndex], rate);
+			DirectX::XMVectorLerp(
+				startTranslates[nodeIndex],
+				endTranslates[nodeIndex], rate);
 
 		Node& node = nodes[nodeIndex];
 		DirectX::XMStoreFloat3(&node.scale, Scale);

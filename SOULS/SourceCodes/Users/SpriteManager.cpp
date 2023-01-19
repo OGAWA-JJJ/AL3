@@ -11,10 +11,12 @@ float SpriteManager::C_PLAYER_MP_BAR_SIZE_X = 200.0f;
 float SpriteManager::C_PLAYER_STAMINA_BAR_SIZE_X = 220.0f;
 
 int SpriteManager::C_YELLOW_MOVE_DELAY = 60;
+int SpriteManager::C_TRANS_DELAY = 90;
 
 DirectX::XMFLOAT4 SpriteManager::m_texColor = { 0,0,0,1 };
 int SpriteManager::m_enemy_yellowCount = 0;
 int SpriteManager::m_player_yellowCount = 0;
+int SpriteManager::m_trans_conut = 0;
 float SpriteManager::m_enemy_hpRate = 0.0f;
 float SpriteManager::m_player_hpRate = 0.0f;
 float SpriteManager::m_diedAlpha = 0.0f;
@@ -22,6 +24,8 @@ bool SpriteManager::m_enemyDamaged = false;
 bool SpriteManager::m_playerDamaged = false;
 bool SpriteManager::m_isStart = false;
 bool SpriteManager::m_isSceneChangeEnd = false;
+bool SpriteManager::m_isTrans = false;
+bool SpriteManager::m_isTransUpdate = false;
 
 std::shared_ptr<Sprite> SpriteManager::tex_numbers[] = { nullptr };
 std::shared_ptr<Sprite> SpriteManager::tex_enemy_hp_red = nullptr;
@@ -49,6 +53,8 @@ std::shared_ptr<Sprite> SpriteManager::tex_title_press_a = nullptr;
 
 std::shared_ptr<Sprite> SpriteManager::tex_estus = nullptr;
 
+std::shared_ptr<Sprite> SpriteManager::tex_trans = nullptr;
+
 void SpriteManager::StaticInit()
 {
 	Sprite::LoadTexture(0, L"Resources/numbers/number_0.png");
@@ -75,6 +81,8 @@ void SpriteManager::StaticInit()
 	Sprite::LoadTexture(19, L"Resources/UIs/press_a.png");
 
 	Sprite::LoadTexture(20, L"Resources/UIs/estus.png");
+
+	Sprite::LoadTexture(21, L"Resources/UIs/trans.png");
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -127,6 +135,8 @@ void SpriteManager::StaticInit()
 
 	tex_estus = Sprite::Create(20, DirectX::XMFLOAT2(48, 572));
 	tex_estus->SetSize(DirectX::XMFLOAT2(72, 128));
+
+	tex_trans = Sprite::Create(21, DirectX::XMFLOAT2(0, 0));
 }
 
 void SpriteManager::Init()
@@ -169,15 +179,12 @@ void SpriteManager::TitleDraw(bool isSceneChange)
 		tex_title->SetColor(m_texColor);
 	}
 
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_title->Draw();
 	if (l_isAlphaMax) { tex_title_press_a->Draw(); }
-	Sprite::PostDraw();
 }
 
 void SpriteManager::PlayerUIDraw(const int estusNum)
 {
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_player_hp_back->Draw();
 	tex_player_mp_back->Draw();
 	tex_player_stamina_back->Draw();
@@ -192,12 +199,10 @@ void SpriteManager::PlayerUIDraw(const int estusNum)
 
 	tex_estus->Draw();
 	tex_numbers[estusNum]->Draw();
-	Sprite::PostDraw();
 }
 
 void SpriteManager::EnemyUIDraw()
 {
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_enemy_hp_back->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.8f));
 	tex_enemy_hp_back->Draw();
 	tex_enemy_hp_yellow->Draw();
@@ -205,16 +210,13 @@ void SpriteManager::EnemyUIDraw()
 	tex_enemy_hp_flame->Draw();
 
 	tex_enemy_name->Draw();
-	Sprite::PostDraw();
 }
 
 void SpriteManager::DiedDraw()
 {
 	tex_died->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, m_diedAlpha));
 
-	Sprite::PreDraw(DirectXImportant::cmdList.Get());
 	tex_died->Draw();
-	Sprite::PostDraw();
 
 	if (m_diedAlpha < 0.9f) { m_diedAlpha += 0.01f; }
 }
@@ -347,5 +349,51 @@ void SpriteManager::EnemyHPUpdate(float hpRate)
 		tex_enemy_hp_yellow->SetSize(DirectX::XMFLOAT2(
 			m_enemy_hpRate,
 			C_ENEMY_HP_BAR_SIZE_Y));
+	}
+}
+
+void SpriteManager::SceneTransUpdate()
+{
+	if (m_isTransUpdate)
+	{
+		//ìßñæÅ®çï
+		if (m_trans_conut < C_TRANS_DELAY / 2)
+		{
+			float l_alpha =
+				1.0f / (C_TRANS_DELAY / 2) * m_trans_conut;
+			tex_trans->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, l_alpha));
+			m_trans_conut++;
+			if (m_trans_conut >= C_TRANS_DELAY / 2)
+			{
+				m_isTrans = false;
+			}
+		}
+		//çïÅ®ìßñæ
+		else if (m_trans_conut < C_TRANS_DELAY)
+		{
+			int l_halfDelay = C_TRANS_DELAY / 2;
+			float l_alpha =
+				1.0f - (1.0f / l_halfDelay * (m_trans_conut - l_halfDelay));
+			tex_trans->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, l_alpha));
+			m_trans_conut++;
+		}
+		//ÉäÉZÉbÉg
+		else
+		{
+			tex_trans->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
+			m_trans_conut = 0;
+			m_isTransUpdate = false;
+			return;
+		}
+	}
+}
+
+void SpriteManager::SceneTransDraw()
+{
+	if (m_isTransUpdate)
+	{
+		Sprite::PreDraw(DirectXImportant::cmdList.Get());
+		tex_trans->Draw();
+		Sprite::PostDraw();
 	}
 }

@@ -55,6 +55,11 @@ void Stage::Update()
 	m_stageObject->Update();
 }
 
+void Stage::AfterBattleUpdate()
+{
+	m_stageObject->AfterBattleUpdate();
+}
+
 void Stage::Draw()
 {
 	if (!ImguiControl::Imgui_isSponzaDraw)
@@ -67,6 +72,11 @@ void Stage::Draw()
 	}
 
 	m_stageObject->Draw();
+}
+
+void Stage::AfterBattleDraw()
+{
+	m_stageObject->AfterBattleDraw();
 }
 
 void Stage::ShadowDraw()

@@ -78,7 +78,8 @@ void Window::Msg()
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// メッセージで分岐
-	switch (msg) {
+	switch (msg)
+	{
 	case WM_DESTROY: // ウィンドウが破棄された
 		PostQuitMessage(0); // OSに対して、アプリの終了を伝える
 		return 0;

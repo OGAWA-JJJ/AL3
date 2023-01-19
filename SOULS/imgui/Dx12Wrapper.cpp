@@ -13,6 +13,7 @@ Dx12Wrapper::~Dx12Wrapper()
 {
 	ImGui_ImplWin32_Shutdown();
 	ImGui_ImplDX12_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void Dx12Wrapper::ImguiInit()
@@ -26,7 +27,17 @@ void Dx12Wrapper::ImguiInit()
 	if (ImGui::CreateContext() == nullptr) {
 		assert(0);
 	}
-	//[ImGui::]
+
+	//ƒtƒHƒ“ƒg’Ç‰Á
+	ImGuiIO& io = ImGui::GetIO();
+	ImFontConfig config;
+	config.MergeMode = true;
+	io.Fonts->AddFontDefault();
+	io.Fonts->AddFontFromFileTTF(
+		"c:\\Windows\\Fonts\\meiryo.ttc",
+		18.0f,
+		&config,
+		io.Fonts->GetGlyphRangesJapanese());
 }
 
 void Dx12Wrapper::WindowsInit(HWND hwnd)
@@ -57,30 +68,6 @@ void Dx12Wrapper::Draw(bool isDraw)
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
-	//static bool blnChk = false;
-	//ImGui::Checkbox("CheakboxTest", &blnChk);
-
-	//static int radio = 0;
-	//ImGui::RadioButton("Radio 1", &radio, 0);
-	//ImGui::SameLine();
-	//ImGui::RadioButton("Radio 2", &radio, 1);
-	//ImGui::SameLine();
-	//ImGui::RadioButton("Radio 3", &radio, 2);
-
-	//static int nSlider = 0;
-	//ImGui::SliderInt("Int Slider", &nSlider, 0, 100);
-
-	//static float fSlider = 0.0f;
-	//ImGui::SliderFloat("Float Slider", &fSlider, 0.0f, 100.0f);
-
-	//static float col3[3] = {};
-	//ImGui::ColorPicker3("ColorPicker3", col3,
-		//ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayRGB);
-
-	//static float col4[4] = {};
-	//ImGui::ColorPicker4("ColorPicker4", col4,
-		//ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
 
 	ImGui::Begin("Settings");
 	ImGui::SetWindowSize(

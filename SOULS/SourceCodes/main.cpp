@@ -217,8 +217,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//yBlurSprite->Draw();
 
 		//Gamescene->ShadowDraw();
+
 		Gamescene->Draw();
 		copyToFrameBufferSprite->Draw();
+		SpriteManager::SceneTransDraw();
+		 
 		//radialSprite2->Draw();
 		//shadow->Draw();
 

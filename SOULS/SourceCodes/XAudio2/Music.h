@@ -33,6 +33,7 @@ private:
 
 public:
 	Music();
+	~Music();
 	void PlayWave(const char* filename, float volume, bool isLoop = false);
 	void StopWave() { pSourceVoice->Stop(); }
 
