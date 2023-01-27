@@ -94,6 +94,33 @@ char* ImguiControl::Imgui_playerIsAttack = "NONE";
 char* ImguiControl::Imgui_playerIsInvincible = "NONE";
 bool ImguiControl::isHel = false;
 
+int ImguiControl::P_ATTACK_COLLISION_TIMER[3] = { 40,35,50 };	//攻撃判定
+int ImguiControl::P_ATTACK_COLLISION_ENDTIMER = 55;				//←回避を入れれるフレームに変更
+
+float ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE = 75.0f;	//カメラと自機の距離の最大
+float ImguiControl::P_MAX_CAMERA_FAR_DISTANCE = 200.0f;	//カメラと自機の距離の最大
+int ImguiControl::P_MAX_PAD_RETENTION = 60;				//PAD保持時間
+float ImguiControl::P_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
+float ImguiControl::P_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
+float ImguiControl::P_MAX_BLEND_TIMER = 0.05f;			//補間速度
+float ImguiControl::P_DOWN_POWER = 0.3f;				//スティック反応ライン
+float ImguiControl::P_ROTATE_ADD_ANGLE = 15.0f;			//回転速度
+float ImguiControl::P_EXPLUSION_RAD = 10.0f;			//排斥
+
+int ImguiControl::P_MAX_HP = 1000;
+int ImguiControl::P_MAX_MP = 100;
+int ImguiControl::P_MAX_STAMINA = 1000;
+int ImguiControl::P_MAX_POWER[3] = { 40,25,70 };		//連撃ダメージ
+int ImguiControl::P_MAX_ESTUS = 5;						//所持数
+int ImguiControl::P_ESTUS_TIMER = 60;					//エスト飲んでから回復までのフレーム数
+int ImguiControl::P_MAX_ESTUS_HEAL = 350;				//回復量
+int ImguiControl::P_MAX_ESTUS_HEAL_SPEED = 15;			//1フレームの回復量
+int ImguiControl::P_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
+int ImguiControl::P_ATTACK_SUB_STAMINA = 220;			//減少スタミナ(攻撃)
+int ImguiControl::P_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
+int ImguiControl::P_HEAL_VOL = 8;						//1フレームのスタミナ回復量
+float ImguiControl::P_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
+
 //obb
 float ImguiControl::Imgui_playerOBBPos[10][3];
 float ImguiControl::Imgui_enemyOBBPos[12][3];
@@ -218,52 +245,47 @@ void ImguiControl::Update()
 		ImGui::Text("INVI                 ： %s", Imgui_enemyInvi);
 
 		ImGui::Spacing();
-		ImGui::DragInt("C_KICK_COLLISION_TIMER", &C_KICK_COLLISION_TIMER);
-		ImGui::DragInt("C_KICK_COLLISION_ENDTIMER", &C_KICK_COLLISION_ENDTIMER);
+		ImGui::DragInt("KICK_COLLISION_TIMER         ", &C_KICK_COLLISION_TIMER);
+		ImGui::DragInt("KICK_COLLISION_ENDTIMER      ", &C_KICK_COLLISION_ENDTIMER);
+		ImGui::DragInt("PUNCH_COLLISION_TIMER        ", &C_PUNCH_COLLISION_TIMER);
+		ImGui::DragInt("PUNCH_COLLISION_ENDTIMER     ", &C_PUNCH_COLLISION_ENDTIMER);
+		ImGui::DragInt("BACK_COLLISION_TIMER         ", &C_BACK_COLLISION_TIMER);
+		ImGui::DragInt("BACK_COLLISION_ENDTIMER      ", &C_BACK_COLLISION_ENDTIMER);
+		ImGui::DragInt("EXPLOSION_COLLISION_TIMER    ", &C_EXPLOSION_COLLISION_TIMER);
+		ImGui::DragInt("EXPLOSION_COLLISION_DELAY    ", &C_EXPLOSION_COLLISION_DELAY);
+		ImGui::DragInt("EXPLOSION_COLLISION_ENDTIMER ", &C_EXPLOSION_COLLISION_ENDTIMER);
+		ImGui::DragInt("SWIP_COLLISION_TIMER         ", &C_SWIP_COLLISION_TIMER);
+		ImGui::DragInt("SWIP_COLLISION_ENDTIMER      ", &C_SWIP_COLLISION_ENDTIMER);
+		ImGui::DragInt("RAZER_COLLISION_STARTTIMER   ", &C_RAZER_COLLISION_STARTTIMER);
+		ImGui::DragInt("RAZER_COLLISION_TIMER        ", &C_RAZER_COLLISION_TIMER);
+		ImGui::DragInt("RAZER_COLLISION_DELAY        ", &C_RAZER_COLLISION_DELAY);
+		ImGui::DragInt("SWINGDOWN_COLLISION_TIMER    ", &C_SWINGDOWN_COLLISION_TIMER);
+		ImGui::DragInt("SWINGDOWN_COLLISION_ENDTIMER ", &C_SWINGDOWN_COLLISION_ENDTIMER);
 
-		ImGui::DragInt("C_PUNCH_COLLISION_TIMER", &C_PUNCH_COLLISION_TIMER);
-		ImGui::DragInt("C_PUNCH_COLLISION_ENDTIMER", &C_PUNCH_COLLISION_ENDTIMER);
+		ImGui::DragFloat("MAX_DIST        ", &C_MAX_DIST);
+		ImGui::DragFloat("MAX_TURN_RAD    ", &C_MAX_TURN_RAD);
+		ImGui::DragFloat("MAX_BACK_RAD    ", &C_MAX_BACK_RAD);
+		ImGui::DragFloat("MAX_BLEND_TIMER ", &C_MAX_BLEND_TIMER);
 
-		ImGui::DragInt("C_BACK_COLLISION_TIMER", &C_BACK_COLLISION_TIMER);
-		ImGui::DragInt("C_BACK_COLLISION_ENDTIMER", &C_BACK_COLLISION_ENDTIMER);
+		ImGui::DragInt("MAX_POWER            ", &C_MAX_POWER);
+		ImGui::DragInt("MAX_EXPLOSION_POWER  ", &C_MAX_EXPLOSION_POWER);
+		ImGui::DragInt("MAX_HP               ", &C_MAX_HP);
 
-		ImGui::DragInt("C_EXPLOSION_COLLISION_TIMER", &C_EXPLOSION_COLLISION_TIMER);
-		ImGui::DragInt("C_EXPLOSION_COLLISION_DELAY", &C_EXPLOSION_COLLISION_DELAY);
-		ImGui::DragInt("C_EXPLOSION_COLLISION_ENDTIMER", &C_EXPLOSION_COLLISION_ENDTIMER);
+		ImGui::DragInt("RISE_TIMER           ", &C_RISE_TIMER);
+		ImGui::DragInt("SWING_DOWN_TIMER     ", &C_SWING_DOWN_TIMER);
+		ImGui::DragFloat("MAX_RISE_HEIGHT      ", &C_MAX_RISE_HEIGHT);
 
-		ImGui::DragInt("C_SWIP_COLLISION_TIMER", &C_SWIP_COLLISION_TIMER);
-		ImGui::DragInt("C_SWIP_COLLISION_ENDTIMER", &C_SWIP_COLLISION_ENDTIMER);
+		ImGui::DragFloat("MAX_MOVE_SPEED       ", &C_MAX_MOVE_SPEED);
+		ImGui::DragFloat("MAX_TURN_TIMER       ", &C_MAX_TURN_TIMER);
+		ImGui::DragFloat("MAX_RISE_TIMER       ", &C_MAX_RISE_TIMER);
+		ImGui::DragFloat("MAX_SWING_DOWN_TIMER ", &C_MAX_SWING_DOWN_TIMER);
 
-		ImGui::DragInt("C_RAZER_COLLISION_STARTTIMER", &C_RAZER_COLLISION_STARTTIMER);
-		ImGui::DragInt("C_RAZER_COLLISION_TIMER", &C_RAZER_COLLISION_TIMER);
-		ImGui::DragInt("C_RAZER_COLLISION_DELAY", &C_RAZER_COLLISION_DELAY);
-
-		ImGui::DragInt("C_SWINGDOWN_COLLISION_TIMER", &C_SWINGDOWN_COLLISION_TIMER);
-		ImGui::DragInt("C_SWINGDOWN_COLLISION_ENDTIMER", &C_SWINGDOWN_COLLISION_ENDTIMER);
-
-		ImGui::DragFloat("C_MAX_DIST", &C_MAX_DIST);
-		ImGui::DragFloat("C_MAX_TURN_RAD", &C_MAX_TURN_RAD);
-		ImGui::DragFloat("C_MAX_BACK_RAD", &C_MAX_BACK_RAD);
-		ImGui::DragFloat("C_MAX_BLEND_TIMER", &C_MAX_BLEND_TIMER);
-
-		ImGui::DragInt("C_MAX_POWER", &C_SWINGDOWN_COLLISION_TIMER);
-		ImGui::DragInt("C_MAX_EXPLOSION_POWER", &C_SWINGDOWN_COLLISION_TIMER);
-		ImGui::DragInt("C_MAX_HP", &C_SWINGDOWN_COLLISION_TIMER);
-
-		ImGui::DragInt("C_RISE_TIMER", &C_RISE_TIMER);
-		ImGui::DragInt("C_SWING_DOWN_TIMER", &C_SWING_DOWN_TIMER);
-		ImGui::DragFloat("C_MAX_RISE_HEIGHT", &C_MAX_RISE_HEIGHT);
-		ImGui::DragFloat("C_MAX_MOVE_SPEED", &C_MAX_MOVE_SPEED);
-		ImGui::DragFloat("C_MAX_TURN_TIMER", &C_MAX_TURN_TIMER);
-		ImGui::DragFloat("C_MAX_RISE_TIMER", &C_MAX_RISE_TIMER);
-		ImGui::DragFloat("C_MAX_SWING_DOWN_TIMER", &C_MAX_SWING_DOWN_TIMER);
-
-		ImGui::DragInt("C_MAX_TACKLE_TIMER", &C_MAX_TACKLE_TIMER);
-		ImGui::DragInt("C_MAX_TACKLE_COUNT", &C_MAX_TACKLE_COUNT);
-		ImGui::DragFloat("C_MAX_TACKLE_SPEED", &C_MAX_TACKLE_SPEED);
-		ImGui::DragFloat("C_MAX_TACKLE_RANGE", &C_MAX_TACKLE_RANGE);
-		ImGui::DragFloat("C_CALC_TACKLE_RANGE", &C_CALC_TACKLE_RANGE);
-		ImGui::DragFloat("c_beforeBattleAddTimer", &c_beforeBattleAddTimer);
+		ImGui::DragInt("MAX_TACKLE_TIMER     ", &C_MAX_TACKLE_TIMER);
+		ImGui::DragInt("MAX_TACKLE_COUNT     ", &C_MAX_TACKLE_COUNT);
+		ImGui::DragFloat("MAX_TACKLE_SPEED     ", &C_MAX_TACKLE_SPEED);
+		ImGui::DragFloat("MAX_TACKLE_RANGE     ", &C_MAX_TACKLE_RANGE);
+		ImGui::DragFloat("CALC_TACKLE_RANGE    ", &C_CALC_TACKLE_RANGE);
+		ImGui::DragFloat("BEFOREBATTLEADDTIMER ", &c_beforeBattleAddTimer);
 		ImGui::TreePop();
 	}
 
@@ -283,6 +305,40 @@ void ImguiControl::Update()
 		ImGui::Text("IS_CHANGE            ： %s", Imgui_playerIsChange);
 		ImGui::Text("IS_CHANGE            ： %s", Imgui_playerIsAttack);
 		ImGui::Text("IS_INVINCIBLE        ： %s", Imgui_playerIsInvincible);
+
+		ImGui::Spacing();
+		ImGui::DragInt("ATTACK_COLLISION_TIMER[0]  ", &P_ATTACK_COLLISION_TIMER[0]);
+		ImGui::DragInt("ATTACK_COLLISION_TIMER[1]  ", &P_ATTACK_COLLISION_TIMER[1]);
+		ImGui::DragInt("ATTACK_COLLISION_TIMER[2]  ", &P_ATTACK_COLLISION_TIMER[2]);
+		ImGui::DragInt("ATTACK_COLLISION_ENDTIMER  ", &P_ATTACK_COLLISION_ENDTIMER);
+
+		ImGui::DragFloat("MAX_CAMERA_NEAR_DISTANCE  ", &P_MAX_CAMERA_NEAR_DISTANCE);
+		ImGui::DragFloat("MAX_CAMERA_FAR_DISTANCE   ", &P_MAX_CAMERA_FAR_DISTANCE);
+		ImGui::DragInt("MAX_PAD_RETENTION         ", &P_MAX_PAD_RETENTION);
+		ImGui::DragFloat("MAX_CAMERA_MOVE_SPEED     ", &P_MAX_CAMERA_MOVE_SPEED);
+		ImGui::DragFloat("EASE_CAMERA_TIMER         ", &P_EASE_CAMERA_TIMER);
+		ImGui::DragFloat("MAX_BLEND_TIMER           ", &P_MAX_BLEND_TIMER);
+		ImGui::DragFloat("DOWN_POWER                ", &P_DOWN_POWER);
+		ImGui::DragFloat("ROTATE_ADD_ANGLE          ", &P_ROTATE_ADD_ANGLE);
+		ImGui::DragFloat("EXPLUSION_RAD             ", &P_EXPLUSION_RAD);
+
+		ImGui::DragInt("MAX_HP                 ", &P_MAX_HP);
+		ImGui::DragInt("MAX_MP                 ", &P_MAX_MP);
+		ImGui::DragInt("MAX_STAMINA            ", &P_MAX_STAMINA);
+
+		ImGui::DragInt("MAX_POWER[0]           ", &P_MAX_POWER[0]);
+		ImGui::DragInt("MAX_POWER[1]           ", &P_MAX_POWER[1]);
+		ImGui::DragInt("MAX_POWER[2]           ", &P_MAX_POWER[2]);
+
+		ImGui::DragInt("MAX_ESTUS              ", &P_MAX_ESTUS);
+		ImGui::DragInt("ESTUS_TIMER            ", &P_ESTUS_TIMER);
+		ImGui::DragInt("MAX_ESTUS_HEAL         ", &P_MAX_ESTUS_HEAL);
+		ImGui::DragInt("MAX_ESTUS_HEAL_SPEED   ", &P_MAX_ESTUS_HEAL_SPEED);
+		ImGui::DragInt("AUTOHEAL_STAMINA_TIMER ", &P_AUTOHEAL_STAMINA_TIMER);
+		ImGui::DragInt("ATTACK_SUB_STAMINA     ", &P_ATTACK_SUB_STAMINA);
+		ImGui::DragInt("ROLLING_SUB_STAMINA    ", &P_ROLLING_SUB_STAMINA);
+		ImGui::DragInt("HEAL_VOL               ", &P_HEAL_VOL);
+		ImGui::DragFloat("C_MAX_MOVE_SPEED       ", &P_MAX_MOVE_SPEED);
 		ImGui::TreePop();
 	}
 

@@ -8,7 +8,6 @@
 #include "../Math/OgaJHelper.h"
 #include "../Input/Input.h"
 #include "../DirectX/Camera.h"
-#include "../../imgui/ImguiControl.h"
 
 #include <fstream>
 #include <iostream>
@@ -124,6 +123,7 @@ void Player::Init()
 	m_cameraToPlayer = { 0,0,0 };
 	m_cameraTarget = { 0,0,0 };
 	m_enemyPos = { 0,0,0 };
+
 	m_animationTimer = 0;
 	m_animationType = STAND;
 	m_oldAnimationType = m_animationType;
@@ -132,15 +132,19 @@ void Player::Init()
 	m_padRetentionTimer = 0;
 	for (int i = 0; i < 3; i++)
 	{
-		m_attackCollisionTimer[i] = C_ATTACK_COLLISION_TIMER[i];
+		m_attackCollisionTimer[i] = ImguiControl::P_ATTACK_COLLISION_TIMER[i];
 	}
 	m_estusHeal = 0;
 	m_estusTimer = 0;
+	m_trailCount = 0;
+	m_keepAnimationType = 0;
+
 	m_cameraMoveEase = 0.0f;
 	m_cameraY = 20.0f;
-	m_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
+	m_cameraDist = ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE;
 	m_blendTimer = 0.0f;
 	m_endAngle = 180.0f;
+
 	m_isTarget = false;
 	m_isEase = false;
 	m_isAttack = false;
@@ -149,16 +153,22 @@ void Player::Init()
 	m_isChange = false;
 	m_isAnimation = false;
 	m_isEstus = false;
+	m_isHeal = true;
+	m_isHelmet = true;
+	m_isTrailStart = false;
+	m_isStickReleaseTrigger = true;
+	m_isSheathed = false;
+	m_isOldSheathed = false;
 
 #pragma endregion
 
 #pragma region StatusInit
 
-	m_hp = C_MAX_HP;
-	m_mp = C_MAX_MP;
-	m_stamina = C_MAX_STAMINA;
-	m_power = C_MAX_POWER[0];
-	m_estus = C_MAX_ESTUS;
+	m_hp = ImguiControl::P_MAX_HP;
+	m_mp = ImguiControl::P_MAX_MP;
+	m_stamina = ImguiControl::P_MAX_STAMINA;
+	m_power = ImguiControl::P_MAX_POWER[0];
+	m_estus = ImguiControl::P_MAX_ESTUS;
 
 #pragma endregion
 
@@ -172,21 +182,7 @@ void Player::Init()
 
 #pragma endregion
 
-	//Sword
-	obj_Sword->SetRotation(XMFLOAT3(
-		310.0f,
-		300.0f,
-		310.0f));
-
-	//Test
-	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
-		0.0f,
-		6.0f,
-		0.0f
-	));
-
-	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, C_MAX_CAMERA_NEAR_DISTANCE));
-	ImguiControl::Imgui_cameraDist = C_MAX_CAMERA_NEAR_DISTANCE;
+#pragma region Particle
 
 	//パーティクル(剣)
 	const float pScaleSword = 0.5f;
@@ -291,6 +287,10 @@ void Player::Init()
 	}
 	pManagerLight3.SetCreateNum(1);
 
+#pragma endregion
+
+#pragma region OBB
+
 	//Box
 	std::array<float, 10> l_x = {
 		3,
@@ -340,6 +340,24 @@ void Player::Init()
 		ImguiControl::Imgui_playerOBBScale[i][2] = l_z[i];
 	}
 
+#pragma endregion
+
+	//Sword
+	obj_Sword->SetRotation(XMFLOAT3(
+		310.0f,
+		300.0f,
+		310.0f));
+
+	//Test
+	obj_SwordBox->SetPosition(DirectX::XMFLOAT3(
+		0.0f,
+		6.0f,
+		0.0f
+	));
+
+	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE));
+	ImguiControl::Imgui_cameraDist = ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE;
+
 	//debug
 	ImguiControl::Imgui_eye_x = Camera::GetEye().x;
 	ImguiControl::Imgui_eye_y = Camera::GetEye().y;
@@ -383,7 +401,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 				}
 
 				//移動
-				if (IsInputStick(C_DOWN_POWER))
+				if (IsInputStick(ImguiControl::P_DOWN_POWER))
 				{
 					if (!m_isAnimation)
 					{
@@ -395,24 +413,24 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 						vec.x = Input::isPadThumb(XINPUT_THUMB_LEFTSIDE);
 						vec.z = Input::isPadThumb(XINPUT_THUMB_LEFTVERT);
 
-						m_pos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						m_pos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
+						m_pos.x += vec.z * m_cameraToPlayer.x * ImguiControl::P_MAX_MOVE_SPEED;
+						m_pos.z += vec.z * m_cameraToPlayer.z * ImguiControl::P_MAX_MOVE_SPEED;
 
 						float rad = atan2(m_cameraToPlayer.x, m_cameraToPlayer.z);
 						rad += DirectX::XM_PI / 2;
-						m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
-						m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+						m_pos.x += vec.x * sinf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
+						m_pos.z += vec.x * cosf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
 
-						cameraPos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						cameraPos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
-						cameraPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
-						cameraPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+						cameraPos.x += vec.z * m_cameraToPlayer.x * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.z += vec.z * m_cameraToPlayer.z * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.x += vec.x * sinf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.z += vec.x * cosf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
 
 						//移動に完全追従←変更必要(本家参照)
-						targetPos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						targetPos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
-						targetPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
-						targetPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+						targetPos.x += vec.z * m_cameraToPlayer.x * ImguiControl::P_MAX_MOVE_SPEED;
+						targetPos.z += vec.z * m_cameraToPlayer.z * ImguiControl::P_MAX_MOVE_SPEED;
+						targetPos.x += vec.x * sinf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
+						targetPos.z += vec.x * cosf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
 
 						float deg = atan2(vec.x, vec.z);
 						OgaJHelper::ConvertToDegree(deg);
@@ -427,7 +445,6 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 						{
 							m_endAngle += 360.0f;
 						}
-						//fbxobj_miku->SetRotation(XMFLOAT3(0, deg + cameraRad, 0));
 					}
 				}
 
@@ -474,9 +491,9 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 					float xz = atan2(playerToCamera.x, playerToCamera.z);
 					OgaJHelper::ConvertToDegree(xz);
 
-					xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * C_MAX_CAMERA_MOVE_SPEED;
-					cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
-					m_cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * C_MAX_CAMERA_MOVE_SPEED;
+					xz += Input::isPadThumb(XINPUT_THUMB_RIGHTSIDE) * ImguiControl::P_MAX_CAMERA_MOVE_SPEED;
+					cameraPos.y += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * ImguiControl::P_MAX_CAMERA_MOVE_SPEED;
+					m_cameraY += Input::isPadThumb(XINPUT_THUMB_RIGHTVERT) * ImguiControl::P_MAX_CAMERA_MOVE_SPEED;
 
 					//距離と差分
 					float diff = 0;
@@ -520,7 +537,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 							Camera::GetTarget(),
 							m_cameraTarget,
 							m_cameraMoveEase);
-						m_cameraMoveEase += C_EASE_CAMERA_TIMER * 2;
+						m_cameraMoveEase += ImguiControl::P_EASE_CAMERA_TIMER * 2;
 					}
 					else
 					{
@@ -716,7 +733,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 					m_cameraY = Camera::GetEye().y;
 				}
 
-				if (IsInputStick(C_DOWN_POWER))
+				if (IsInputStick(ImguiControl::P_DOWN_POWER))
 				{
 					if (!m_isAnimation)
 					{
@@ -767,18 +784,18 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 							}
 						}
 
-						m_pos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						m_pos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
+						m_pos.x += vec.z * m_cameraToPlayer.x * ImguiControl::P_MAX_MOVE_SPEED;
+						m_pos.z += vec.z * m_cameraToPlayer.z * ImguiControl::P_MAX_MOVE_SPEED;
 
 						float rad = atan2(m_cameraToPlayer.x, m_cameraToPlayer.z);
 						rad += DirectX::XM_PI / 2;
-						m_pos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
-						m_pos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+						m_pos.x += vec.x * sinf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
+						m_pos.z += vec.x * cosf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
 
-						cameraPos.x += vec.z * m_cameraToPlayer.x * C_MAX_MOVE_SPEED;
-						cameraPos.z += vec.z * m_cameraToPlayer.z * C_MAX_MOVE_SPEED;
-						cameraPos.x += vec.x * sinf(rad) * C_MAX_MOVE_SPEED;
-						cameraPos.z += vec.x * cosf(rad) * C_MAX_MOVE_SPEED;
+						cameraPos.x += vec.z * m_cameraToPlayer.x * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.z += vec.z * m_cameraToPlayer.z * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.x += vec.x * sinf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
+						cameraPos.z += vec.x * cosf(rad) * ImguiControl::P_MAX_MOVE_SPEED;
 
 						float deg = atan2(vec.x, vec.z);
 						OgaJHelper::ConvertToDegree(deg);
@@ -873,7 +890,7 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 			if (!l_isThumb && m_cameraMoveEase < 1.0f)
 			{
 				//カメラ挙動管理用
-				m_cameraMoveEase += C_EASE_CAMERA_TIMER;
+				m_cameraMoveEase += ImguiControl::P_EASE_CAMERA_TIMER;
 				if (m_cameraMoveEase > 1.0f)
 				{
 					m_cameraMoveEase = 1.0f;
@@ -934,9 +951,9 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 		}
 		else
 		{
-			if (m_stamina < C_MAX_STAMINA)
+			if (m_stamina < ImguiControl::P_MAX_STAMINA)
 			{
-				m_stamina += C_HEAL_VOL;
+				m_stamina += ImguiControl::P_HEAL_VOL;
 			}
 		}
 	}
@@ -945,13 +962,13 @@ void Player::Update(DirectX::XMFLOAT3 enemyPos, bool isInputRecept)
 	if (m_estusHeal > 0)
 	{
 		//誤差が発生する可能性アリ
-		m_estusHeal -= C_MAX_ESTUS_HEAL_SPEED;
-		if (m_hp < C_MAX_HP)
+		m_estusHeal -= ImguiControl::P_MAX_ESTUS_HEAL_SPEED;
+		if (m_hp < ImguiControl::P_MAX_HP)
 		{
-			m_hp += C_MAX_ESTUS_HEAL_SPEED;
-			if (m_hp >= C_MAX_HP)
+			m_hp += ImguiControl::P_MAX_ESTUS_HEAL_SPEED;
+			if (m_hp >= ImguiControl::P_MAX_HP)
 			{
-				m_hp = C_MAX_HP;
+				m_hp = ImguiControl::P_MAX_HP;
 				m_estusHeal = 0;
 			}
 		}
@@ -1073,7 +1090,7 @@ void Player::ShadowDraw()
 
 void Player::ResetCamera()
 {
-	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, C_MAX_CAMERA_NEAR_DISTANCE));
+	Camera::SetEye(DirectX::XMFLOAT3(0, m_cameraY, ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE));
 }
 
 bool Player::BeforeBattleScene()
@@ -1087,46 +1104,46 @@ void Player::AddMenbers()
 
 #pragma region FRAME
 	rapidjson::Value l_frameValue(rapidjson::kObjectType);
-	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[0]  ", 40, l_doc.GetAllocator());
-	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[1]  ", 35, l_doc.GetAllocator());
-	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[2]  ", 50, l_doc.GetAllocator());
-	l_frameValue.AddMember("ATTACK_COLLISION_ENDTIMER  ", 55, l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[0]  ", ImguiControl::P_ATTACK_COLLISION_TIMER[0], l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[1]  ", ImguiControl::P_ATTACK_COLLISION_TIMER[1], l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_TIMER[2]  ", ImguiControl::P_ATTACK_COLLISION_TIMER[2], l_doc.GetAllocator());
+	l_frameValue.AddMember("ATTACK_COLLISION_ENDTIMER  ", ImguiControl::P_ATTACK_COLLISION_ENDTIMER, l_doc.GetAllocator());
 	l_doc.AddMember("FRAME", l_frameValue, l_doc.GetAllocator());
 #pragma endregion
 
 #pragma region OTHER
 	rapidjson::Value l_frameOther(rapidjson::kObjectType);
-	l_frameOther.AddMember("MAX_CAMERA_NEAR_DISTANCE  ", 75.0, l_doc.GetAllocator());
-	l_frameOther.AddMember("MAX_CAMERA_FAR_DISTANCE   ", 200.0, l_doc.GetAllocator());
-	l_frameOther.AddMember("MAX_PAD_RETENTION         ", 60, l_doc.GetAllocator());
-	l_frameOther.AddMember("MAX_CAMERA_MOVE_SPEED     ", 2.0, l_doc.GetAllocator());
-	l_frameOther.AddMember("EASE_CAMERA_TIMER         ", 0.01, l_doc.GetAllocator());
-	l_frameOther.AddMember("MAX_BLEND_TIMER           ", 0.02, l_doc.GetAllocator());
-	l_frameOther.AddMember("DOWN_POWER                ", 0.3, l_doc.GetAllocator());
-	l_frameOther.AddMember("ROTATE_ADD_ANGLE          ", 15.0, l_doc.GetAllocator());
-	l_frameOther.AddMember("EXPLUSION_RAD             ", 10.0, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_CAMERA_NEAR_DISTANCE  ", ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_CAMERA_FAR_DISTANCE   ", ImguiControl::P_MAX_CAMERA_FAR_DISTANCE, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_PAD_RETENTION         ", ImguiControl::P_MAX_PAD_RETENTION, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_CAMERA_MOVE_SPEED     ", ImguiControl::P_MAX_CAMERA_MOVE_SPEED, l_doc.GetAllocator());
+	l_frameOther.AddMember("EASE_CAMERA_TIMER         ", ImguiControl::P_EASE_CAMERA_TIMER, l_doc.GetAllocator());
+	l_frameOther.AddMember("MAX_BLEND_TIMER           ", ImguiControl::P_MAX_BLEND_TIMER, l_doc.GetAllocator());
+	l_frameOther.AddMember("DOWN_POWER                ", ImguiControl::P_DOWN_POWER, l_doc.GetAllocator());
+	l_frameOther.AddMember("ROTATE_ADD_ANGLE          ", ImguiControl::P_ROTATE_ADD_ANGLE, l_doc.GetAllocator());
+	l_frameOther.AddMember("EXPLUSION_RAD             ", ImguiControl::P_EXPLUSION_RAD, l_doc.GetAllocator());
 	l_doc.AddMember("OTHER", l_frameOther, l_doc.GetAllocator());
 #pragma endregion
 
 #pragma region STATUS
 	rapidjson::Value l_frameStatus(rapidjson::kObjectType);
-	l_frameStatus.AddMember("MAX_HP                 ", 1000, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_MP                 ", 100, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_STAMINA            ", 1000, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_HP                 ", ImguiControl::P_MAX_HP, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_MP                 ", ImguiControl::P_MAX_MP, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_STAMINA            ", ImguiControl::P_MAX_STAMINA, l_doc.GetAllocator());
 
-	l_frameStatus.AddMember("MAX_POWER[0]           ", 40, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_POWER[1]           ", 25, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_POWER[2]           ", 70, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_POWER[0]           ", ImguiControl::P_MAX_POWER[0], l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_POWER[1]           ", ImguiControl::P_MAX_POWER[1], l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_POWER[2]           ", ImguiControl::P_MAX_POWER[2], l_doc.GetAllocator());
 
-	l_frameStatus.AddMember("MAX_ESTUS              ", 5, l_doc.GetAllocator());
-	l_frameStatus.AddMember("ESTUS_TIMER            ", 60, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_ESTUS_HEAL         ", 350, l_doc.GetAllocator());
-	l_frameStatus.AddMember("MAX_ESTUS_HEAL_SPEED   ", 15, l_doc.GetAllocator());
-	l_frameStatus.AddMember("AUTOHEAL_STAMINA_TIMER ", 60, l_doc.GetAllocator());
-	l_frameStatus.AddMember("ATTACK_SUB_STAMINA     ", 220, l_doc.GetAllocator());
-	l_frameStatus.AddMember("ROLLING_SUB_STAMINA    ", 200, l_doc.GetAllocator());
-	l_frameStatus.AddMember("HEAL_VOL               ", 8, l_doc.GetAllocator());
-	l_frameStatus.AddMember("C_MAX_MOVE_SPEED       ", 1.5, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_ESTUS              ", ImguiControl::P_MAX_ESTUS, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ESTUS_TIMER            ", ImguiControl::P_ESTUS_TIMER, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_ESTUS_HEAL         ", ImguiControl::P_MAX_ESTUS_HEAL, l_doc.GetAllocator());
+	l_frameStatus.AddMember("MAX_ESTUS_HEAL_SPEED   ", ImguiControl::P_MAX_ESTUS_HEAL_SPEED, l_doc.GetAllocator());
+	l_frameStatus.AddMember("AUTOHEAL_STAMINA_TIMER ", ImguiControl::P_AUTOHEAL_STAMINA_TIMER, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ATTACK_SUB_STAMINA     ", ImguiControl::P_ATTACK_SUB_STAMINA, l_doc.GetAllocator());
+	l_frameStatus.AddMember("ROLLING_SUB_STAMINA    ", ImguiControl::P_ROLLING_SUB_STAMINA, l_doc.GetAllocator());
+	l_frameStatus.AddMember("HEAL_VOL               ", ImguiControl::P_HEAL_VOL, l_doc.GetAllocator());
+	l_frameStatus.AddMember("C_MAX_MOVE_SPEED       ", ImguiControl::P_MAX_MOVE_SPEED, l_doc.GetAllocator());
 	l_doc.AddMember("STATUS", l_frameStatus, l_doc.GetAllocator());
 #pragma endregion
 
@@ -1136,41 +1153,42 @@ void Player::AddMenbers()
 void Player::ExportJson()
 {
 #pragma region FRAME
-	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].SetInt(0);
-	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].SetInt(0);
-	m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].SetInt(0);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[0]  "].SetInt(ImguiControl::P_ATTACK_COLLISION_TIMER[0]);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].SetInt(ImguiControl::P_ATTACK_COLLISION_TIMER[1]);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].SetInt(ImguiControl::P_ATTACK_COLLISION_TIMER[2]);
+	m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].SetInt(ImguiControl::P_ATTACK_COLLISION_ENDTIMER);
 #pragma endregion
 
 #pragma region OTHER
-	m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].SetInt(0);
-	m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].SetInt(0);
-	m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].SetInt(0);
-	m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].SetInt(0);
-	m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].SetInt(0);
-	m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].SetInt(0);
-	m_pDoc["OTHER"]["DOWN_POWER                "].SetInt(0);
-	m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].SetInt(0);
-	m_pDoc["OTHER"]["EXPLUSION_RAD             "].SetInt(0);
+	m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].SetFloat(ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE);
+	m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].SetFloat(ImguiControl::P_MAX_CAMERA_FAR_DISTANCE);
+	m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].SetInt(ImguiControl::P_MAX_PAD_RETENTION);
+	m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].SetFloat(ImguiControl::P_MAX_CAMERA_MOVE_SPEED);
+	m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].SetFloat(ImguiControl::P_EASE_CAMERA_TIMER);
+	m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].SetFloat(ImguiControl::P_MAX_BLEND_TIMER);
+	m_pDoc["OTHER"]["DOWN_POWER                "].SetFloat(ImguiControl::P_DOWN_POWER);
+	m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].SetFloat(ImguiControl::P_ROTATE_ADD_ANGLE);
+	m_pDoc["OTHER"]["EXPLUSION_RAD             "].SetFloat(ImguiControl::P_EXPLUSION_RAD);
 #pragma endregion
 
 #pragma region STATUS
-	m_pDoc["STATUS"]["MAX_HP                 "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_MP                 "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_STAMINA            "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_HP                 "].SetInt(ImguiControl::P_MAX_HP);
+	m_pDoc["STATUS"]["MAX_MP                 "].SetInt(ImguiControl::P_MAX_MP);
+	m_pDoc["STATUS"]["MAX_STAMINA            "].SetInt(ImguiControl::P_MAX_STAMINA);
 
-	m_pDoc["STATUS"]["MAX_POWER[0]           "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_POWER[1]           "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_POWER[2]           "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_POWER[0]           "].SetInt(ImguiControl::P_MAX_POWER[0]);
+	m_pDoc["STATUS"]["MAX_POWER[1]           "].SetInt(ImguiControl::P_MAX_POWER[1]);
+	m_pDoc["STATUS"]["MAX_POWER[2]           "].SetInt(ImguiControl::P_MAX_POWER[2]);
 
-	m_pDoc["STATUS"]["MAX_ESTUS              "].SetInt(0);
-	m_pDoc["STATUS"]["ESTUS_TIMER            "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].SetInt(0);
-	m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].SetInt(0);
-	m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].SetInt(0);
-	m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].SetInt(0);
-	m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].SetInt(0);
-	m_pDoc["STATUS"]["HEAL_VOL               "].SetInt(0);
-	m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].SetInt(0);
+	m_pDoc["STATUS"]["MAX_ESTUS              "].SetInt(ImguiControl::P_MAX_ESTUS);
+	m_pDoc["STATUS"]["ESTUS_TIMER            "].SetInt(ImguiControl::P_ESTUS_TIMER);
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].SetInt(ImguiControl::P_MAX_ESTUS_HEAL);
+	m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].SetInt(ImguiControl::P_MAX_ESTUS_HEAL_SPEED);
+	m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].SetInt(ImguiControl::P_AUTOHEAL_STAMINA_TIMER);
+	m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].SetInt(ImguiControl::P_ATTACK_SUB_STAMINA);
+	m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].SetInt(ImguiControl::P_ROLLING_SUB_STAMINA);
+	m_pDoc["STATUS"]["HEAL_VOL               "].SetInt(ImguiControl::P_HEAL_VOL);
+	m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].SetFloat(ImguiControl::P_MAX_MOVE_SPEED);
 #pragma endregion
 
 	Config::Writter("PlayerDataConfig", m_pDoc);
@@ -1179,48 +1197,49 @@ void Player::ExportJson()
 void Player::InportJson()
 {
 #pragma region FRAME
-	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].GetInt();
-	m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].GetInt();
-	m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].GetInt();
+	ImguiControl::P_ATTACK_COLLISION_TIMER[0] = m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[0]  "].GetInt();
+	ImguiControl::P_ATTACK_COLLISION_TIMER[1] = m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[1]  "].GetInt();
+	ImguiControl::P_ATTACK_COLLISION_TIMER[2] = m_pDoc["FRAME"]["ATTACK_COLLISION_TIMER[2]  "].GetInt();
+	ImguiControl::P_ATTACK_COLLISION_ENDTIMER = m_pDoc["FRAME"]["ATTACK_COLLISION_ENDTIMER  "].GetInt();
 #pragma endregion
 
 #pragma region OTHER
-	m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].GetInt();
-	m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].GetInt();
-	m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].GetInt();
-	m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].GetInt();
-	m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].GetInt();
-	m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].GetInt();
-	m_pDoc["OTHER"]["DOWN_POWER                "].GetInt();
-	m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].GetInt();
-	m_pDoc["OTHER"]["EXPLUSION_RAD             "].GetInt();
+	ImguiControl::P_MAX_CAMERA_NEAR_DISTANCE = m_pDoc["OTHER"]["MAX_CAMERA_NEAR_DISTANCE  "].GetFloat();
+	ImguiControl::P_MAX_CAMERA_FAR_DISTANCE = m_pDoc["OTHER"]["MAX_CAMERA_FAR_DISTANCE   "].GetFloat();
+	ImguiControl::P_MAX_PAD_RETENTION = m_pDoc["OTHER"]["MAX_PAD_RETENTION         "].GetInt();
+	ImguiControl::P_MAX_CAMERA_MOVE_SPEED = m_pDoc["OTHER"]["MAX_CAMERA_MOVE_SPEED     "].GetFloat();
+	ImguiControl::P_EASE_CAMERA_TIMER = m_pDoc["OTHER"]["EASE_CAMERA_TIMER         "].GetFloat();
+	ImguiControl::P_MAX_BLEND_TIMER = m_pDoc["OTHER"]["MAX_BLEND_TIMER           "].GetFloat();
+	ImguiControl::P_DOWN_POWER = m_pDoc["OTHER"]["DOWN_POWER                "].GetFloat();
+	ImguiControl::P_ROTATE_ADD_ANGLE = m_pDoc["OTHER"]["ROTATE_ADD_ANGLE          "].GetFloat();
+	ImguiControl::P_EXPLUSION_RAD = m_pDoc["OTHER"]["EXPLUSION_RAD             "].GetFloat();
 #pragma endregion
 
 #pragma region STATUS
-	m_pDoc["STATUS"]["MAX_HP                 "].GetInt();
-	m_pDoc["STATUS"]["MAX_MP                 "].GetInt();
-	m_pDoc["STATUS"]["MAX_STAMINA            "].GetInt();
+	ImguiControl::P_MAX_HP = m_pDoc["STATUS"]["MAX_HP                 "].GetInt();
+	ImguiControl::P_MAX_MP = m_pDoc["STATUS"]["MAX_MP                 "].GetInt();
+	ImguiControl::P_MAX_STAMINA = m_pDoc["STATUS"]["MAX_STAMINA            "].GetInt();
 
-	m_pDoc["STATUS"]["MAX_POWER[0]           "].GetInt();
-	m_pDoc["STATUS"]["MAX_POWER[1]           "].GetInt();
-	m_pDoc["STATUS"]["MAX_POWER[2]           "].GetInt();
+	ImguiControl::P_MAX_POWER[0] = m_pDoc["STATUS"]["MAX_POWER[0]           "].GetInt();
+	ImguiControl::P_MAX_POWER[1] = m_pDoc["STATUS"]["MAX_POWER[1]           "].GetInt();
+	ImguiControl::P_MAX_POWER[2] = m_pDoc["STATUS"]["MAX_POWER[2]           "].GetInt();
 
-	m_pDoc["STATUS"]["MAX_ESTUS              "].GetInt();
-	m_pDoc["STATUS"]["ESTUS_TIMER            "].GetInt();
-	m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].GetInt();
-	m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].GetInt();
-	m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].GetInt();
-	m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].GetInt();
-	m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].GetInt();
-	m_pDoc["STATUS"]["HEAL_VOL               "].GetInt();
-	m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].GetInt();
+	ImguiControl::P_MAX_ESTUS = m_pDoc["STATUS"]["MAX_ESTUS              "].GetInt();
+	ImguiControl::P_ESTUS_TIMER = m_pDoc["STATUS"]["ESTUS_TIMER            "].GetInt();
+	ImguiControl::P_MAX_ESTUS_HEAL = m_pDoc["STATUS"]["MAX_ESTUS_HEAL         "].GetInt();
+	ImguiControl::P_MAX_ESTUS_HEAL_SPEED = m_pDoc["STATUS"]["MAX_ESTUS_HEAL_SPEED   "].GetInt();
+	ImguiControl::P_AUTOHEAL_STAMINA_TIMER = m_pDoc["STATUS"]["AUTOHEAL_STAMINA_TIMER "].GetInt();
+	ImguiControl::P_ATTACK_SUB_STAMINA = m_pDoc["STATUS"]["ATTACK_SUB_STAMINA     "].GetInt();
+	ImguiControl::P_ROLLING_SUB_STAMINA = m_pDoc["STATUS"]["ROLLING_SUB_STAMINA    "].GetInt();
+	ImguiControl::P_HEAL_VOL = m_pDoc["STATUS"]["HEAL_VOL               "].GetInt();
+	ImguiControl::P_MAX_MOVE_SPEED = m_pDoc["STATUS"]["C_MAX_MOVE_SPEED       "].GetFloat();
 #pragma endregion
 }
 
 void Player::Input()
 {
 	//先行入力削除
-	if (m_padRetentionTimer < C_MAX_PAD_RETENTION)
+	if (m_padRetentionTimer < ImguiControl::P_MAX_PAD_RETENTION)
 	{
 		m_padRetentionTimer++;
 	}
@@ -1579,7 +1598,7 @@ void Player::CalcBlendAnimation()
 		//タイマー計算
 		else if (m_blendTimer < 1.0f)
 		{
-			m_blendTimer += C_MAX_BLEND_TIMER;
+			m_blendTimer += ImguiControl::P_MAX_BLEND_TIMER;
 			if (m_blendTimer > 1.0f)
 			{
 				m_blendTimer = 1.0f;
@@ -1666,7 +1685,7 @@ void Player::CalcAttack()
 	if (!m_isAccept)
 	{
 		if (fbxobj_miku->GetNowTime(m_animationType) >=
-			fbxobj_miku->GetAddTime(m_animationType) * C_ATTACK_COLLISION_ENDTIMER)
+			fbxobj_miku->GetAddTime(m_animationType) * ImguiControl::P_ATTACK_COLLISION_ENDTIMER)
 		{
 			m_isAttack = false;
 			m_isAccept = true;
@@ -1678,6 +1697,8 @@ void Player::CalcAttack()
 	{
 		m_isAnimation = false;
 		m_isAttack = false;
+		m_isAccept = true;
+		m_isHeal = true;
 	}
 }
 
@@ -1696,20 +1717,20 @@ void Player::CalcAttackTimer()
 		else
 		{
 			//攻撃力
-			m_power = C_MAX_POWER[m_animationType - 6];
+			m_power = ImguiControl::P_MAX_POWER[m_animationType - 6];
 
 			m_animationTimer = 0;
 			m_isAttack = true;
 
-			m_healTimer = C_AUTOHEAL_STAMINA_TIMER;
-			m_stamina -= C_ATTACK_SUB_STAMINA;
+			m_healTimer = ImguiControl::P_AUTOHEAL_STAMINA_TIMER;
+			m_stamina -= ImguiControl::P_ATTACK_SUB_STAMINA;
 			if (m_stamina < 0)
 			{
 				m_stamina = 0;
 			}
 
 			//攻撃時方向切り替え
-			if (IsInputStick(C_DOWN_POWER))
+			if (IsInputStick(ImguiControl::P_DOWN_POWER))
 			{
 				SetAngle(GetInputAngle());
 			}
@@ -1758,8 +1779,8 @@ void Player::DoAttack(const int animationType)
 
 void Player::CalcRolling()
 {
-	float l_addPosX = m_rollingAngle.x * C_MAX_MOVE_SPEED;
-	float l_addPosZ = m_rollingAngle.z * C_MAX_MOVE_SPEED;
+	float l_addPosX = m_rollingAngle.x * ImguiControl::P_MAX_MOVE_SPEED;
+	float l_addPosZ = m_rollingAngle.z * ImguiControl::P_MAX_MOVE_SPEED;
 	m_pos.x += l_addPosX;
 	m_pos.z += l_addPosZ;
 
@@ -1785,8 +1806,8 @@ void Player::CalcRollingAngle()
 {
 	m_padState = 0;
 
-	m_healTimer = C_AUTOHEAL_STAMINA_TIMER;
-	m_stamina -= C_ROLLING_SUB_STAMINA;
+	m_healTimer = ImguiControl::P_AUTOHEAL_STAMINA_TIMER;
+	m_stamina -= ImguiControl::P_ROLLING_SUB_STAMINA;
 	if (m_stamina < 0)
 	{
 		m_stamina = 0;
@@ -1801,7 +1822,7 @@ void Player::CalcRollingAngle()
 	m_isInvincible = true;
 
 	//向きの計算
-	if (IsInputStick(C_DOWN_POWER))
+	if (IsInputStick(ImguiControl::P_DOWN_POWER))
 	{
 		m_rollingAngle = GetInputAngle();
 		SetAngle(m_rollingAngle);
@@ -1815,14 +1836,14 @@ void Player::CalcRollingAngle()
 
 void Player::CalcHeal()
 {
-	if (m_estusTimer < C_ESTUS_TIMER)
+	if (m_estusTimer < ImguiControl::P_ESTUS_TIMER)
 	{
 		m_estusTimer++;
 	}
 	else
 	{
 		m_estus--;
-		m_estusHeal = C_MAX_ESTUS_HEAL;
+		m_estusHeal = ImguiControl::P_MAX_ESTUS_HEAL;
 		m_isEstus = true;
 		pManagerEstus.SetIsCreateStop(false);
 	}
@@ -1865,12 +1886,12 @@ void Player::CalcExpulsion(bool isTackle)
 	l_pos.y = m_enemyPos.y;
 	float l_dist = OgaJHelper::CalcDist(m_enemyPos, l_pos);
 
-	if (l_dist < C_EXPLUSION_RAD)
+	if (l_dist < ImguiControl::P_EXPLUSION_RAD)
 	{
 		DirectX::XMFLOAT3 l_vec =
 			OgaJHelper::CalcNormalizeVec3(OgaJHelper::CalcDirectionVec3(m_enemyPos, l_pos));
-		float l_expulsX = l_vec.x * (C_EXPLUSION_RAD - l_dist);
-		float l_expulsZ = l_vec.z * (C_EXPLUSION_RAD - l_dist);
+		float l_expulsX = l_vec.x * (ImguiControl::P_EXPLUSION_RAD - l_dist);
+		float l_expulsZ = l_vec.z * (ImguiControl::P_EXPLUSION_RAD - l_dist);
 		m_pos.x += l_expulsX;
 		m_pos.z += l_expulsZ;
 
@@ -2154,46 +2175,39 @@ void Player::CalcEstusParticle()
 
 void Player::CalcTrail()
 {
+	const float trailScale_z = 25.0f;
+	const float trailBottomPos_y = 25.0f;
+
 	if (m_trailCount > 99)
 	{
 		m_trailCount = 0;
 	}
 
+	DirectX::XMMATRIX l_bottom = DirectX::XMMatrixIdentity();
+	l_bottom *= DirectX::XMMatrixTranslation(0, trailBottomPos_y, 0);
+	l_bottom *= obj_Sword->GetMatrix();
+
+	DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
+	l_trans.r[3].m128_f32[1] = trailScale_z;
+	l_trans *= l_bottom;
+
+	DirectX::XMFLOAT3 top = {
+		l_trans.r[3].m128_f32[0],
+	l_trans.r[3].m128_f32[1] ,
+	l_trans.r[3].m128_f32[2] };
+
+	DirectX::XMFLOAT3 bottom = {
+		l_bottom.r[3].m128_f32[0],
+	l_bottom.r[3].m128_f32[1],
+	l_bottom.r[3].m128_f32[2] };
+
 	if (!m_isTrailStart)
 	{
-		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-		l_trans.r[3].m128_f32[1] = 25.0f;
-		l_trans *= obj_Sword->GetMatrix();
-
-		DirectX::XMFLOAT3 top = {
-			l_trans.r[3].m128_f32[0],
-		l_trans.r[3].m128_f32[1] ,
-		l_trans.r[3].m128_f32[2] };
-
-		DirectX::XMFLOAT3 bottom = {
-			obj_Sword->GetMatrix().r[3].m128_f32[0],
-		obj_Sword->GetMatrix().r[3].m128_f32[1],
-		obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
 		trail.SetCurrentPos(m_trailCount, top, bottom);
 		m_isTrailStart = true;
 	}
 	else
 	{
-		DirectX::XMMATRIX l_trans = DirectX::XMMatrixIdentity();
-		l_trans.r[3].m128_f32[1] = 25.0f;
-		l_trans *= obj_Sword->GetMatrix();
-
-		DirectX::XMFLOAT3 top = {
-			l_trans.r[3].m128_f32[0],
-		l_trans.r[3].m128_f32[1] ,
-		l_trans.r[3].m128_f32[2] };
-
-		DirectX::XMFLOAT3 bottom = {
-			obj_Sword->GetMatrix().r[3].m128_f32[0],
-		obj_Sword->GetMatrix().r[3].m128_f32[1],
-		obj_Sword->GetMatrix().r[3].m128_f32[2] };
-
 		int l_oldCount = m_trailCount - 1;
 		if (l_oldCount < 0)
 		{
@@ -2272,8 +2286,8 @@ void Player::CalcAngle()
 		l_currentDegY, m_endAngle);
 	if (l_nearAngle < 0)
 	{
-		float l_totalAngle = l_currentDegY - C_ROTATE_ADD_ANGLE;
-		if (fabsf(l_totalAngle - m_endAngle) < C_ROTATE_ADD_ANGLE)
+		float l_totalAngle = l_currentDegY - ImguiControl::P_ROTATE_ADD_ANGLE;
+		if (fabsf(l_totalAngle - m_endAngle) < ImguiControl::P_ROTATE_ADD_ANGLE)
 		{
 			l_totalAngle = m_endAngle;
 		}
@@ -2281,8 +2295,8 @@ void Player::CalcAngle()
 	}
 	else if (l_nearAngle > 0)
 	{
-		float l_totalAngle = l_currentDegY + C_ROTATE_ADD_ANGLE;
-		if (fabsf(l_totalAngle - m_endAngle) < C_ROTATE_ADD_ANGLE)
+		float l_totalAngle = l_currentDegY + ImguiControl::P_ROTATE_ADD_ANGLE;
+		if (fabsf(l_totalAngle - m_endAngle) < ImguiControl::P_ROTATE_ADD_ANGLE)
 		{
 			l_totalAngle = m_endAngle;
 		}

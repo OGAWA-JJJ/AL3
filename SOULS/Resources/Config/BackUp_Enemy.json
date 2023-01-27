@@ -30,7 +30,7 @@
         "RISE_TIMER           ": 110,
         "SWING_DOWN_TIMER     ": 30,
         "MAX_RISE_HEIGHT      ": 100.0,
-        "MAX_MOVE_SPEED       ": 2.0,
+        "MAX_MOVE_SPEED       ": 0.0,
         "MAX_TURN_TIMER       ": 0.019999999552965164,
         "MAX_RISE_TIMER       ": 0.009999999776482582,
         "MAX_SWING_DOWN_TIMER ": 0.019999999552965164,
@@ -39,6 +39,6 @@
         "MAX_TACKLE_SPEED     ": 7.0,
         "MAX_TACKLE_RANGE     ": 200.0,
         "CALC_TACKLE_RANGE    ": 100.0,
-        "BEFOREBATTLEADDTIMER ": 0.003999999910593033
+        "BEFOREBATTLEADDTIMER ": 0.03999999910593033
     }
 }

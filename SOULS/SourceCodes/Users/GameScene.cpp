@@ -66,10 +66,12 @@ void GameScene::Update()
 	//Json
 	if (ImguiControl::Imgui_export)
 	{
+		m_player->ExportJson();
 		m_enemy->ExportJson();
 	}
 	if (ImguiControl::Imgui_inport)
 	{
+		m_player->InportJson();
 		m_enemy->InportJson();
 	}
 	if (ImguiControl::Imgui_addMenbers)
@@ -137,6 +139,7 @@ void GameScene::Update()
 	case BATTLE:
 	{
 		OtherUpdate();
+		LightUpdate();
 
 		PlayerUpdate();
 		EnemyUpdate();
@@ -163,6 +166,7 @@ void GameScene::Update()
 	}
 	case AFTER_BATTLE:
 	{
+		OtherUpdate();
 		LightUpdate();
 		m_player->Update(m_enemy->GetPos());
 		m_enemy->Update(m_player->GetPos());
@@ -202,7 +206,7 @@ void GameScene::Draw()
 		//2D
 		Sprite::PreDraw(DirectXImportant::cmdList.Get());
 
-		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
+		SpriteManager::PlayerUIDraw(m_player->GetEstus());
 		if (m_enemy->IsFighting())
 		{
 			SpriteManager::EnemyUIDraw();

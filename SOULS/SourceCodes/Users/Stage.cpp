@@ -82,7 +82,6 @@ void Stage::AfterBattleDraw()
 void Stage::ShadowDraw()
 {
 	obj_arenaFront->Draw(PipelineManager::obj_shadow, false);
-	//obj_arenaBack->Draw(PipelineManager::obj_shadow, false);
 }
 
 void Stage::LuminanceDraw()

@@ -141,12 +141,19 @@ void SpriteManager::StaticInit()
 
 void SpriteManager::Init()
 {
-	//•ª‚¯‚È‚¢‚Æƒ‹[ƒv‚É‚¾‚é‚¢‚©‚à
+	m_texColor = { 0,0,0,1 };
 	m_enemy_yellowCount = 0;
 	m_player_yellowCount = 0;
+	m_trans_conut = 0;
+	m_enemy_hpRate = 0.0f;
+	m_player_hpRate = 0.0f;
+	m_diedAlpha = 0.0f;
 	m_enemyDamaged = false;
 	m_playerDamaged = false;
-	m_diedAlpha = 0.0f;
+	m_isStart = false;
+	m_isSceneChangeEnd = false;
+	m_isTrans = false;
+	m_isTransUpdate = false;
 }
 
 void SpriteManager::TitleDraw(bool isSceneChange)

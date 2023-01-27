@@ -7,7 +7,6 @@
 #include "../DirectX/DirectXImportant.h"
 #include "../Users/PipelineManager.h"
 #include "../Math/OgaJHelper.h"
-#include "../../imgui/ImguiControl.h"
 #include "../DirectX/Camera.h"
 
 #include <random>
@@ -81,13 +80,13 @@ Enemy::Enemy()
 	fbxobj_creature->SetLoopAnimation(AnimationType::AWAKE, false);
 
 	fbxobj_creature->PlayAnimation(AnimationType::SWIP);
-	fbxobj_creature->SetLoopAnimation(AnimationType::SWIP, false);
+	//fbxobj_creature->SetLoopAnimation(AnimationType::SWIP, false);
 
 #pragma endregion
 
 #pragma region ModelInit
 
-	const float Creature_Scale = 0.6f;
+	const float Creature_Scale = 0.4f;
 	fbxobj_creature->SetScale(DirectX::XMFLOAT3(Creature_Scale, Creature_Scale, Creature_Scale));
 
 #pragma endregion
@@ -105,10 +104,17 @@ void Enemy::Init()
 	m_swingDownStartPos = { 0,0,0 };
 	m_swingDownEndPos = { 0,0,0 };
 	m_playerPos = { 0,0,0 };
+	m_tackleDirection = { 0,0,0 };
+
 	m_animationTimer = 0;
 	m_animationType = STAND;
 	m_oldAnimationType = m_animationType;
 	m_hitOBBNum = 0;
+	m_tackleCount = 0;
+	m_pPowerCount = 0;
+	m_createCount = 1;
+	m_keepAnimationType = 0;
+
 	m_deg = 180.0f;
 	m_easeTimer = 0.0f;
 	m_turnStartAngle = 0.0f;
@@ -117,6 +123,7 @@ void Enemy::Init()
 	m_blendTimer = 0.0f;
 	m_riseStartY = 0.0f;
 	m_beforeBattleEaseTimer = 0.0f;
+
 	m_isInvincible = false;
 	m_isAttack = false;
 	m_isAttackTrigger = false;
@@ -130,14 +137,22 @@ void Enemy::Init()
 	m_isSwing = false;
 	m_isChange = false;
 	m_beforeBattleEaseEndTrigger = false;
+	m_isTackleRange = false;
+	m_isTackleEnd = false;
+	m_isExplosion = false;
+	m_isDeadAnimationEnd = false;
+	m_beforeBattleEaseEndTrigger = false;
+	m_isRazerHit = false;
 
 #pragma endregion
 
 #pragma region StatusInit
 
-	m_hp = C_MAX_HP;
+	m_hp = ImguiControl::C_MAX_HP;
 
 #pragma endregion
+
+#pragma region Particle
 
 	//パーティクル(Hit)
 	const float pScaleHit = 1.0f;
@@ -173,7 +188,7 @@ void Enemy::Init()
 	pManagerEx.SetIsCreateStop(true);
 
 	//パーティクル(レーザー)
-	const float pScaleRazer = 2.0f;
+	const float pScaleRazer = 1.0f;
 	const float pPowerRazer = 0.5f;
 	const int pColorRange = 31;
 
@@ -193,6 +208,10 @@ void Enemy::Init()
 	}
 	pManagerRazer.SetCreateNum(3);
 	pManagerRazer.SetIsCreateStop(true);
+
+#pragma endregion
+
+#pragma region OBB
 
 	//Box(enemyScale=0.4fがベース)
 	std::array<float, 10> l_x = {
@@ -244,6 +263,9 @@ void Enemy::Init()
 		ImguiControl::Imgui_enemyOBBScale[i][2] = l_z[i] * addScale;
 	}
 
+#pragma endregion
+
+	fbxobj_creature->PlayAnimation(AWAKE);
 	fbxobj_creature->ResetAnimation(AWAKE);
 }
 
@@ -269,10 +291,10 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 					m_deg = atan2(eDirection.x, eDirection.z);
 					OgaJHelper::ConvertToDegree(m_deg);
 
-					if (l_dist >= C_MAX_DIST)
+					if (l_dist >= ImguiControl::C_MAX_DIST)
 					{
-						m_pos.x += -eDirection.x * C_MAX_MOVE_SPEED;
-						m_pos.z += -eDirection.z * C_MAX_MOVE_SPEED;
+						m_pos.x += -eDirection.x * ImguiControl::C_MAX_MOVE_SPEED;
+						m_pos.z += -eDirection.z * ImguiControl::C_MAX_MOVE_SPEED;
 					}
 				}
 
@@ -348,12 +370,13 @@ void Enemy::ShadowDraw()
 	pManagerRazer.Draw(false);
 }
 
+//戦闘前カメラ
 bool Enemy::BeforeBattleScene()
 {
 	if (m_beforeBattleEaseTimer < 1.0f &&
 		!m_beforeBattleEaseEndTrigger)
 	{
-		m_beforeBattleEaseTimer += c_beforeBattleAddTimer;
+		m_beforeBattleEaseTimer += ImguiControl::c_beforeBattleAddTimer;
 		if (m_beforeBattleEaseTimer > 1.0f)
 		{
 			m_beforeBattleEaseTimer = 1.0f;
@@ -368,7 +391,7 @@ bool Enemy::BeforeBattleScene()
 	}
 	else
 	{
-		m_beforeBattleEaseTimer += c_beforeBattleAddTimer * 2.0f;
+		m_beforeBattleEaseTimer += ImguiControl::c_beforeBattleAddTimer * 2.0f;
 		if (m_beforeBattleEaseTimer > 1.0f)
 		{
 			m_beforeBattleEaseTimer = 1.0f;
@@ -493,6 +516,7 @@ void Enemy::ExportJson()
 	m_eDoc["STATUS"]["RISE_TIMER           "].SetInt(ImguiControl::C_RISE_TIMER);
 	m_eDoc["STATUS"]["SWING_DOWN_TIMER     "].SetInt(ImguiControl::C_SWING_DOWN_TIMER);
 	m_eDoc["STATUS"]["MAX_RISE_HEIGHT      "].SetFloat(ImguiControl::C_MAX_RISE_HEIGHT);
+
 	m_eDoc["STATUS"]["MAX_MOVE_SPEED       "].SetFloat(ImguiControl::C_MAX_MOVE_SPEED);
 	m_eDoc["STATUS"]["MAX_TURN_TIMER       "].SetFloat(ImguiControl::C_MAX_TURN_TIMER);
 	m_eDoc["STATUS"]["MAX_RISE_TIMER       "].SetFloat(ImguiControl::C_MAX_RISE_TIMER);
@@ -619,6 +643,7 @@ void Enemy::CalcOBB()
 	m_obbs = l_obbs;
 }
 
+//攻撃選択
 void Enemy::JudgAnimationType(float dist)
 {
 	int l_div = 300;
@@ -671,10 +696,10 @@ void Enemy::JudgAnimationType(float dist)
 			}
 		}
 	}
-	else if (dist > C_MAX_DIST)
+	else if (dist > ImguiControl::C_MAX_DIST)
 	{
 		l_rand = l_rand % l_div;
-		if (dist < C_MAX_TACKLE_RANGE)
+		if (dist < ImguiControl::C_MAX_TACKLE_RANGE)
 		{
 			if (l_rand == 0)
 			{
@@ -682,8 +707,8 @@ void Enemy::JudgAnimationType(float dist)
 
 				m_isTackleEnd = false;
 				m_tackleCount = 0;
-				m_animationType = TACKLE;
-				fbxobj_creature->PlayAnimation(TACKLE);
+
+				ChangeAttackAnimation(TACKLE);
 				return;
 			}
 		}
@@ -703,33 +728,23 @@ void Enemy::JudgAnimationType(float dist)
 			m_pPowerCount = 20;
 			pManagerEx.SetCreateNum(m_createCount);
 			pManagerEx.SetIsCreateStop(false);
-			m_animationType = EXPLOSION;
-			fbxobj_creature->PlayAnimation(EXPLOSION);
+			ChangeAttackAnimation(EXPLOSION);
 		}
 
-		//l_rand % 5 == 0 &&GetHpRate() < 0.75f
 		else if (l_rand % 5 == 0 && GetHpRate() < 0.75f)
 		{
 			//ここの管理方法を考える←仮
 			m_riseStartY = 0.0f;
-			m_animationType = RISE;
-			fbxobj_creature->ResetAnimation(AnimationType::RISE);
-			fbxobj_creature->ResetAnimation(AnimationType::SWING_DOWN);
-		}
-
-		else if (m_oldAnimationType != KICK)
-		{
-			m_animationType = KICK;
-			fbxobj_creature->PlayAnimation(KICK);
+			ChangeAttackAnimation(RISE);
 		}
 		else
 		{
-			m_animationType = PUNCH;
-			fbxobj_creature->PlayAnimation(PUNCH);
+			ChangeAttackAnimation(KICK);
 		}
 	}
 }
 
+//振り向きと後ろ攻撃計算
 void Enemy::CalcAngleDiff()
 {
 	if (m_isTurn)
@@ -752,7 +767,7 @@ void Enemy::CalcAngleDiff()
 
 		if (m_easeTimer < 1.0f)
 		{
-			m_easeTimer += C_MAX_TURN_TIMER;
+			m_easeTimer += ImguiControl::C_MAX_TURN_TIMER;
 		}
 		else
 		{
@@ -771,7 +786,7 @@ void Enemy::CalcAngleDiff()
 			float l_rotY = (m_turnEndAngle - m_turnStartAngle) *
 				OgaJEase::easeOutSine(m_easeTimer) + m_turnStartAngle;
 			fbxobj_creature->SetRotation(DirectX::XMFLOAT3(0, l_rotY, 0));
-			m_easeTimer += C_MAX_TURN_TIMER;
+			m_easeTimer += ImguiControl::C_MAX_TURN_TIMER;
 		}
 
 		else
@@ -791,6 +806,7 @@ void Enemy::CalcAngleDiff()
 	}
 }
 
+//自機の角度計算
 void Enemy::CalcNearAngle(float myAngleY)
 {
 	m_turnStartAngle = myAngleY;
@@ -820,13 +836,14 @@ void Enemy::CalcNearAngle(float myAngleY)
 	float l_nearSub = OgaJHelper::RotateEarliestArc(l_enemyDeg, l_frontDeg);
 	//自機が範囲外なら振り向きアニメーション抽選をする
 	float l_nearSubAbs = fabsf(l_nearSub);
-	if (l_nearSubAbs > C_MAX_TURN_RAD)
+	if (l_nearSubAbs > ImguiControl::C_MAX_TURN_RAD)
 	{
 		m_isTurn = true;
 
-		if (l_nearSubAbs >= C_MAX_BACK_RAD)
+		if (l_nearSubAbs >= ImguiControl::C_MAX_BACK_RAD)
 		{
-			if (!m_isBackAttackLottery && OgaJHelper::CalcDist(m_pos, m_playerPos) < C_MAX_DIST)
+			if (!m_isBackAttackLottery &&
+				OgaJHelper::CalcDist(m_pos, m_playerPos) < ImguiControl::C_MAX_DIST)
 			{
 				m_isBackAttackLottery = true;
 			}
@@ -865,6 +882,7 @@ void Enemy::CalcNearAngle(float myAngleY)
 	}
 }
 
+//フレーム計算
 void Enemy::CalcAttackCollisionTimer(const int startFrame, const int endFrame)
 {
 	if (!m_isCalc)
@@ -894,18 +912,20 @@ void Enemy::CalcAttackCollisionTimer(const int startFrame, const int endFrame)
 	}
 }
 
+//上昇
 void Enemy::CalcRise()
 {
-	if (m_animationTimer < C_RISE_TIMER)
+	if (m_animationTimer < ImguiControl::C_RISE_TIMER)
 	{
 		m_animationTimer++;
 	}
 	else
 	{
-		m_pos.y = ((m_riseStartY + C_MAX_RISE_HEIGHT) - m_riseStartY) * OgaJEase::easeOutCubic(m_easeTimer) + m_riseStartY;
+		m_pos.y = ((m_riseStartY + ImguiControl::C_MAX_RISE_HEIGHT) - m_riseStartY)
+			* OgaJEase::easeOutCubic(m_easeTimer) + m_riseStartY;
 		if (m_easeTimer < 1.0f)
 		{
-			m_easeTimer += C_MAX_RISE_TIMER;
+			m_easeTimer += ImguiControl::C_MAX_RISE_TIMER;
 			if (m_easeTimer > 1.0f)
 			{
 				m_easeTimer = 1.0f;
@@ -917,19 +937,18 @@ void Enemy::CalcRise()
 			m_easeTimer = 0.0f;
 			m_swingDownStartPos = m_pos;
 			m_swingDownEndPos = m_playerPos;
-			m_animationType = AnimationType::SWING_DOWN;
-			fbxobj_creature->SetPosition(m_pos);
-			fbxobj_creature->StopAnimation(SWING_DOWN);
-			fbxobj_creature->Update();
+
+			ChangeAttackAnimation(SWING_DOWN);
 		}
 		fbxobj_creature->SetPosition(m_pos);
 	}
 	fbxobj_creature->Update();
 }
 
+//振り下ろし
 void Enemy::CalcSwingDown()
 {
-	if (m_animationTimer < C_SWING_DOWN_TIMER)
+	if (m_animationTimer < ImguiControl::C_SWING_DOWN_TIMER)
 	{
 		m_animationTimer++;
 	}
@@ -938,7 +957,7 @@ void Enemy::CalcSwingDown()
 		m_pos = OgaJEase::easeInCircXMFLOAT3(m_swingDownStartPos, m_swingDownEndPos, m_easeTimer);
 		if (m_easeTimer < 1.0f)
 		{
-			m_easeTimer += C_MAX_SWING_DOWN_TIMER;
+			m_easeTimer += ImguiControl::C_MAX_SWING_DOWN_TIMER;
 			if (m_easeTimer > 1.0f)
 			{
 				m_easeTimer = 1.0f;
@@ -950,15 +969,14 @@ void Enemy::CalcSwingDown()
 			if (!m_isCalcEnd)
 			{
 				CalcAttackCollisionTimer(
-					C_SWINGDOWN_COLLISION_TIMER, C_SWINGDOWN_COLLISION_ENDTIMER);
+					ImguiControl::C_SWINGDOWN_COLLISION_TIMER,
+					ImguiControl::C_SWINGDOWN_COLLISION_ENDTIMER);
 			}
 
 			if (fbxobj_creature->IsAnimationEnd(SWING_DOWN))
 			{
 				m_animationTimer = 0;
 				m_easeTimer = 0.0f;
-				float l_dist = OgaJHelper::CalcDist(m_pos, m_playerPos);
-				fbxobj_creature->SetPosition(m_pos);
 				m_isAttack = false;
 			}
 		}
@@ -967,6 +985,7 @@ void Enemy::CalcSwingDown()
 	fbxobj_creature->Update();
 }
 
+//突進
 void Enemy::CalcTackle()
 {
 	//違うとこでも結構求めてるから修正必要アリ(共有化)
@@ -974,27 +993,27 @@ void Enemy::CalcTackle()
 	eDirection = OgaJHelper::CalcNormalizeVec3(eDirection);
 
 	//突進前
-	if (m_animationTimer < C_MAX_TACKLE_TIMER)
+	if (m_animationTimer < ImguiControl::C_MAX_TACKLE_TIMER)
 	{
 		m_deg = atan2(eDirection.x, eDirection.z);
 		OgaJHelper::ConvertToDegree(m_deg);
 		m_animationTimer++;
-		if (m_animationTimer >= C_MAX_TACKLE_TIMER)
+		if (m_animationTimer >= ImguiControl::C_MAX_TACKLE_TIMER)
 		{
 			m_tackleDirection = eDirection;
 		}
 	}
 	else
 	{
-		m_pos.x += -m_tackleDirection.x * C_MAX_TACKLE_SPEED;
-		m_pos.z += -m_tackleDirection.z * C_MAX_TACKLE_SPEED;
+		m_pos.x += -m_tackleDirection.x * ImguiControl::C_MAX_TACKLE_SPEED;
+		m_pos.z += -m_tackleDirection.z * ImguiControl::C_MAX_TACKLE_SPEED;
 
 		float l_dist = OgaJHelper::CalcDist(m_pos, m_playerPos);
 		//突進中
 		if (!m_isTackleRange)
 		{
 			//範囲外(追従)
-			if (l_dist > C_CALC_TACKLE_RANGE)
+			if (l_dist > ImguiControl::C_CALC_TACKLE_RANGE)
 			{
 				m_deg = atan2(eDirection.x, eDirection.z);
 				OgaJHelper::ConvertToDegree(m_deg);
@@ -1011,27 +1030,28 @@ void Enemy::CalcTackle()
 		}
 
 		//突進後,範囲外
-		if (m_isTackleRange && l_dist > C_MAX_TACKLE_RANGE)
+		if (m_isTackleRange && l_dist > ImguiControl::C_MAX_TACKLE_RANGE)
 		{
 			m_tackleCount++;
 			m_animationTimer = 0;
 			m_isTackleRange = false;
 
 			//何回突進するか
-			if (m_tackleCount >= C_MAX_TACKLE_COUNT)
+			if (m_tackleCount >= ImguiControl::C_MAX_TACKLE_COUNT)
 			{
 				m_isTackleEnd = true;
 			}
 		}
 
 		//判定外
-		if (l_dist > C_CALC_TACKLE_RANGE)
+		if (l_dist > ImguiControl::C_CALC_TACKLE_RANGE)
 		{
 			m_isCalc = false;
 		}
 	}
 }
 
+//爆発
 void Enemy::CalcExplosion()
 {
 	//パーティクル(解放前)
@@ -1104,18 +1124,23 @@ void Enemy::CalcExplosion()
 	}
 
 	if (!m_isExplosion &&
-		m_pPowerCount < C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+		m_pPowerCount <
+		ImguiControl::C_EXPLOSION_COLLISION_TIMER +
+		ImguiControl::C_EXPLOSION_COLLISION_DELAY +
+		ImguiControl::C_EXPLOSION_COLLISION_ENDTIMER)
 	{
 		if (m_pPowerCount % l_createAddFrame == 0)
 		{
 			m_createCount++;
 			pManagerEx.SetCreateNum(m_createCount);
 		}
-		if (m_pPowerCount == C_EXPLOSION_COLLISION_TIMER)
+		if (m_pPowerCount == ImguiControl::C_EXPLOSION_COLLISION_TIMER)
 		{
 			pManagerEx.SetIsCreateStop(true);
 		}
-		if (m_pPowerCount >= C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY)
+		if (m_pPowerCount >=
+			ImguiControl::C_EXPLOSION_COLLISION_TIMER +
+			ImguiControl::C_EXPLOSION_COLLISION_DELAY)
 		{
 			m_isExplosion = true;
 			pManagerEx.SetCreateNum(pManagerEx.GetMaxParticle());
@@ -1153,7 +1178,9 @@ void Enemy::CalcExplosion()
 	else if (m_isExplosion)
 	{
 		if (m_pPowerCount >
-			C_EXPLOSION_COLLISION_TIMER + C_EXPLOSION_COLLISION_DELAY + C_EXPLOSION_COLLISION_ENDTIMER)
+			ImguiControl::C_EXPLOSION_COLLISION_TIMER +
+			ImguiControl::C_EXPLOSION_COLLISION_DELAY +
+			ImguiControl::C_EXPLOSION_COLLISION_ENDTIMER)
 		{
 			m_isExplosion = false;
 			pManagerEx.SetIsCreateStop(true);
@@ -1162,11 +1189,14 @@ void Enemy::CalcExplosion()
 	m_pPowerCount++;
 }
 
+//殴り2
 void Enemy::CalcSwip()
 {
 	if (!m_isCalcEnd)
 	{
-		CalcAttackCollisionTimer(C_SWIP_COLLISION_TIMER, C_SWIP_COLLISION_ENDTIMER);
+		CalcAttackCollisionTimer(
+			ImguiControl::C_SWIP_COLLISION_TIMER,
+			ImguiControl::C_SWIP_COLLISION_ENDTIMER);
 	}
 	if (!m_isCalc && !m_isCalcEnd)
 	{
@@ -1184,20 +1214,24 @@ void Enemy::CalcSwip()
 	}
 }
 
+//レーザー
 void Enemy::CalcRazer()
 {
 	const float l_razer_dist = 100.0f;
 	const int l_rand_range = 51;
-	const int l_rand_after_range = 31;
+	const int l_rand_after_range = 11;
+
+	const float l_rand_after_power_base = 25.0f;
+	const int l_rand_after_power_range = 6;
 
 	//撃つ前
 	if (m_animationTimer <
-		C_RAZER_COLLISION_TIMER + C_RAZER_COLLISION_DELAY)
+		ImguiControl::C_RAZER_COLLISION_TIMER + ImguiControl::C_RAZER_COLLISION_DELAY)
 	{
 		m_animationTimer++;
 
 		//溜め
-		if (m_animationTimer < C_RAZER_COLLISION_TIMER)
+		if (m_animationTimer < ImguiControl::C_RAZER_COLLISION_TIMER)
 		{
 			//追従
 			m_deg = CalcDeg();
@@ -1213,7 +1247,7 @@ void Enemy::CalcRazer()
 			l_goalPos.z += l_z * l_razer_dist;
 
 			//最初は生成しない
-			if (m_animationTimer > C_RAZER_COLLISION_STARTTIMER)
+			if (m_animationTimer > ImguiControl::C_RAZER_COLLISION_STARTTIMER)
 			{
 				//パーティクル生成
 				for (int i = 0; i < pManagerRazer.GetMaxParticle(); i++)
@@ -1242,13 +1276,14 @@ void Enemy::CalcRazer()
 
 		//超えたら
 		if (m_animationTimer ==
-			C_RAZER_COLLISION_TIMER)
+			ImguiControl::C_RAZER_COLLISION_TIMER)
 		{
 			pManagerRazer.SetIsCreateStop(true);
 		}
 
 		if (m_animationTimer >=
-			C_RAZER_COLLISION_TIMER + C_RAZER_COLLISION_DELAY)
+			ImguiControl::C_RAZER_COLLISION_TIMER +
+			ImguiControl::C_RAZER_COLLISION_DELAY)
 		{
 			pManagerRazer.SetIsCreateStop(false);
 		}
@@ -1257,7 +1292,7 @@ void Enemy::CalcRazer()
 	//発射中
 	else
 	{
-		const float l_rotate_speed = 0.2f;
+		const float l_rotate_speed = 0.4f;
 
 		//自機の方に段々傾ける
 		//正面
@@ -1293,7 +1328,11 @@ void Enemy::CalcRazer()
 		}
 
 		//ヒット判定
-		if (fabsf(l_nearSub - 180.0f) < 20.0f)
+		DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+		float l_dist = OgaJHelper::CalcDist(l_pos, m_playerPos);
+
+		if (fabsf(l_nearSub - 180.0f) < 20.0f &&
+			l_dist > l_razer_dist)
 		{
 			m_isRazerHit = true;
 		}
@@ -1315,9 +1354,12 @@ void Enemy::CalcRazer()
 			//生成時
 			if (!pManagerRazer.IsMove(i))
 			{
-				pManagerRazer.SetCreateNum(5);
+				pManagerRazer.SetCreateNum(10);
 				pManagerRazer.SetLife(i, 20);
-				pManagerRazer.SetPower(i, DirectX::XMFLOAT3(15.0f, 15.0f, 15.0f));
+				pManagerRazer.SetPower(i, DirectX::XMFLOAT3(
+					l_rand_after_power_base + rand() % l_rand_after_range,
+					l_rand_after_power_base + rand() % l_rand_after_range,
+					l_rand_after_power_base + rand() % l_rand_after_range));
 				pManagerRazer.SetPosition(i, DirectX::XMFLOAT3(
 					l_goalPos.x + (rand() % l_rand_after_range - l_rand_after_range * 0.5f),
 					l_goalPos.y + (rand() % l_rand_after_range - l_rand_after_range * 0.5f),
@@ -1350,6 +1392,7 @@ void Enemy::CalcRazer()
 	fbxobj_creature->Update();
 }
 
+//その他
 void Enemy::OtherUpdate()
 {
 	//FbxUpdate
@@ -1378,11 +1421,30 @@ void Enemy::OtherUpdate()
 	{
 		if (!m_isCalcEnd)
 		{
-			CalcAttackCollisionTimer(C_KICK_COLLISION_TIMER, C_KICK_COLLISION_ENDTIMER);
+			CalcAttackCollisionTimer(
+				ImguiControl::C_KICK_COLLISION_TIMER,
+				ImguiControl::C_KICK_COLLISION_ENDTIMER);
 		}
 		if (!m_isCalc && !m_isCalcEnd)
 		{
 			m_deg = CalcDeg();
+		}
+
+		if (!m_isCalc && m_isCalcEnd)
+		{
+			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+			float l_dist = OgaJHelper::CalcDist(l_pos, m_playerPos);
+			if (l_dist < ImguiControl::C_MAX_DIST)
+			{
+				EndAttackAnimation(PUNCH);
+			}
+			else
+			{
+				EndAttackAnimation();
+
+				m_isAttack = false;
+				CalcNearAngle(fbxobj_creature->GetRotation().y);
+			}
 		}
 
 		fbxobj_creature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
@@ -1398,12 +1460,9 @@ void Enemy::OtherUpdate()
 			obj_Box[9]->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 
-		if (fbxobj_creature->IsAnimationEnd(KICK))
+		/*if (fbxobj_creature->IsAnimationEnd(KICK))
 		{
-			m_isAttack = false;
-
-			CalcNearAngle(fbxobj_creature->GetRotation().y);
-		}
+		}*/
 
 		ImguiControl::Imgui_enemyAniType = "KICK";
 		break;
@@ -1412,11 +1471,30 @@ void Enemy::OtherUpdate()
 	{
 		if (!m_isCalcEnd)
 		{
-			CalcAttackCollisionTimer(C_PUNCH_COLLISION_TIMER, C_PUNCH_COLLISION_ENDTIMER);
+			CalcAttackCollisionTimer(
+				ImguiControl::C_PUNCH_COLLISION_TIMER,
+				ImguiControl::C_PUNCH_COLLISION_ENDTIMER);
 		}
 		if (!m_isCalc && !m_isCalcEnd)
 		{
 			m_deg = CalcDeg();
+		}
+
+		if (!m_isCalc && m_isCalcEnd)
+		{
+			DirectX::XMFLOAT3 l_pos = { m_pos.x,0,m_pos.z };
+			float l_dist = OgaJHelper::CalcDist(l_pos, m_playerPos);
+			if (l_dist < ImguiControl::C_MAX_DIST)
+			{
+				EndAttackAnimation(SWIP);
+			}
+			else
+			{
+				EndAttackAnimation();
+
+				m_isAttack = false;
+				CalcNearAngle(fbxobj_creature->GetRotation().y);
+			}
 		}
 
 		fbxobj_creature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
@@ -1432,12 +1510,9 @@ void Enemy::OtherUpdate()
 			obj_Box[5]->SetColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 
-		if (fbxobj_creature->IsAnimationEnd(PUNCH))
+		/*if (fbxobj_creature->IsAnimationEnd(PUNCH))
 		{
-			m_isAttack = false;
-
-			CalcNearAngle(fbxobj_creature->GetRotation().y);
-		}
+		}*/
 
 		ImguiControl::Imgui_enemyAniType = "PUNCH";
 		break;
@@ -1471,7 +1546,9 @@ void Enemy::OtherUpdate()
 	{
 		if (!m_isCalcEnd)
 		{
-			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
+			CalcAttackCollisionTimer(
+				ImguiControl::C_BACK_COLLISION_TIMER,
+				ImguiControl::C_BACK_COLLISION_ENDTIMER);
 		}
 		fbxobj_creature->Update();
 
@@ -1482,7 +1559,9 @@ void Enemy::OtherUpdate()
 	{
 		if (!m_isCalcEnd)
 		{
-			CalcAttackCollisionTimer(C_BACK_COLLISION_TIMER, C_BACK_COLLISION_ENDTIMER);
+			CalcAttackCollisionTimer(
+				ImguiControl::C_BACK_COLLISION_TIMER,
+				ImguiControl::C_BACK_COLLISION_ENDTIMER);
 		}
 		fbxobj_creature->Update();
 
@@ -1669,6 +1748,7 @@ void Enemy::SetImgui()
 	ImguiControl::Imgui_enemyOldAniTimer = fbxobj_creature->GetNowTime(m_oldAnimationType);
 }
 
+//補間
 void Enemy::CalcBlendAnimation()
 {
 	//切り替わったら
@@ -1694,7 +1774,7 @@ void Enemy::CalcBlendAnimation()
 
 		if (m_blendTimer < 1.0f)
 		{
-			m_blendTimer += C_MAX_BLEND_TIMER;
+			m_blendTimer += ImguiControl::C_MAX_BLEND_TIMER;
 			if (m_blendTimer > 1.0f)
 			{
 				m_blendTimer = 1.0f;
@@ -1714,6 +1794,7 @@ void Enemy::CalcBlendAnimation()
 		BlendAnimation(m_oldAnimationType, m_animationType, OgaJEase::easeOutCubic(m_blendTimer), true);
 }
 
+//自機の角度
 float Enemy::CalcDeg()
 {
 	DirectX::XMFLOAT3 eDirection = OgaJHelper::CalcDirectionVec3(m_playerPos, m_pos);
@@ -1723,6 +1804,7 @@ float Enemy::CalcDeg()
 	return l_deg;
 }
 
+//排斥
 void Enemy::CalcArea()
 {
 	//エリア外判定
@@ -1737,6 +1819,25 @@ void Enemy::CalcArea()
 		float l_backZ = l_backVec.z * l_sub;
 		m_pos.x += l_backX;
 		m_pos.z += l_backZ;
+	}
+}
+
+//変更時
+void Enemy::ChangeAttackAnimation(int nextAnimationType)
+{
+	m_animationType = nextAnimationType;
+	fbxobj_creature->PlayAnimation(nextAnimationType);
+	fbxobj_creature->SetAnimationIndex(nextAnimationType);
+}
+
+//終了時
+void Enemy::EndAttackAnimation(int nextAnimationType)
+{
+	m_isCalc = false;
+	m_isCalcEnd = false;
+	if (nextAnimationType != -1)
+	{
+		ChangeAttackAnimation(nextAnimationType);
 	}
 }
 
@@ -1769,7 +1870,8 @@ std::vector<OBB> Enemy::GetAttackOBBs()
 		l_obb = { m_obbs[9] };
 		return l_obb;
 	}
-	else if (m_animationType == PUNCH)
+	else if (m_animationType == PUNCH ||
+		m_animationType == SWIP)
 	{
 		l_obb = { m_obbs[3] };
 		return l_obb;

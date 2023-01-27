@@ -4,6 +4,7 @@
 #include "../XAudio2/Music.h"
 #include "../Math/OBBCollision.h"
 #include "../3D/FbxObjects.h"
+#include "../../imgui/ImguiControl.h"
 
 #include "ParticleManager.h"
 #include "TrailManager.h"
@@ -54,36 +55,6 @@ private:	//自機のパターン
 
 	const int C_MIKU_NUM = 13;	//fbx増減時変更
 
-private:		//定数(判定系)
-	const int C_ATTACK_COLLISION_TIMER[3] = { 40,35,50 };	//攻撃判定
-	const int C_ATTACK_COLLISION_ENDTIMER = 55;				//攻撃判定後、←回避を入れれるフレームに変更
-
-private:		//定数
-	const float C_MAX_CAMERA_NEAR_DISTANCE = 75.0f;	//カメラと自機の距離の最大
-	const float C_MAX_CAMERA_FAR_DISTANCE = 200.0f;	//カメラと自機の距離の最大
-	const int C_MAX_PAD_RETENTION = 60;				//PAD保持時間
-	const float C_MAX_CAMERA_MOVE_SPEED = 2.0f;		//カメラの最大速度
-	const float C_EASE_CAMERA_TIMER = 0.01f;		//Targetモードが切り替わった際の速度
-	const float C_MAX_BLEND_TIMER = 0.02f;			//補間速度
-	const float C_DOWN_POWER = 0.3f;				//スティック反応ライン
-	const float C_ROTATE_ADD_ANGLE = 15.0f;			//回転速度
-	const float C_EXPLUSION_RAD = 10.0f;			//排斥
-
-private:	//定数(ステータス関係)
-	const int C_MAX_HP = 1000;
-	const int C_MAX_MP = 100;
-	const int C_MAX_STAMINA = 1000;
-	const int C_MAX_POWER[3] = { 40,25,70 };	//連撃ダメージ
-	const int C_MAX_ESTUS = 5;					//所持数
-	const int C_ESTUS_TIMER = 60;				//エスト飲んでから回復までのフレーム数
-	const int C_MAX_ESTUS_HEAL = 350;			//回復量
-	const int C_MAX_ESTUS_HEAL_SPEED = 15;		//1フレームの回復量
-	const int C_AUTOHEAL_STAMINA_TIMER = 60;		//回復し始めるまでのフレーム
-	const int C_ATTACK_SUB_STAMINA = 220;			//減少スタミナ(攻撃)
-	const int C_ROLLING_SUB_STAMINA = 200;			//減少スタミナ(回避)
-	const int C_HEAL_VOL = 8;						//1フレームのスタミナ回復量
-	const float C_MAX_MOVE_SPEED = 1.5f;			//自機の最大速度
-
 private:	//格納用
 	std::vector<std::pair<std::string, DirectX::XMMATRIX>> bones;	//ボーン情報
 	std::vector<DirectX::XMMATRIX> matRot;							//回転行列情報
@@ -106,11 +77,14 @@ private:	//変数
 	int m_attackCollisionTimer[3];	//攻撃判定を始めるフレーム
 	int m_estusHeal;				//HP回復残量
 	int m_estusTimer;				//HP回復判定開始までのフレーム
+	int m_trailCount;
+	int m_keepAnimationType;
 	float m_cameraMoveEase;			//カメラのイージング用タイマー
 	float m_cameraY;				//カメラのY軸保存用(めり込み回避)
 	float m_cameraDist;				//自機とカメラの距離
 	float m_blendTimer;				//補間用タイマー
 	float m_endAngle;
+	float m_attackEase = 0.0f;
 	bool m_isTarget;				//ターゲットモード中か
 	bool m_isEase;					//カメラがイージング中か
 	bool m_isAttack;				//攻撃中か
@@ -119,18 +93,12 @@ private:	//変数
 	bool m_isChange;				//アニメーションが切り替わったか
 	bool m_isAnimation;				//STANDとRUN以外true
 	bool m_isEstus;					//回復中か
-
-	//仮
-	int m_trailCount = 0;
-	int m_keepAnimationType = 0;
-	float m_attackEase = 0.0f;
-	bool m_isHeal = true;
-	bool m_isHelmet = true;
-	bool m_isTrailStart = false;
-	bool m_isStickReleaseTrigger = true;
-
-	bool m_isSheathed = false;		//納刀用
-	bool m_isOldSheathed = false;
+	bool m_isHeal;
+	bool m_isHelmet;
+	bool m_isTrailStart;
+	bool m_isStickReleaseTrigger;
+	bool m_isSheathed;				//納刀用
+	bool m_isOldSheathed;
 
 private:	//変数(ステータス関係)
 	int m_hp;
@@ -151,8 +119,6 @@ private:	//オブジェクト(Draw用)
 	std::shared_ptr<Object> obj_SwordBox = nullptr;
 	std::shared_ptr<Object> obj_Helmet = nullptr;
 
-	//std::array<FbxObjects*, 13> fbxobj_miku = { nullptr };
-	//std::array<FbxObjects*, 13> fbxobj_shadowMiku = { nullptr };	//shadow用修正
 	std::shared_ptr<FbxObjects> fbxobj_miku = nullptr;
 
 public:
@@ -204,9 +170,15 @@ public:	//Getter
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
 	const int GetPower() { return m_power; }
 	const int GetEstus() { return m_estus; }
-	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
-	const inline float GetMpRate() { return static_cast<float>(m_mp) / static_cast<float>(C_MAX_MP); }
-	const inline float GetStaminaRate() { return static_cast<float>(m_stamina) / static_cast<float>(C_MAX_STAMINA); }
+	const inline float GetHpRate() {
+		return static_cast<float>(m_hp) / static_cast<float>(ImguiControl::P_MAX_HP);
+	}
+	const inline float GetMpRate() {
+		return static_cast<float>(m_mp) / static_cast<float>(ImguiControl::P_MAX_MP);
+	}
+	const inline float GetStaminaRate() {
+		return static_cast<float>(m_stamina) / static_cast<float>(ImguiControl::P_MAX_STAMINA);
+	}
 	const float GetCameraDist() { return m_cameraDist; }
 	const bool IsAttack() { return m_isAttack; }
 	const bool IsInvincible() { return m_isInvincible; }

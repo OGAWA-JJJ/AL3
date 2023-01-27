@@ -2,6 +2,7 @@
 #include "../3D/FbxObjects.h"
 #include "../3D/Object.h"
 #include "../Math/OBBCollision.h"
+#include "../../imgui/ImguiControl.h"
 
 #include "ParticleManager.h"
 
@@ -39,6 +40,8 @@ private:
 		ULT			//ハルバード出す
 	};
 
+	//std::array<int, 3> m_attackPattern0 = { KICK,PUNCH,SWIP };
+
 private:
 	enum TurnVec
 	{
@@ -46,59 +49,21 @@ private:
 		LEFT = 1
 	};
 
-private:	//定数(判定系)
-	int C_KICK_COLLISION_TIMER = 15;		//攻撃判定を取り出すフレーム
-	int C_KICK_COLLISION_ENDTIMER = 30;	//攻撃判定後、判定を取り消すフレーム
-
-	int C_PUNCH_COLLISION_TIMER = 60;		//攻撃判定を取り出すフレーム
-	int C_PUNCH_COLLISION_ENDTIMER = 20;	//攻撃判定後、判定を取り消すフレーム
-
-	int C_BACK_COLLISION_TIMER = 20;		//攻撃判定を取り出すフレーム
-	int C_BACK_COLLISION_ENDTIMER = 90;	//攻撃判定後、判定を取り消すフレーム
-
-	int C_EXPLOSION_COLLISION_TIMER = 180;	//爆発を溜めるフレーム
-	int C_EXPLOSION_COLLISION_DELAY = 65;		//溜めた後の何もないフレーム
-	int C_EXPLOSION_COLLISION_ENDTIMER = 10;	//解放する判定を行うフレーム
-
-	int C_SWIP_COLLISION_TIMER = 40;
-	int C_SWIP_COLLISION_ENDTIMER = 10;
-
-	int C_RAZER_COLLISION_STARTTIMER = 20;
-	int C_RAZER_COLLISION_TIMER = 90;
-	int C_RAZER_COLLISION_DELAY = 60;
-
-	int C_SWINGDOWN_COLLISION_TIMER = 40;
-	int C_SWINGDOWN_COLLISION_ENDTIMER = 10;
-
-private:	//定数
-	float C_MAX_DIST = 35.0f;				//攻撃判定開始
-	float C_MAX_TURN_RAD = 45.0f;			//振り向きが入る角度
-	float C_MAX_BACK_RAD = 150.0f;		//後ろ攻撃が入る角度
-	float C_MAX_BLEND_TIMER = 0.02f;		//補間速度
-
-private:	//定数(ステータス関係)
-	int C_MAX_POWER = 300;
-	int C_MAX_EXPLOSION_POWER = 500;
-	int C_MAX_HP = 1000;
-
-	int C_RISE_TIMER = 110;				//上昇
-	int C_SWING_DOWN_TIMER = 30;			//振り下ろし
-	float C_MAX_RISE_HEIGHT = 100.0f;		//上昇高さ
-	float C_MAX_MOVE_SPEED = 2.0f;		//移動速度
-	float C_MAX_TURN_TIMER = 0.02f;		//振り向きイージング
-	float C_MAX_RISE_TIMER = 0.01f;		//上昇イージング
-	float C_MAX_SWING_DOWN_TIMER = 0.02f;	//振り下ろしイージング
-
 private:
 	std::vector<OBB> m_obbs;
 	DirectX::XMFLOAT3 m_pos;
 	DirectX::XMFLOAT3 m_swingDownStartPos;
 	DirectX::XMFLOAT3 m_swingDownEndPos;
 	DirectX::XMFLOAT3 m_playerPos;
+	DirectX::XMFLOAT3 m_tackleDirection;
 	int m_animationTimer;
 	int m_animationType;
 	int m_oldAnimationType;
 	int m_hitOBBNum;
+	int m_tackleCount;
+	int m_pPowerCount;
+	int m_createCount;
+	int m_keepAnimationType;
 	float m_deg;
 	float m_easeTimer;
 	float m_turnStartAngle;
@@ -106,6 +71,7 @@ private:
 	float m_dist;
 	float m_blendTimer;
 	float m_riseStartY;
+	float m_beforeBattleEaseTimer;
 	bool m_isInvincible;
 	bool m_isAttack;
 	bool m_isAttackTrigger;
@@ -118,29 +84,12 @@ private:
 	bool m_isRise;
 	bool m_isSwing;
 	bool m_isChange;
-
-	DirectX::XMFLOAT3 m_tackleDirection = {};
-	const int C_MAX_TACKLE_TIMER = 50;
-	const int C_MAX_TACKLE_COUNT = 3;
-	const float C_MAX_TACKLE_SPEED = 7.0f;
-	const float C_MAX_TACKLE_RANGE = 200.0f;
-	const float C_CALC_TACKLE_RANGE = 100.0f;
-	int m_tackleCount = 0;
-	bool m_isTackleRange = false;
-	bool m_isTackleEnd = false;
-
-	int m_pPowerCount = 0;
-	int m_createCount = 1;
-	int m_keepAnimationType = 0;
-	bool m_isExplosion = false;
-
-	bool m_isDeadAnimationEnd = false;
-
-	bool m_beforeBattleEaseEndTrigger = false;
-	float m_beforeBattleEaseTimer = 0.0f;
-	const float c_beforeBattleAddTimer = 0.004f;
-
-	bool m_isRazerHit = false;
+	bool m_isTackleRange;
+	bool m_isTackleEnd;
+	bool m_isExplosion ;
+	bool m_isDeadAnimationEnd ;
+	bool m_beforeBattleEaseEndTrigger ;
+	bool m_isRazerHit ;
 
 private:	//変数(ステータス関係)
 	int m_hp;
@@ -160,9 +109,7 @@ private:	//オブジェクト(Draw用)
 		0,0
 	};
 
-	//std::array<FbxObjects*, 13> fbxobj_creature = { nullptr };
 	std::shared_ptr<FbxObjects> fbxobj_creature = nullptr;
-	const int C_CREATURE_NUM = 13;
 
 public:
 	Enemy();
@@ -198,13 +145,17 @@ private:
 
 	float CalcDeg();
 	void CalcArea();
+	void ChangeAttackAnimation(int nextAnimationType);
+	void EndAttackAnimation(int nextAnimationType = -1);
 
 public:	//Getter
 	const std::vector<OBB>& GetOBBs() { return m_obbs; }
 	const DirectX::XMFLOAT3& GetPos() { return m_pos; }
-	const int GetPower() { return C_MAX_POWER; }
-	const int GetExplosionPower() { return C_MAX_EXPLOSION_POWER; }
-	const inline float GetHpRate() { return static_cast<float>(m_hp) / static_cast<float>(C_MAX_HP); }
+	const int GetPower() { return ImguiControl::C_MAX_POWER; }
+	const int GetExplosionPower() { return ImguiControl::C_MAX_EXPLOSION_POWER; }
+	const inline float GetHpRate() {
+		return static_cast<float>(m_hp) / static_cast<float>(ImguiControl::C_MAX_HP);
+	}
 	const bool IsInvincible() { return m_isInvincible; }
 	const bool IsAttack() { return m_isAttack; }
 	const bool IsCalc() { return m_isCalc; }

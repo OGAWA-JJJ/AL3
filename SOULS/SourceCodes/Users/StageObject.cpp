@@ -43,7 +43,10 @@ void StageObject::Update()
 void StageObject::AfterBattleUpdate()
 {
 	float l_alpha = obj_bonefire->GetColor().w;
-	l_alpha += 0.05f;
+	if (l_alpha < 1.0f)
+	{
+		l_alpha += 0.05f;
+	}
 	obj_bonefire->SetColor(DirectX::XMFLOAT4(1, 1, 1, l_alpha));
 	obj_bonefire->Update();
 }
@@ -55,7 +58,7 @@ void StageObject::Draw()
 
 void StageObject::AfterBattleDraw()
 {
-	obj_bonefire->Draw(PipelineManager::obj_normal, false);
+	obj_bonefire->Draw(PipelineManager::obj_receiveShadow);
 }
 
 void StageObject::ShadowDraw()
