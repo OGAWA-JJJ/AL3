@@ -15,6 +15,8 @@ class Enemy
 	ParticleManager pManagerHit;
 	ParticleManager pManagerEx;
 	ParticleManager pManagerRazer;
+	ParticleManager pManagerSpark;
+
 
 private:
 	enum AnimationType
@@ -86,10 +88,10 @@ private:
 	bool m_isChange;
 	bool m_isTackleRange;
 	bool m_isTackleEnd;
-	bool m_isExplosion ;
-	bool m_isDeadAnimationEnd ;
-	bool m_beforeBattleEaseEndTrigger ;
-	bool m_isRazerHit ;
+	bool m_isExplosion;
+	bool m_isDeadAnimationEnd;
+	bool m_beforeBattleEaseEndTrigger;
+	bool m_isRazerHit;
 
 private:	//変数(ステータス関係)
 	int m_hp;

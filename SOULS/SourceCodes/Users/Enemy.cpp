@@ -17,9 +17,10 @@ rapidjson::Document m_eDoc(rapidjson::kObjectType);
 
 Enemy::Enemy()
 {
-	pManagerHit.Init();
-	pManagerEx.Init();
-	pManagerRazer.Init();
+	pManagerHit.Init(ModelManager::model_box2);
+	pManagerEx.Init(ModelManager::model_box2);
+	pManagerRazer.Init(ModelManager::model_box2);
+	pManagerSpark.Init(ModelManager::model_box2);
 
 	std::ifstream ifs("Resources/Config/EnemyDataConfig.json");
 	std::string str;
@@ -175,6 +176,7 @@ void Enemy::Init()
 	//パーティクル(爆発)
 	const float pScaleEx = 2.0f;
 	const float pPowerEx = 1.0f;
+
 	Particle::ParticleData pDataEx;
 	pDataEx.isRandVec = false;
 	pDataEx.life = 30;
@@ -208,6 +210,24 @@ void Enemy::Init()
 	}
 	pManagerRazer.SetCreateNum(3);
 	pManagerRazer.SetIsCreateStop(true);
+
+	//パーティクル(火花)
+	Particle::ParticleData pDataSpark;
+	pDataSpark.isRandVec = false;
+	pDataSpark.scale = { 0.3f, 0.3f, 0.3f };
+	pDataSpark.power = { 1.0f, 1.0f, 1.0f };
+	pDataSpark.life = 50;
+	for (int i = 0; i < pManagerSpark.GetMaxParticle(); i++)
+	{
+		pDataSpark.color = {
+			0.9f,
+			(rand() % 51 * 0.01f) + 0.4f,
+			0.0f,
+			1.0f };
+		pManagerSpark.SetParticle(i, pDataSpark);
+	}
+	//pManagerSpark.SetCreateNum(5);
+	pManagerSpark.SetCreateNum(pManagerSpark.GetMaxParticle());
 
 #pragma endregion
 
@@ -316,6 +336,32 @@ void Enemy::Update(DirectX::XMFLOAT3 playerPos)
 		}
 	}
 
+	//仮
+	float now = fbxobj_creature->GetNowTime(PUNCH);
+	float end = fbxobj_creature->GetEndTime(PUNCH);
+	if (now / end >= 0.55f)
+	{
+		for (int i = 0; i < pManagerSpark.GetMaxParticle(); i++)
+		{
+			if (!pManagerSpark.IsMove(i))
+			{
+				pManagerSpark.SetPosition(i, m_obbs[3].pos);
+				pManagerSpark.SetVec(i, DirectX::XMFLOAT3(
+					(rand() % 201 - 100) / 100.0f,
+					rand() % 51 / 100.0f + 0.8f,
+					(rand() % 201 - 100) / 100.0f
+				));
+			}
+			else
+			{
+				DirectX::XMFLOAT3 vec = pManagerSpark.GetVec(i);
+				vec.y -= 0.05f;
+				pManagerSpark.SetVec(i, vec);
+			}
+		}
+	}
+	pManagerSpark.Update();
+
 	CalcBlendAnimation();
 	OtherUpdate();
 	CalcOBB();
@@ -352,12 +398,14 @@ void Enemy::Draw()
 	pManagerHit.Draw();
 	pManagerEx.Draw();
 	pManagerRazer.Draw();
+	pManagerSpark.Draw();
 }
 
 void Enemy::LuminanceDraw()
 {
 	pManagerEx.Draw();
 	pManagerRazer.Draw();
+	pManagerSpark.Draw();
 }
 
 void Enemy::ShadowDraw()
@@ -1437,6 +1485,7 @@ void Enemy::OtherUpdate()
 			if (l_dist < ImguiControl::C_MAX_DIST)
 			{
 				EndAttackAnimation(PUNCH);
+				pManagerSpark.SetIsCreateStop(false);
 			}
 			else
 			{
@@ -1447,6 +1496,7 @@ void Enemy::OtherUpdate()
 			}
 		}
 
+		//fbxobj_creature->SetAnimationSpeed(KICK, );
 		fbxobj_creature->SetRotation(DirectX::XMFLOAT3(0, m_deg + 180.0f, 0));
 		fbxobj_creature->SetPosition(m_pos);
 		fbxobj_creature->Update();

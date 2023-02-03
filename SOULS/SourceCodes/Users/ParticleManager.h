@@ -1,5 +1,7 @@
 #pragma once
 #include "../3D/Object.h"
+#include "../Users/ModelManager.h"
+
 #include <array>
 
 class Particle
@@ -30,7 +32,7 @@ private:
 	DirectX::XMFLOAT3 m_scale = { 0,0,0 };
 
 public:
-	void Init();
+	void Init(std::shared_ptr<Model> model);
 	bool Update(bool isCreate);
 	void Draw(bool isShadow);
 
@@ -82,7 +84,7 @@ private:
 	bool m_isArrivalCreateNum = false;
 
 public:
-	void Init();
+	void Init(std::shared_ptr<Model> model);
 	void Update();
 	void Draw(bool isShadow = true);
 

@@ -40,7 +40,7 @@ GameScene::~GameScene()
 
 void GameScene::Init()
 {
-	m_sceneType = GameSceneType::TITLE;
+	m_sceneType = GameSceneType::BATTLE;
 	m_nextSceneType = m_sceneType;
 	m_sceneChangeTri = false;
 
@@ -206,7 +206,7 @@ void GameScene::Draw()
 		//2D
 		Sprite::PreDraw(DirectXImportant::cmdList.Get());
 
-		SpriteManager::PlayerUIDraw(m_player->GetEstus());
+		//SpriteManager::PlayerUIDraw(m_player->GetEstus());
 		if (m_enemy->IsFighting())
 		{
 			SpriteManager::EnemyUIDraw();

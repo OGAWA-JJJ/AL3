@@ -16,13 +16,13 @@ rapidjson::Document m_pDoc(rapidjson::kObjectType);
 
 Player::Player()
 {
-	pManagerSword.Init();
-	pManagerEstus.Init();
+	pManagerSword.Init(ModelManager::model_box2);
+	pManagerEstus.Init(ModelManager::model_box2);
 
-	pManagerLight0.Init();
-	pManagerLight1.Init();
-	pManagerLight2.Init();
-	pManagerLight3.Init();
+	pManagerLight0.Init(ModelManager::model_box2);
+	pManagerLight1.Init(ModelManager::model_box2);
+	pManagerLight2.Init(ModelManager::model_box2);
+	pManagerLight3.Init(ModelManager::model_box2);
 
 	trail.Init();
 
@@ -230,7 +230,7 @@ void Player::Init()
 	pManagerEstus.SetCreateNum(pCreateNumEstus);
 	pManagerEstus.SetIsCreateStop(true);
 
-	//Light
+	//LightÅ©íºÇ∑
 	pDataEstus.isRandVec = false;
 	pDataEstus.scale = { 2.0f, 2.0f, 2.0f };
 	pDataEstus.power = { 0.5f, 0.5f, 0.5f };

@@ -1,16 +1,15 @@
 #include "ParticleManager.h"
 #include "../Users/PipelineManager.h"
-#include "../Users/ModelManager.h"
 #include "../DirectX/DirectXImportant.h"
 
 //Particle
-void Particle::Init()
+void Particle::Init(std::shared_ptr<Model> model)
 {
 	m_life = 0;
 	m_createFrame = 0;
 	m_loopNum = 0;
 	m_isDraw = false;
-	m_object = Object::Create(ModelManager::model_box2);
+	m_object = Object::Create(model);
 }
 
 void Particle::Create()
@@ -165,7 +164,7 @@ void Particle::ResetLifeParticle()
 }
 
 //ParticleManager
-void ParticleManager::Init()
+void ParticleManager::Init(std::shared_ptr<Model> model)
 {
 	m_maxParticle = C_MAX_PARTICLE;
 	m_createTimer = 0;
@@ -179,7 +178,7 @@ void ParticleManager::Init()
 	m_particles.resize(C_MAX_PARTICLE);
 	for (int i = 0; i < m_particles.size(); i++)
 	{
-		m_particles.at(i).Init();
+		m_particles.at(i).Init(model);
 	}
 }
 
