@@ -1,0 +1,433 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="Resources\Shaders\SpriteVertexShader.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SpritePixelShader.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ShadowMapVS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ShadowMapPS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\PostEffectTestVS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\PostEffectTestPS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\LuminancePS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\GaussianBlurVS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\GaussianBlurPS.hlsl">
+      <Filter>Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\BasicGeometryShader.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\BasicPS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\BasicVS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FBXPS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\FBXVS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ObjPS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ObjVS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\TrailPS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\TrailVS.hlsl">
+      <Filter>Shader\3D</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx12.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\Camera.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\ConstantBuffer.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\DirectXBase.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\DirectX\DirectXImportant.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Light.cpp">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\Dx12Wrapper.cpp">
+      <Filter>SourceCodes\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxMaterial.cpp">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxMeshes.cpp">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxModels.cpp">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\FbxObjects.cpp">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\WinAPI\WindowsAPI.cpp">
+      <Filter>SourceCodes\WinAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Input\Input.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Mesh.cpp">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Material.cpp">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Model.cpp">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\XAudio2\Music.cpp">
+      <Filter>SourceCodes\XAudio2</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\3D\Object.cpp">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\RenderTarget.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\Sprite.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\main.cpp">
+      <Filter>SourceCodes</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Enemy.cpp">
+      <Filter>SourceCodes\Users\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Player.cpp">
+      <Filter>SourceCodes\Users\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Stage.cpp">
+      <Filter>SourceCodes\Users\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\StageObject.cpp">
+      <Filter>SourceCodes\Users\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\ModelManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\ParticleManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\PipelineManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\SpriteManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\GameScene.cpp">
+      <Filter>SourceCodes\Users\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Math\OBBCollision.cpp">
+      <Filter>SourceCodes\Math\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\ImguiControl.cpp">
+      <Filter>SourceCodes\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\PostEffect.cpp">
+      <Filter>SourceCodes\2D\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\TexManager.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\TrailManager.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\2D\ShadowMap.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCodes\Users\Config.cpp">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SourceCodes\Singleton.h">
+      <Filter>SourceCodes</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx12.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\Camera.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\ConstantBuffer.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\DirectXBase.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\DirectXImportant.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Light.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\Dx12Wrapper.h">
+      <Filter>SourceCodes\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxMaterial.h">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxMeshes.h">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxModels.h">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\FbxObjects.h">
+      <Filter>SourceCodes\3D\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\WinAPI\WindowsAPI.h">
+      <Filter>SourceCodes\WinAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Input\Input.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Mesh.h">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Material.h">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Model.h">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\XAudio2\Music.h">
+      <Filter>SourceCodes\XAudio2</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\3D\Object.h">
+      <Filter>SourceCodes\3D\OBJ</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\RenderTarget.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\Sprite.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Enemy.h">
+      <Filter>SourceCodes\Users\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Player.h">
+      <Filter>SourceCodes\Users\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Stage.h">
+      <Filter>SourceCodes\Users\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\StageObject.h">
+      <Filter>SourceCodes\Users\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\ModelManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\ParticleManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\PipelineManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\GameScene.h">
+      <Filter>SourceCodes\Users\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\OBBCollision.h">
+      <Filter>SourceCodes\Math\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\OgaJHelper.h">
+      <Filter>SourceCodes\Math\MyHelper</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Math\Easing.h">
+      <Filter>SourceCodes\Math\MyHelper</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\ImguiControl.h">
+      <Filter>SourceCodes\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\PostEffect.h">
+      <Filter>SourceCodes\2D\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\DirectX\d3dx12.h">
+      <Filter>SourceCodes\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\TexManager.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\TrailManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\2D\ShadowMap.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\SpriteManager.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCodes\Users\Config.h">
+      <Filter>SourceCodes\Users\Manager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\SpriteShaderHeader.hlsli">
+      <Filter>Shader\2D</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowMapShaderHeader.hlsli">
+      <Filter>Shader\2D</Filter>
+    </None>
+    <None Include="Resources\Shaders\PostEffectTest.hlsli">
+      <Filter>Shader\2D</Filter>
+    </None>
+    <None Include="Resources\Shaders\GaussianBlurShaderHeader.hlsli">
+      <Filter>Shader\2D</Filter>
+    </None>
+    <None Include="Resources\Shaders\BasicShaderHeader.hlsli">
+      <Filter>Shader\3D</Filter>
+    </None>
+    <None Include="Resources\Shaders\FBX.hlsli">
+      <Filter>Shader\3D</Filter>
+    </None>
+    <None Include="Resources\Shaders\ObjShaderHeader.hlsli">
+      <Filter>Shader\3D</Filter>
+    </None>
+    <None Include="Resources\Shaders\Trail.hlsli">
+      <Filter>Shader\3D</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{4d15edff-b005-42e1-830b-bf9369ecce95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes">
+      <UniqueIdentifier>{255d8f08-f205-4779-86eb-cdef98c8c672}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{e8fe7a1d-b732-4df6-a9b7-d09d965c2104}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\2D">
+      <UniqueIdentifier>{33d0c97a-32f7-43bf-b2de-4057d653b14d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\3D">
+      <UniqueIdentifier>{3bfad0e9-8f14-4f9b-931c-ac6652bd7dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\WinAPI">
+      <UniqueIdentifier>{5409af1a-20ed-4cb7-9aea-74c3fcf8af65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Input">
+      <UniqueIdentifier>{890778ad-ac63-4a03-813a-87a122affbcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\ImGui">
+      <UniqueIdentifier>{b29f441f-7c7a-47c7-a1dd-6b4e6ed02000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\3D\FBX">
+      <UniqueIdentifier>{0abb2a53-1734-431f-b7ec-97f1a3ec0c30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\3D\OBJ">
+      <UniqueIdentifier>{28091839-5ba3-41d7-8762-f62c48131f85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\XAudio2">
+      <UniqueIdentifier>{df175455-880b-40e5-9b73-160db63e95a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\DirectX">
+      <UniqueIdentifier>{a91517af-96b2-42ae-ae6d-4ae30f48f232}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users">
+      <UniqueIdentifier>{9b8dbe2a-9154-489a-b91a-357e91a440b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Math">
+      <UniqueIdentifier>{3711de52-83dc-431e-9168-6f9686ba4c76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users\Enemy">
+      <UniqueIdentifier>{3c9ecc0b-7d9f-46e0-a03e-7ecd5f6f72d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users\Player">
+      <UniqueIdentifier>{ea58fc8f-bd03-4e2a-b681-16e92e070a7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users\Stage">
+      <UniqueIdentifier>{141eba3b-1c07-494b-aeb6-0e79555343b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users\Manager">
+      <UniqueIdentifier>{5e4b820a-91db-4aec-99e5-af1d7a12841f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Users\GameScene">
+      <UniqueIdentifier>{e67d57b7-975c-4076-adb8-6ea9e820e3c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Math\Collision">
+      <UniqueIdentifier>{0d5d79fc-2d14-447a-9c35-152745f493ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Math\MyHelper">
+      <UniqueIdentifier>{4c818942-24f2-4645-8895-0063c53cdea5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\2D\PostEffect">
+      <UniqueIdentifier>{c98e7f1d-ca0d-49ed-8ddc-757211ef28e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\2D">
+      <UniqueIdentifier>{f86af128-15e6-4b82-8db6-cc3cd2080277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\3D">
+      <UniqueIdentifier>{69ff2b1e-9028-48e3-9338-4428ec75001a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,36 @@
+{
+    "FRAME": {
+        "ATTACK_COLLISION_TIMER[0]  ": 40,
+        "ATTACK_COLLISION_TIMER[1]  ": 35,
+        "ATTACK_COLLISION_TIMER[2]  ": 50,
+        "ATTACK_COLLISION_ENDTIMER  ": 55
+    },
+    "OTHER": {
+        "MAX_CAMERA_NEAR_DISTANCE  ": 75.0,
+        "MAX_CAMERA_FAR_DISTANCE   ": 200.0,
+        "MAX_PAD_RETENTION         ": 60,
+        "MAX_CAMERA_MOVE_SPEED     ": 2.0,
+        "EASE_CAMERA_TIMER         ": 0.009999999776482582,
+        "MAX_BLEND_TIMER           ": 0.019999999552965164,
+        "DOWN_POWER                ": 0.30000001192092896,
+        "ROTATE_ADD_ANGLE          ": 15.0,
+        "EXPLUSION_RAD             ": 10.0
+    },
+    "STATUS": {
+        "MAX_HP                 ": 1000,
+        "MAX_MP                 ": 100,
+        "MAX_STAMINA            ": 1000,
+        "MAX_POWER[0]           ": 40,
+        "MAX_POWER[1]           ": 25,
+        "MAX_POWER[2]           ": 70,
+        "MAX_ESTUS              ": 5,
+        "ESTUS_TIMER            ": 60,
+        "MAX_ESTUS_HEAL         ": 350,
+        "MAX_ESTUS_HEAL_SPEED   ": 15,
+        "AUTOHEAL_STAMINA_TIMER ": 60,
+        "ATTACK_SUB_STAMINA     ": 220,
+        "ROLLING_SUB_STAMINA    ": 200,
+        "HEAL_VOL               ": 8,
+        "C_MAX_MOVE_SPEED       ": 1.5
+    }
+}

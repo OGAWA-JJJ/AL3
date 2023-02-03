@@ -1,0 +1,44 @@
+{
+    "FRAME": {
+        "KICK_COLLISION_TIMER         ": 15,
+        "KICK_COLLISION_ENDTIMER      ": 30,
+        "PUNCH_COLLISION_TIMER        ": 60,
+        "PUNCH_COLLISION_ENDTIMER     ": 20,
+        "BACK_COLLISION_TIMER         ": 20,
+        "BACK_COLLISION_ENDTIMER      ": 90,
+        "EXPLOSION_COLLISION_TIMER    ": 180,
+        "EXPLOSION_COLLISION_DELAY    ": 65,
+        "EXPLOSION_COLLISION_ENDTIMER ": 10,
+        "SWIP_COLLISION_TIMER         ": 40,
+        "SWIP_COLLISION_ENDTIMER      ": 60,
+        "RAZER_COLLISION_STARTTIMER   ": 20,
+        "RAZER_COLLISION_TIMER        ": 90,
+        "RAZER_COLLISION_DELAY        ": 60,
+        "SWINGDOWN_COLLISION_TIMER    ": 40,
+        "SWINGDOWN_COLLISION_ENDTIMER ": 10
+    },
+    "OTHER": {
+        "MAX_DIST        ": 35.0,
+        "MAX_TURN_RAD    ": 45.0,
+        "MAX_BACK_RAD    ": 150.0,
+        "MAX_BLEND_TIMER ": 0.029999999329447746
+    },
+    "STATUS": {
+        "MAX_POWER            ": 300,
+        "MAX_EXPLOSION_POWER  ": 500,
+        "MAX_HP               ": 1000,
+        "RISE_TIMER           ": 110,
+        "SWING_DOWN_TIMER     ": 30,
+        "MAX_RISE_HEIGHT      ": 100.0,
+        "MAX_MOVE_SPEED       ": 0.0,
+        "MAX_TURN_TIMER       ": 0.019999999552965164,
+        "MAX_RISE_TIMER       ": 0.009999999776482582,
+        "MAX_SWING_DOWN_TIMER ": 0.019999999552965164,
+        "MAX_TACKLE_TIMER     ": 50,
+        "MAX_TACKLE_COUNT     ": 3,
+        "MAX_TACKLE_SPEED     ": 7.0,
+        "MAX_TACKLE_RANGE     ": 200.0,
+        "CALC_TACKLE_RANGE    ": 100.0,
+        "BEFOREBATTLEADDTIMER ": 0.03999999910593033
+    }
+}
