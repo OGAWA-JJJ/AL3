@@ -40,7 +40,7 @@ GameScene::~GameScene()
 
 void GameScene::Init()
 {
-	m_sceneType = GameSceneType::BATTLE;
+	m_sceneType = GameSceneType::TITLE;
 	m_nextSceneType = m_sceneType;
 	m_sceneChangeTri = false;
 
